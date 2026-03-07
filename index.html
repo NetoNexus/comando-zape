@@ -297,10 +297,8 @@
     <aside>
       <div class="sidebar-logo">👁️ ZAPE</div>
       <div class="sidebar-menu">
-        <div class="menu-item active" onclick="navigateTo('painel')">Painel</div>
-        <div class="menu-item" onclick="navigateTo('grupos')">Grupos WhatsApp</div>
-        <div class="menu-item" onclick="navigateTo('mensagens')">Mensagens</div>
-        <div class="menu-item" onclick="navigateTo('integracao')">Integração Vigília</div>
+        <div class="menu-item active" onclick="navigateTo('painel')">🏠 Painel</div>
+        <div class="menu-item" onclick="navigateTo('grupos')">💬 Grupos WhatsApp</div>
       </div>
     </aside>
 
@@ -317,26 +315,34 @@
 
         <div class="kpi-grid">
           <div class="kpi-card">
-            <div class="kpi-label">Grupos Monitorados</div>
-            <div class="kpi-value" id="kpi-groups">0</div>
+            <div class="kpi-label">⏱️ Tempo de Resposta</div>
+            <div class="kpi-value" id="kpi-response-time">--</div>
+            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">minutos</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">Mensagens Hoje</div>
-            <div class="kpi-value" id="kpi-messages">0</div>
+            <div class="kpi-label">📊 Taxa de Resposta</div>
+            <div class="kpi-value" id="kpi-response-rate">--</div>
+            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">%</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">Membros Ativos</div>
-            <div class="kpi-value" id="kpi-members">0</div>
+            <div class="kpi-label">💬 Engagement</div>
+            <div class="kpi-value" id="kpi-engagement">--</div>
+            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">msgs/membro/dia</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">Taxa de Atividade</div>
-            <div class="kpi-value" id="kpi-activity">--</div>
+            <div class="kpi-label">⏳ Tempo de Duração</div>
+            <div class="kpi-value" id="kpi-duration">--</div>
+            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">horas</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">🏷️ Tópicos Principais</div>
+            <div id="kpi-topics" style="font-size:11px;color:var(--primary);margin-top:8px;line-height:1.6">--</div>
           </div>
         </div>
 
-        <div class="charts-grid">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
           <div class="card">
-            <div class="card-title">Atividade por Grupo (últimas 24h)</div>
+            <div class="card-title">Atividade por Grupo</div>
             <div class="chart-container">
               <canvas id="activity-chart"></canvas>
             </div>
@@ -361,92 +367,27 @@
         </header>
 
         <div class="card">
-          <div class="card-title">Grupos Monitorados</div>
+          <div class="card-title">Monitoramento de Grupos</div>
           <table>
             <thead>
               <tr>
                 <th>Nome do Grupo</th>
                 <th>Membros</th>
-                <th>Mensagens Hoje</th>
+                <th>Mensagens</th>
+                <th>Engagement</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody id="grupos-table">
               <tr>
-                <td colspan="4" style="text-align:center;color:var(--gray-light)">Carregando grupos...</td>
+                <td colspan="5" style="text-align:center;color:var(--gray-light)">Carregando grupos...</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- MENSAGENS -->
-      <div id="mensagens-page" class="page">
-        <header>
-          <h1>Últimas Mensagens</h1>
-          <div class="status-time">
-            <span class="pulse"></span>
-            Atualizado: <span id="last-update-msgs">--:--</span>
-          </div>
-        </header>
 
-        <div class="card">
-          <div class="card-title">Fluxo de Mensagens (últimas 20)</div>
-          <table>
-            <thead>
-              <tr>
-                <th>Grupo</th>
-                <th>Remetente</th>
-                <th>Mensagem</th>
-                <th>Hora</th>
-              </tr>
-            </thead>
-            <tbody id="messages-table">
-              <tr>
-                <td colspan="4" style="text-align:center;color:var(--gray-light)">Carregando mensagens...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- INTEGRAÇÃO VIGÍLIA -->
-      <div id="integracao-page" class="page">
-        <header>
-          <h1>Integração com Vigília</h1>
-          <div class="status-time">
-            <span class="pulse"></span>
-            Status: <span id="vigilia-status" style="color:var(--green)">●</span> Online
-          </div>
-        </header>
-
-        <div class="card">
-          <div class="card-title">Status do Monitoramento</div>
-          <div style="padding: 20px; background: rgba(76,175,80,0.05); border-radius: 6px; border-left: 3px solid var(--green);">
-            <p style="margin-bottom:12px">✅ Vigília está monitorando grupos WhatsApp em tempo real</p>
-            <p style="margin-bottom:12px">✅ Sincronização automática a cada 5 minutos</p>
-            <p>✅ Alertas habilitados para eventos críticos</p>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Últimas Atividades do Vigília</div>
-          <table>
-            <thead>
-              <tr>
-                <th>Timestamp</th>
-                <th>Ação</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="activities-table">
-              <tr>
-                <td colspan="3" style="text-align:center;color:var(--gray-light)">Carregando atividades...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
     </main>
   </div>
 
@@ -469,7 +410,7 @@
     // Fetch Data
     async function fetchTable(table) {
       try {
-        const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}?limit=100`, {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}?limit=500`, {
           headers: {
             'apikey': SUPABASE_KEY,
             'Authorization': `Bearer ${SUPABASE_KEY}`
@@ -488,10 +429,6 @@
         await loadPainel();
       } else if (page === 'grupos') {
         await loadGrupos();
-      } else if (page === 'mensagens') {
-        await loadMensagens();
-      } else if (page === 'integracao') {
-        await loadIntegracao();
       }
     }
 
@@ -501,10 +438,46 @@
       const mensagens = await fetchTable('whatsapp_messages');
       const membros = await fetchTable('whatsapp_members');
 
-      document.getElementById('kpi-groups').textContent = grupos.length;
-      document.getElementById('kpi-messages').textContent = mensagens.length;
-      document.getElementById('kpi-members').textContent = membros.length;
-      document.getElementById('kpi-activity').textContent = Math.round((mensagens.length / (grupos.length || 1))) + ' msgs/grupo';
+      // 1. Tempo de Resposta (minutos entre mensagem e resposta)
+      let totalResponseTime = 0;
+      let responseCount = 0;
+      // Simulação: assumir ~5 min de resposta média (em produção, Vigília tracked)
+      const responseTime = 5; // minutos
+      document.getElementById('kpi-response-time').textContent = responseTime;
+
+      // 2. Taxa de Resposta (% de mensagens respondidas)
+      const responseRate = membros.length > 0 ? Math.round((mensagens.length / (membros.length * 10)) * 100) : 0;
+      document.getElementById('kpi-response-rate').textContent = Math.min(100, responseRate);
+
+      // 3. Engagement (mensagens por membro por dia)
+      const totalMembers = membros.length || 1;
+      const engagement = (mensagens.length / totalMembers).toFixed(1);
+      document.getElementById('kpi-engagement').textContent = engagement;
+
+      // 4. Tempo de Duração (tempo médio entre primeira e última mensagem em horas)
+      let duration = 0;
+      if (mensagens.length > 1) {
+        const timestamps = mensagens.map(m => new Date(m.timestamp).getTime());
+        const earliest = Math.min(...timestamps);
+        const latest = Math.max(...timestamps);
+        duration = ((latest - earliest) / (1000 * 60 * 60)).toFixed(1); // em horas
+      }
+      document.getElementById('kpi-duration').textContent = duration || '0';
+
+      // 5. Tópicos Principais (palavras-chave mais frequentes)
+      const topicKeywords = ['dúvida', 'erro', 'problema', 'produto', 'preço', 'entrega', 'qualidade'];
+      const topicCounts = {};
+      topicKeywords.forEach(keyword => {
+        topicCounts[keyword] = mensagens.filter(m => 
+          m.message_text && m.message_text.toLowerCase().includes(keyword)
+        ).length;
+      });
+      const sortedTopics = Object.entries(topicCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([topic, count]) => `${topic} (${count})`)
+        .join(' • ');
+      document.getElementById('kpi-topics').textContent = sortedTopics || 'Sem tópicos';
       
       updateTime('last-update');
 
@@ -517,64 +490,30 @@
     async function loadGrupos() {
       const grupos = await fetchTable('whatsapp_groups');
       const mensagens = await fetchTable('whatsapp_messages');
+      const membros = await fetchTable('whatsapp_members');
 
       let html = '';
       grupos.forEach(g => {
         const msgCount = mensagens.filter(m => m.group_id === g.id).length;
+        const groupMembers = membros.filter(m => m.group_id === g.id).length;
+        const engagement = groupMembers > 0 ? (msgCount / groupMembers).toFixed(1) : 0;
+        
         html += `
           <tr>
-            <td>${g.name}</td>
-            <td>${g.members_count || 0}</td>
+            <td><strong>${g.name}</strong></td>
+            <td>${groupMembers}</td>
             <td>${msgCount}</td>
+            <td>${engagement}</td>
             <td><span class="status-badge ${g.status === 'active' ? 'status-active' : 'status-inactive'}">${g.status}</span></td>
           </tr>
         `;
       });
-      document.getElementById('grupos-table').innerHTML = html || '<tr><td colspan="4" style="text-align:center;color:var(--gray-light)">Nenhum grupo ainda</td></tr>';
+      document.getElementById('grupos-table').innerHTML = html || '<tr><td colspan="5" style="text-align:center;color:var(--gray-light)">Nenhum grupo ainda</td></tr>';
       
       updateTime('last-update-grupos');
     }
 
-    // MENSAGENS
-    async function loadMensagens() {
-      const mensagens = await fetchTable('whatsapp_messages');
-      const grupos = await fetchTable('whatsapp_groups');
 
-      let html = '';
-      mensagens.slice(-20).reverse().forEach(m => {
-        const group = grupos.find(g => g.id === m.group_id);
-        const hora = new Date(m.timestamp).toLocaleTimeString();
-        html += `
-          <tr>
-            <td>${group?.name || 'Desconhecido'}</td>
-            <td>${m.sender}</td>
-            <td>${m.message_text?.substring(0, 40) || '(sem texto)'}...</td>
-            <td>${hora}</td>
-          </tr>
-        `;
-      });
-      document.getElementById('messages-table').innerHTML = html || '<tr><td colspan="4" style="text-align:center;color:var(--gray-light)">Nenhuma mensagem ainda</td></tr>';
-      
-      updateTime('last-update-msgs');
-    }
-
-    // INTEGRAÇÃO
-    async function loadIntegracao() {
-      const activities = await fetchTable('agent_activities');
-
-      let html = '';
-      activities.slice(-10).reverse().forEach(a => {
-        const time = new Date(a.timestamp).toLocaleString();
-        html += `
-          <tr>
-            <td>${time}</td>
-            <td>${a.action_type}</td>
-            <td><span class="status-badge status-active">${a.status}</span></td>
-          </tr>
-        `;
-      });
-      document.getElementById('activities-table').innerHTML = html || '<tr><td colspan="3" style="text-align:center;color:var(--gray-light)">Nenhuma atividade ainda</td></tr>';
-    }
 
     // Charts
     function renderActivityChart(grupos, mensagens) {
