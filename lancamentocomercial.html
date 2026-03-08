@@ -811,8 +811,12 @@
     }
 
     function openEditMovementModal(id) {
-      editingMovement = movements.find(m => m.id === id);
-      if (!editingMovement) return;
+      editingMovement = movements.find(m => m.id == id);
+      if (!editingMovement) {
+        console.error('Movimento não encontrado. ID:', id, 'Movements:', movements);
+        alert('Erro ao abrir movimento para edição');
+        return;
+      }
       
       // Preenche campos do modal
       document.getElementById('edit-movement-data').value = editingMovement.data_raw || editingMovement.data;
@@ -823,6 +827,7 @@
       renderEditGanhos();
       
       document.getElementById('editMovementModal').classList.add('show');
+      console.log('✅ Modal aberto para edição:', editingMovement);
     }
 
     function closeEditMovementModal() {
