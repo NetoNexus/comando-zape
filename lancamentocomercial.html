@@ -15,7 +15,10 @@
     header h1 { font-size: 28px; font-weight: 900; }
     
     .card { background: #2A2A2A; padding: 20px; margin-bottom: 24px; border-radius: 8px; border: 1px solid #383838; }
-    .card-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; color: #fff; }
+    .card-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; color: #fff; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+    .card-title:hover { color: #B2FF00; }
+    .expand-icon { display: inline-block; transition: transform 0.3s; font-size: 12px; }
+    .expand-icon.open { transform: rotate(180deg); }
     
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; font-size: 11px; font-weight: 700; color: #999; margin-bottom: 8px; text-transform: uppercase; }
@@ -24,7 +27,6 @@
     
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
     .form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
-    .form-row.full { grid-template-columns: 1fr; }
     
     .btn { background: #B2FF00; color: #1A1A1A; padding: 12px 24px; border: none; border-radius: 6px; font-weight: 900; font-size: 14px; cursor: pointer; margin-top: 16px; transition: all 0.3s; }
     .btn:hover { opacity: 0.9; }
@@ -32,33 +34,29 @@
     .success { color: #4CAF50; padding: 12px; border-radius: 6px; margin-bottom: 16px; display: none; }
     .success.show { display: block; }
     
-    .filter-section { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-    .filter-section .form-group { margin-bottom: 0; }
-    
-    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
     table th { padding: 12px; text-align: left; font-weight: 700; color: #B2FF00; border-bottom: 1px solid #383838; }
     table td { padding: 12px; border-bottom: 1px solid #383838; }
     table tr:hover { background: rgba(178,255,0,0.03); }
     
     .expandable-row { cursor: pointer; }
-    .expandable-row td { padding: 12px; }
     .expandable-row:hover { background: rgba(178,255,0,0.05); }
     
-    .expand-icon { display: inline-block; transition: transform 0.3s; margin-right: 8px; }
-    .expand-icon.open { transform: rotate(180deg); }
+    .expand-cell { width: 30px; }
+    .expand-cell-icon { display: inline-block; transition: transform 0.3s; }
+    .expand-cell-icon.open { transform: rotate(180deg); }
     
     .detail-row { background: rgba(0,0,0,0.2); display: none; }
     .detail-row.show { display: table-row; }
     .detail-content { padding: 20px; }
     .detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-    .detail-item { }
     .detail-label { font-size: 10px; color: #999; text-transform: uppercase; margin-bottom: 4px; }
     .detail-value { font-size: 12px; color: #fff; }
     
     .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
-    .edit-btn { background: #2196F3; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 700; }
+    .edit-btn { background: #2196F3; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 700; }
     .edit-btn:hover { background: #1976D2; }
-    .delete-btn { background: #F44336; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 700; }
+    .delete-btn { background: #F44336; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 700; }
     .delete-btn:hover { opacity: 0.8; }
     
     .dynamic-fields { background: #1A1A1A; padding: 16px; border-radius: 6px; margin-bottom: 16px; }
@@ -69,6 +67,12 @@
     
     .add-btn { background: #383838; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 700; margin-top: 8px; }
     .add-btn:hover { background: #B2FF00; color: #1A1A1A; }
+    
+    .collapsible-content { display: none; }
+    .collapsible-content.show { display: block; }
+    
+    .filter-section { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #383838; }
+    .filter-section .form-group { margin-bottom: 0; }
     
     .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); }
     .modal.show { display: flex; align-items: center; justify-content: center; }
@@ -178,47 +182,51 @@
       </form>
     </div>
 
-    <!-- FILTROS -->
-    <div class="card">
-      <div class="card-title">Filtros de Pesquisa</div>
-      <div class="filter-section">
-        <div class="form-group">
-          <label>Filtrar por Closer</label>
-          <select id="filter-closer" onchange="applyFilters()">
-            <option value="">Todos</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Filtrar por Data</label>
-          <input type="date" id="filter-date" onchange="applyFilters()">
-        </div>
-        <div class="form-group">
-          <label>&nbsp;</label>
-          <button class="btn" onclick="clearFilters()" style="margin: 0; width: 100%;">Limpar Filtros</button>
-        </div>
-      </div>
-    </div>
-
     <!-- HISTÓRICO -->
     <div class="card">
-      <div class="card-title">Histórico de Movimentações</div>
-      <table>
-        <thead>
-          <tr>
-            <th style="width: 30px;"></th>
-            <th>Data</th>
-            <th>Closer</th>
-            <th>Origem</th>
-            <th>Reuniões</th>
-            <th>Qtd. Ganho</th>
-            <th>Valor Ganho</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="records-table">
-          <tr><td colspan="8" style="text-align:center;color:#999;">Carregando...</td></tr>
-        </tbody>
-      </table>
+      <div class="card-title" onclick="toggleHistorico()">
+        <span>Histórico de Movimentações</span>
+        <span class="expand-icon" id="historico-icon">▼</span>
+      </div>
+      
+      <div class="collapsible-content show" id="historico-content">
+        <div class="filter-section">
+          <div class="form-group">
+            <label>Filtrar por Closer</label>
+            <select id="filter-closer" onchange="applyFilters()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Filtrar por Data</label>
+            <input type="date" id="filter-date" onchange="applyFilters()">
+          </div>
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <button class="btn" onclick="clearFilters()" style="margin: 0; width: 100%;">Limpar Filtros</button>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 30px;"></th>
+              <th>Data</th>
+              <th>Closer</th>
+              <th>Origem</th>
+              <th>Agendamentos</th>
+              <th>Reuniões</th>
+              <th>Reagendamentos</th>
+              <th>Qtd. Ganho</th>
+              <th>Valor Ganho</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="records-table">
+            <tr><td colspan="10" style="text-align:center;color:#999;">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -229,7 +237,7 @@
         <h2>Editar Movimentação</h2>
         <button class="modal-close" onclick="closeEditModal()">×</button>
       </div>
-      <form onsubmit="saveEdit(event)" style="max-height: 500px; overflow-y: auto;">
+      <form onsubmit="saveEdit(event)">
         <div class="form-row">
           <div class="form-group">
             <label>Data</label>
@@ -298,6 +306,7 @@
     let origens = [];
     let movements = JSON.parse(localStorage.getItem('movements')) || [];
     let editingMovement = null;
+    let historicoExpanded = true;
 
     async function loadData() {
       closers = await supabaseFetch('closers?order=name');
@@ -365,26 +374,26 @@
       document.querySelectorAll('#agendamentos-container .dynamic-field').forEach(field => {
         const sdrId = field.querySelector('.sdr-select').value;
         const qty = field.querySelector('.quantidade').value;
-        if (sdrId && qty) agendamentos.push({ sdr_id: sdrId, quantidade: qty });
+        if (sdrId && qty) agendamentos.push({ sdr_id: sdrId, quantidade: parseInt(qty) });
       });
 
       const reagendamentos = [];
       document.querySelectorAll('#reagendamentos-container .dynamic-field').forEach(field => {
         const sdrId = field.querySelector('.sdr-select').value;
         const qty = field.querySelector('.quantidade').value;
-        if (sdrId && qty) reagendamentos.push({ sdr_id: sdrId, quantidade: qty });
+        if (sdrId && qty) reagendamentos.push({ sdr_id: sdrId, quantidade: parseInt(qty) });
       });
 
       const movement = {
         id: movements.length + 1,
         data: form.data.value,
-        closer_id: form.closer.value,
-        origem_id: form.origem.value,
+        closer_id: parseInt(form.closer.value),
+        origem_id: parseInt(form.origem.value),
         agendamentos: agendamentos,
-        reunioes: form.reunioes.value,
+        reunioes: parseInt(form.reunioes.value),
         reagendamentos: reagendamentos,
-        quantidade_ganho: form['quantidade-ganho'].value,
-        valor_ganho: form['valor-ganho'].value,
+        quantidade_ganho: parseInt(form['quantidade-ganho'].value),
+        valor_ganho: parseFloat(form['valor-ganho'].value),
         timestamp: new Date().toLocaleDateString('pt-BR'),
         expanded: false
       };
@@ -429,9 +438,9 @@
       e.preventDefault();
       if (editingMovement) {
         editingMovement.data = document.getElementById('edit-data').value;
-        editingMovement.reunioes = document.getElementById('edit-reunioes').value;
-        editingMovement.quantidade_ganho = document.getElementById('edit-quantidade-ganho').value;
-        editingMovement.valor_ganho = document.getElementById('edit-valor-ganho').value;
+        editingMovement.reunioes = parseInt(document.getElementById('edit-reunioes').value);
+        editingMovement.quantidade_ganho = parseInt(document.getElementById('edit-quantidade-ganho').value);
+        editingMovement.valor_ganho = parseFloat(document.getElementById('edit-valor-ganho').value);
         localStorage.setItem('movements', JSON.stringify(movements));
         closeEditModal();
         renderTable();
@@ -445,6 +454,12 @@
         localStorage.setItem('movements', JSON.stringify(movements));
         renderTable();
       }
+    }
+
+    function toggleHistorico() {
+      historicoExpanded = !historicoExpanded;
+      document.getElementById('historico-content').classList.toggle('show');
+      document.getElementById('historico-icon').classList.toggle('open');
     }
 
     function applyFilters() {
@@ -467,7 +482,7 @@
 
       const tbody = document.getElementById('records-table');
       if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;">Nenhum registro</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#999;">Nenhum registro</td></tr>';
         return;
       }
 
@@ -486,13 +501,15 @@
         }).join(', ') || '--';
 
         return `<tr class="expandable-row" onclick="toggleRow(${m.id})">
-          <td><span class="expand-icon ${m.expanded ? 'open' : ''}">▼</span></td>
+          <td class="expand-cell"><span class="expand-cell-icon ${m.expanded ? 'open' : ''}">▼</span></td>
           <td>${m.data}</td>
           <td>${closerName}</td>
           <td>${origemName}</td>
+          <td>${agendStr}</td>
           <td>${m.reunioes}</td>
+          <td>${reagendStr}</td>
           <td>${m.quantidade_ganho}</td>
-          <td>R$ ${parseFloat(m.valor_ganho).toFixed(2)}</td>
+          <td>R$ ${m.valor_ganho.toFixed(2)}</td>
           <td onclick="event.stopPropagation();">
             <div class="btn-group">
               <button class="edit-btn" onclick="openEditModal(${m.id})">Editar</button>
@@ -501,22 +518,15 @@
           </td>
         </tr>
         <tr class="detail-row ${m.expanded ? 'show' : ''}" onclick="event.stopPropagation();">
-          <td colspan="8">
+          <td colspan="10">
             <div class="detail-content">
-              <div class="detail-grid">
-                <div class="detail-item">
-                  <div class="detail-label">Agendamentos</div>
-                  <div class="detail-value">${agendStr}</div>
-                </div>
-                <div class="detail-item">
-                  <div class="detail-label">Reagendamentos</div>
-                  <div class="detail-value">${reagendStr}</div>
-                </div>
-                <div class="detail-item">
-                  <div class="detail-label">Closer</div>
-                  <div class="detail-value">${closerName}</div>
-                </div>
-              </div>
+              <p><strong>Detalhes completos:</strong></p>
+              <p>Closer: ${closerName}</p>
+              <p>Origem: ${origemName}</p>
+              <p>Agendamentos: ${agendStr}</p>
+              <p>Reuniões: ${m.reunioes}</p>
+              <p>Reagendamentos: ${reagendStr}</p>
+              <p>Total Ganho: ${m.quantidade_ganho} unidades - R$ ${m.valor_ganho.toFixed(2)}</p>
             </div>
           </td>
         </tr>`;
