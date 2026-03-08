@@ -167,21 +167,20 @@
 
         <button type="button" class="add-btn" onclick="addReagendamento()">+ Adicionar SDR (Reagendamentos)</button>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>Quantidade Ganho</label>
-            <select name="quantidade-ganho" required>
-              <option value="">Selecione...</option>
-              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-              <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-              <option value="7">7</option><option value="8">8</option><option value="9">9</option>
-              <option value="10">10</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Valor Ganho (R$)</label>
-            <input type="number" name="valor-ganho" placeholder="0,00" step="0.01" required>
-          </div>
+        <div class="form-group">
+          <label>Quantidade Ganho</label>
+          <select name="quantidade-ganho" id="quantidade-ganho-select" onchange="onQuantidadeGanhoChange()" required>
+            <option value="">Selecione...</option>
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+            <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+            <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+            <option value="10">10</option>
+          </select>
+        </div>
+
+        <div id="ganhos-container" style="display: none;">
+          <label style="font-size: 11px; font-weight: 700; color: #999; text-transform: uppercase; display: block; margin-bottom: 16px;">Detalhes de Cada Ganho</label>
+          <div id="ganhos-fields"></div>
         </div>
 
         <button type="submit" class="btn">Registrar Movimentação</button>
@@ -451,6 +450,54 @@
       container.appendChild(newField);
     }
 
+    function onQuantidadeGanhoChange() {
+      const quantidade = document.getElementById('quantidade-ganho-select').value;
+      const container = document.getElementById('ganhos-container');
+      const ganhosFields = document.getElementById('ganhos-fields');
+      
+      if (!quantidade) {
+        container.style.display = 'none';
+        return;
+      }
+      
+      container.style.display = 'block';
+      ganhosFields.innerHTML = '';
+      
+      for (let i = 1; i <= parseInt(quantidade); i++) {
+        const div = document.createElement('div');
+        div.style.cssText = 'background: #1A1A1A; padding: 16px; border-radius: 6px; margin-bottom: 12px;';
+        div.innerHTML = `
+          <div style="font-size: 10px; color: #999; margin-bottom: 12px; font-weight: 700;">GANHO ${i}</div>
+          <div class="form-row" style="margin-bottom: 0;">
+            <div class="form-group">
+              <label>Origem</label>
+              <select class="ganho-origem-select" data-ganho="${i}" required>
+                <option value="">Carregando...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Sub-origem (se houver)</label>
+              <select class="ganho-sub-origem-select" data-ganho="${i}" style="display: none;">
+                <option value="">Selecione sub-origem...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Valor Ganho (R$)</label>
+              <input type="number" class="ganho-valor-input" data-ganho="${i}" placeholder="0,00" step="0.01" required>
+            </div>
+          </div>
+        `;
+        ganhosFields.appendChild(div);
+      }
+      
+      // Popular os dropdowns de origem
+      document.querySelectorAll('.ganho-origem-select').forEach(sel => {
+        sel.innerHTML = '<option value="">Selecione origem...</option>' + origens.map(o => 
+          `<option value="${o.id}">${o.name}</option>`
+        ).join('');
+      });
+    }
+
     function addReagendamento() {
       const container = document.getElementById('reagendamentos-container');
       const newField = document.createElement('div');
@@ -488,17 +535,26 @@
         if (sdrId && qty) reagendamentos.push({ sdr_id: sdrId, quantidade: parseInt(qty) });
       });
 
+      // Coletar ganhos dinâmicos
+      const ganhos = [];
+      document.querySelectorAll('.ganho-origem-select').forEach(sel => {
+        const ganhoNum = sel.getAttribute('data-ganho');
+        const origemId = sel.value;
+        const valorInput = document.querySelector(`.ganho-valor-input[data-ganho="${ganhoNum}"]`);
+        const valor = parseFloat(valorInput.value || 0);
+        if (origemId && valor > 0) {
+          ganhos.push({ origem_id: parseInt(origemId), valor: valor });
+        }
+      });
+
       const movement = {
         id: movements.length + 1,
         data: form.data.value,
         closer_id: parseInt(form.closer.value),
-        origem_id: parseInt(form.origem.value),
-        sub_origem: document.getElementById('sub-origem-select').value || null,
         agendamentos: agendamentos,
         reunioes: parseInt(form.reunioes.value),
         reagendamentos: reagendamentos,
-        quantidade_ganho: parseInt(form['quantidade-ganho'].value),
-        valor_ganho: parseFloat(form['valor-ganho'].value),
+        ganhos: ganhos, // Array de {origem_id, valor}
         timestamp: new Date().toLocaleDateString('pt-BR'),
         expanded: false
       };
@@ -512,7 +568,7 @@
 
       form.reset();
       document.querySelector('input[type="date"]').valueAsDate = new Date();
-      document.getElementById('sub-origem-group').style.display = 'none';
+      document.getElementById('ganhos-container').style.display = 'none';
       renderTable();
     }
 
@@ -605,10 +661,16 @@
       filtered.forEach(m => {
         totalReunioes += parseInt(m.reunioes || 0);
         totalVendas += 1;
-        totalQuantidade += parseInt(m.quantidade_ganho || 0);
-        totalValor += parseFloat(m.valor_ganho || 0);
         totalAgendamentos += m.agendamentos.reduce((sum, a) => sum + parseInt(a.quantidade || 0), 0);
         totalReagendamentos += m.reagendamentos.reduce((sum, r) => sum + parseInt(r.quantidade || 0), 0);
+        
+        // Calcular ganhos
+        if (m.ganhos && Array.isArray(m.ganhos)) {
+          totalQuantidade += m.ganhos.length;
+          m.ganhos.forEach(g => {
+            totalValor += g.valor || 0;
+          });
+        }
       });
 
       document.getElementById('total-reunioes').textContent = totalReunioes;
@@ -626,8 +688,20 @@
 
       tbody.innerHTML = filtered.map(m => {
         const closerName = closers.find(c => c.id == m.closer_id)?.name || '--';
-        const origemName = origens.find(o => o.id == m.origem_id)?.name || '--';
-        const subOrigemDisplay = m.sub_origem ? ` (${m.sub_origem})` : '';
+        
+        // Calcular ganhos para exibição
+        let ganhosDisplay = '--';
+        let totalValorGanho = 0;
+        let totalQtdGanho = 0;
+        
+        if (m.ganhos && Array.isArray(m.ganhos) && m.ganhos.length > 0) {
+          totalQtdGanho = m.ganhos.length;
+          ganhosDisplay = m.ganhos.map(g => {
+            const origemName = origens.find(o => o.id == g.origem_id)?.name || 'N/A';
+            totalValorGanho += g.valor;
+            return `${origemName}: R$ ${g.valor.toFixed(2)}`;
+          }).join(', ');
+        }
 
         const agendStr = m.agendamentos.map(a => {
           const sdrName = sdrs.find(s => s.id == a.sdr_id)?.name || 'N/A';
@@ -642,12 +716,12 @@
         return `<tr>
           <td>${m.data}</td>
           <td>${closerName}</td>
-          <td>${origemName}${subOrigemDisplay}</td>
+          <td>${ganhosDisplay}</td>
           <td>${agendStr}</td>
           <td>${m.reunioes}</td>
           <td>${reagendStr}</td>
-          <td>${m.quantidade_ganho}</td>
-          <td>R$ ${parseFloat(m.valor_ganho).toFixed(2)}</td>
+          <td>${totalQtdGanho}</td>
+          <td>R$ ${totalValorGanho.toFixed(2)}</td>
         </tr>`;
       }).join('');
     }
@@ -668,8 +742,22 @@
 
       tbody.innerHTML = filtered.map(m => {
         const closerName = closers.find(c => c.id == m.closer_id)?.name || '--';
-        const origemName = origens.find(o => o.id == m.origem_id)?.name || '--';
-        const subOrigemDisplay = m.sub_origem ? ` (${m.sub_origem})` : '';
+        
+        // Calcular ganhos
+        let totalValorGanho = 0;
+        let totalQtdGanho = 0;
+        let ganhosDisplay = '--';
+        let ganhosDetalhes = '--';
+        
+        if (m.ganhos && Array.isArray(m.ganhos) && m.ganhos.length > 0) {
+          totalQtdGanho = m.ganhos.length;
+          ganhosDisplay = m.ganhos.map(g => {
+            const origemName = origens.find(o => o.id == g.origem_id)?.name || 'N/A';
+            totalValorGanho += g.valor;
+            return `${origemName}: R$ ${g.valor.toFixed(2)}`;
+          }).join(', ');
+          ganhosDetalhes = ganhosDisplay;
+        }
 
         const agendStr = m.agendamentos.map(a => {
           const sdrName = sdrs.find(s => s.id == a.sdr_id)?.name || 'N/A';
@@ -685,15 +773,14 @@
           <td class="expand-cell"><span class="expand-cell-icon ${m.expanded ? 'open' : ''}">▼</span></td>
           <td>${m.data}</td>
           <td>${closerName}</td>
-          <td>${origemName}${subOrigemDisplay}</td>
+          <td>${ganhosDisplay}</td>
           <td>${agendStr}</td>
           <td>${m.reunioes}</td>
           <td>${reagendStr}</td>
-          <td>${m.quantidade_ganho}</td>
-          <td>R$ ${m.valor_ganho.toFixed(2)}</td>
+          <td>${totalQtdGanho}</td>
+          <td>R$ ${totalValorGanho.toFixed(2)}</td>
           <td onclick="event.stopPropagation();">
             <div class="btn-group">
-              <button class="edit-btn" onclick="openEditModal(${m.id})">Editar</button>
               <button class="delete-btn" onclick="deleteMovement(${m.id})">Deletar</button>
             </div>
           </td>
@@ -703,11 +790,11 @@
             <div class="detail-content">
               <p><strong>Detalhes completos:</strong></p>
               <p>Closer: ${closerName}</p>
-              <p>Origem: ${origemName}${subOrigemDisplay}</p>
+              <p>Ganhos: ${ganhosDetalhes}</p>
               <p>Agendamentos: ${agendStr}</p>
               <p>Reuniões: ${m.reunioes}</p>
               <p>Reagendamentos: ${reagendStr}</p>
-              <p>Total Ganho: ${m.quantidade_ganho} unidades - R$ ${m.valor_ganho.toFixed(2)}</p>
+              <p>Total Ganho: ${totalQtdGanho} unidades - R$ ${totalValorGanho.toFixed(2)}</p>
             </div>
           </td>
         </tr>`;
