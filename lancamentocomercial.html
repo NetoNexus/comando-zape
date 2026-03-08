@@ -50,7 +50,7 @@
     .delete-btn { background: #F44336; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 700; }
     .delete-btn:hover { opacity: 0.8; }
     
-    .dynamic-fields { background: #1A1A1A; padding: 16px; border-radius: 6px; margin-bottom: 16px; }
+    .dynamic-fields { background: #1A1A1A; padding: 16px; border-radius: 6px; margin-bottom: 16px; transition: all 0.3s ease; }
     .dynamic-field { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-bottom: 12px; align-items: flex-end; }
     .dynamic-field select, .dynamic-field input { margin: 0; }
     .remove-btn { background: #F44336; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 700; }
@@ -58,6 +58,10 @@
     
     .add-btn { background: #383838; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 700; margin-top: 8px; }
     .add-btn:hover { background: #B2FF00; color: #1A1A1A; }
+    
+    .toggle-btn { background: #383838; color: #fff; border: none; padding: 12px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 700; width: 100%; text-align: left; transition: all 0.3s ease; }
+    .toggle-btn:hover { background: #4A4A4A; }
+    .toggle-btn.open { background: #B2FF00; color: #1A1A1A; }
     
     .collapsible-content { display: none; }
     .collapsible-content.show { display: block; }
@@ -125,34 +129,21 @@
             </select>
           </div>
 
-          <div style="grid-column: span 1;">
-            <div class="form-group" style="margin-bottom: 0;">
-              <label>Reagendamentos</label>
-            </div>
-            <div class="dynamic-fields" id="reagendamentos-container" style="margin-bottom: 0;">
-              <div class="dynamic-field">
-                <select class="sdr-select" required>
-                  <option value="">Carregando SDRs...</option>
-                </select>
-                <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
-                <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <button type="button" class="add-btn" onclick="addReagendamento()">+ Adicionar SDR (Reagendamentos)</button>
+        <button type="button" class="toggle-btn" onclick="toggleReagendamentos()" id="toggle-reagendamentos-btn" style="margin-bottom: 0;">Reagendamentos ▼</button>
+        <div class="dynamic-fields" id="reagendamentos-container" style="margin-bottom: 0; display: none; margin-top: 12px;">
+          <!-- Dinâmico -->
+        </div>
+        <button type="button" class="add-btn" onclick="addReagendamento()" id="add-reagendamento-btn" style="display: none; margin-bottom: 16px;">+ Adicionar SDR (Reagendamentos)</button>
+
+        <button type="button" class="toggle-btn" onclick="toggleNoShows()" id="toggle-noshow-btn" style="margin-bottom: 0; margin-top: 16px;">No-Shows ▼</button>
+        <div class="dynamic-fields" id="noshows-container" style="margin-bottom: 0; display: none; margin-top: 12px;">
+          <!-- Dinâmico -->
+        </div>
+        <button type="button" class="add-btn" onclick="addNoShow()" id="add-noshow-btn" style="display: none; margin-bottom: 16px;">+ Adicionar SDR (No-Shows)</button>
 
         <div class="form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <label>No-Shows</label>
-          </div>
-          <div class="dynamic-fields" id="noshows-container" style="margin-bottom: 0;">
-            <!-- Dinâmico -->
-          </div>
-        </div>
-
-        <button type="button" class="add-btn" onclick="addNoShow()">+ Adicionar SDR (No-Shows)</button>
 
         <div class="form-group">
           <label>Ganhos Registrados</label>
@@ -565,6 +556,46 @@
       });
     }
 
+    function toggleReagendamentos() {
+      const container = document.getElementById('reagendamentos-container');
+      const addBtn = document.getElementById('add-reagendamento-btn');
+      const toggleBtn = document.getElementById('toggle-reagendamentos-btn');
+      const isHidden = container.style.display === 'none';
+      
+      if (isHidden) {
+        container.style.display = 'block';
+        addBtn.style.display = 'block';
+        toggleBtn.classList.add('open');
+        if (container.children.length === 0) {
+          addReagendamento();
+        }
+      } else {
+        container.style.display = 'none';
+        addBtn.style.display = 'none';
+        toggleBtn.classList.remove('open');
+      }
+    }
+
+    function toggleNoShows() {
+      const container = document.getElementById('noshows-container');
+      const addBtn = document.getElementById('add-noshow-btn');
+      const toggleBtn = document.getElementById('toggle-noshow-btn');
+      const isHidden = container.style.display === 'none';
+      
+      if (isHidden) {
+        container.style.display = 'block';
+        addBtn.style.display = 'block';
+        toggleBtn.classList.add('open');
+        if (container.children.length === 0) {
+          addNoShow();
+        }
+      } else {
+        container.style.display = 'none';
+        addBtn.style.display = 'none';
+        toggleBtn.classList.remove('open');
+      }
+    }
+
     function addReagendamento() {
       const container = document.getElementById('reagendamentos-container');
       const newField = document.createElement('div');
@@ -665,7 +696,14 @@
       document.querySelector('input[type="date"]').valueAsDate = new Date();
       tempGanhos = [];
       renderizarGanhos();
+      document.getElementById('reagendamentos-container').innerHTML = '';
       document.getElementById('noshows-container').innerHTML = '';
+      document.getElementById('reagendamentos-container').style.display = 'none';
+      document.getElementById('noshows-container').style.display = 'none';
+      document.getElementById('add-reagendamento-btn').style.display = 'none';
+      document.getElementById('add-noshow-btn').style.display = 'none';
+      document.getElementById('toggle-reagendamentos-btn').classList.remove('open');
+      document.getElementById('toggle-noshow-btn').classList.remove('open');
       renderTable();
     }
 
