@@ -746,13 +746,28 @@
     setInterval(autoSyncToSupabase, 30000); // A cada 30 segundos
 
     async function loadData() {
+      console.log('🔷 [LOAD_DATA] Iniciando loadData()...');
+      
       closers = await supabaseFetch('closers?order=name');
+      console.log('✅ [LOAD_DATA] Closers carregados:', closers.length);
+      
       sdrs = await supabaseFetch('sdrs?order=name');
+      console.log('✅ [LOAD_DATA] SDRs carregados:', sdrs.length);
+      
       origens = await supabaseFetch('origens?order=name');
+      console.log('✅ [LOAD_DATA] Origens carregadas:', origens.length);
+      
       servicos = await supabaseFetch('servicos?order=name');
-      await loadMovementsFromSupabase(); // Carregar movements do Supabase
+      console.log('✅ [LOAD_DATA] Serviços carregados:', servicos.length);
+      
+      const loaded = await loadMovementsFromSupabase(); // Carregar movements do Supabase
+      console.log('✅ [LOAD_DATA] loadMovementsFromSupabase() retornou:', loaded, '| Movements:', movements.length);
+      
       populateSelects();
+      console.log('✅ [LOAD_DATA] populateSelects() executado');
+      
       renderTable();
+      console.log('✅ [LOAD_DATA] renderTable() executado. Renderizou:', document.querySelectorAll('#records-table tbody tr').length, 'linhas');
     }
 
     function populateSelects() {
@@ -1691,6 +1706,8 @@
     }
 
     function renderTable() {
+      console.log('📊 [RENDER] renderTable() chamado. Movements total:', movements.length, 'IDs:', movements.map(m => m.id).slice(0, 5));
+      
       const filterCloserId = document.getElementById('filter-closer').value;
       const filterMonth = document.getElementById('filter-month').value;
 
