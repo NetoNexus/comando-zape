@@ -108,21 +108,6 @@
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>Origem</label>
-            <select name="origem" id="origem-select" onchange="onOrigemChange()" required>
-              <option value="">Carregando...</option>
-            </select>
-          </div>
-          <div class="form-group" id="sub-origem-group" style="display: none;">
-            <label>Sub-origem</label>
-            <select name="sub-origem" id="sub-origem-select" required>
-              <option value="">Selecione sub-origem...</option>
-            </select>
-          </div>
-        </div>
-
         <div class="form-group">
           <label>Agendamentos Realizados</label>
           <div class="dynamic-fields" id="agendamentos-container">
@@ -168,19 +153,21 @@
         <button type="button" class="add-btn" onclick="addReagendamento()">+ Adicionar SDR (Reagendamentos)</button>
 
         <div class="form-group">
-          <label>Quantidade Ganho</label>
-          <select name="quantidade-ganho" id="quantidade-ganho-select" onchange="onQuantidadeGanhoChange()" required>
-            <option value="">Selecione...</option>
-            <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-            <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-            <option value="7">7</option><option value="8">8</option><option value="9">9</option>
-            <option value="10">10</option>
-          </select>
-        </div>
-
-        <div id="ganhos-container" style="display: none;">
-          <label style="font-size: 11px; font-weight: 700; color: #999; text-transform: uppercase; display: block; margin-bottom: 16px;">Detalhes de Cada Ganho</label>
-          <div id="ganhos-fields"></div>
+          <label>Ganhos Registrados</label>
+          <table id="ganhos-table-temp" style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 16px;">
+            <thead>
+              <tr style="border-bottom: 1px solid #383838;">
+                <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">Origem</th>
+                <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">SDR</th>
+                <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">Valor</th>
+                <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="ganhos-tbody" style="border-bottom: 1px solid #383838;">
+              <tr><td colspan="4" style="padding: 8px; text-align: center; color: #999;">Nenhum ganho registrado</td></tr>
+            </tbody>
+          </table>
+          <button type="button" class="add-btn" onclick="openGanhoModal()">+ Registrar Ganho</button>
         </div>
 
         <button type="submit" class="btn">Registrar Movimentação</button>
@@ -292,6 +279,41 @@
           </tbody>
         </table>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL REGISTRAR GANHO -->
+  <div id="ganhoModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2>Registrar Ganho</h2>
+        <button class="modal-close" onclick="closeGanhoModal()">×</button>
+      </div>
+      <form onsubmit="adicionarGanho(event)">
+        <div class="form-group">
+          <label>Origem</label>
+          <select id="ganho-origem-select" onchange="onGanhoOrigemChange()" required>
+            <option value="">Carregando...</option>
+          </select>
+        </div>
+        <div class="form-group" id="ganho-sub-origem-group" style="display: none;">
+          <label>Sub-origem</label>
+          <select id="ganho-sub-origem-select" required>
+            <option value="">Selecione sub-origem...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>SDR (Qual SDR gerou este ganho)</label>
+          <select id="ganho-sdr-select" required>
+            <option value="">Carregando SDRs...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Valor Ganho (R$)</label>
+          <input type="number" id="ganho-valor-input" placeholder="0,00" step="0.01" required>
+        </div>
+        <button type="submit" class="btn" style="width: 100%;">Adicionar Ganho</button>
+      </form>
     </div>
   </div>
 
