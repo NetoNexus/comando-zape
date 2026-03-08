@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Comercial - Comando Zape</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Albert Sans', sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #B2FF00;
+      margin-bottom: 30px;
+      font-size: 28px;
+    }
+
+    .sync-status {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background: #2A2A2A;
+      border-left: 4px solid #B2FF00;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #B2FF00;
+      display: none;
+    }
+
+    .sync-status.active {
+      display: block;
+    }
+
+    /* ===== KPI GRID ===== */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .kpi-card {
+      background: #2A2A2A;
+      border: 1px solid #383838;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .kpi-label {
+      color: #999;
+      font-size: 12px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .kpi-value {
+      color: #B2FF00;
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .kpi-subtext {
+      color: #666;
+      font-size: 11px;
+    }
+
+    /* ===== SECTIONS ===== */
+    .section {
+      margin-bottom: 50px;
+    }
+
+    .section-title {
+      color: #B2FF00;
+      font-size: 18px;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #383838;
+    }
+
+    /* ===== TABLES ===== */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #2A2A2A;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th {
+      background: #1a1a1a;
+      color: #B2FF00;
+      padding: 12px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      border-bottom: 1px solid #383838;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #383838;
+      font-size: 13px;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover {
+      background: #333;
+    }
+
+    .number {
+      color: #B2FF00;
+      font-weight: 600;
+    }
+
+    .percentage {
+      color: #4CAF50;
+    }
+
+    .percentage.negative {
+      color: #FF6B6B;
+    }
+
+    /* ===== LAYOUT ===== */
+    .two-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 1024px) {
+      .two-column {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .loading {
+      text-align: center;
+      color: #B2FF00;
+      padding: 40px;
+      font-size: 14px;
+    }
+
+    .last-sync {
+      font-size: 11px;
+      color: #666;
+      margin-top: 20px;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 Dashboard Comercial</h1>
+
+    <!-- SYNC STATUS -->
+    <div class="sync-status" id="syncStatus">
+      🔄 Sincronizando com Supabase...
+    </div>
+
+    <!-- MAIN KPIs -->
+    <div class="kpi-grid" id="mainKPIs">
+      <div class="loading">Carregando dados...</div>
+    </div>
+
+    <!-- HISTÓRICO POR CLOSER -->
+    <div class="section">
+      <h2 class="section-title">Performance por Closer</h2>
+      <table id="tableClosers">
+        <thead>
+          <tr>
+            <th>Closer</th>
+            <th>Agendamentos</th>
+            <th>Reuniões</th>
+            <th>Taxa Conversão</th>
+            <th>Ganhos</th>
+            <th>Valor Total</th>
+            <th>Ticket Médio</th>
+          </tr>
+        </thead>
+        <tbody id="closersBody">
+          <tr><td colspan="7" class="loading">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- HISTÓRICO POR ORIGEM -->
+    <div class="section">
+      <h2 class="section-title">Performance por Origem</h2>
+      <table id="tableOrigens">
+        <thead>
+          <tr>
+            <th>Origem</th>
+            <th>Agendamentos</th>
+            <th>Reuniões</th>
+            <th>Taxa Conversão</th>
+            <th>Ganhos</th>
+            <th>Valor Total</th>
+          </tr>
+        </thead>
+        <tbody id="origensBody">
+          <tr><td colspan="6" class="loading">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- HISTÓRICO POR SERVIÇO -->
+    <div class="section">
+      <h2 class="section-title">Performance por Serviço</h2>
+      <table id="tableServicos">
+        <thead>
+          <tr>
+            <th>Serviço</th>
+            <th>Quantidade de Ganhos</th>
+            <th>Valor Total</th>
+            <th>Valor Médio</th>
+          </tr>
+        </thead>
+        <tbody id="servicosBody">
+          <tr><td colspan="4" class="loading">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- HISTÓRICO POR SDR -->
+    <div class="section">
+      <h2 class="section-title">Performance por SDR</h2>
+      <table id="tableSDRs">
+        <thead>
+          <tr>
+            <th>SDR</th>
+            <th>Agendamentos</th>
+            <th>Reuniões</th>
+            <th>Taxa Conversão</th>
+            <th>Ganhos Gerados</th>
+            <th>Valor Total Gerado</th>
+          </tr>
+        </thead>
+        <tbody id="sdrsBody">
+          <tr><td colspan="6" class="loading">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ÚLTIMOS 10 LANÇAMENTOS -->
+    <div class="section">
+      <h2 class="section-title">Últimos Lançamentos</h2>
+      <table id="tableUltimos">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Closer</th>
+            <th>Agendamentos</th>
+            <th>Reuniões</th>
+            <th>Ganhos</th>
+            <th>Valor</th>
+          </tr>
+        </thead>
+        <tbody id="ultimosBody">
+          <tr><td colspan="6" class="loading">Carregando...</td></tr>
+        </tbody>
+      </table>
+      <div class="last-sync" id="lastSync"></div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://mrchphqqgbssndijichd.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yY2hwaHFxZ2Jzc25kaWppY2hkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTM3NzQsImV4cCI6MjA4ODQ4OTc3NH0.27BBzargnQ1jLuZNdlrohOxl8VqNtZLiwZqJcT4xpoA';
+
+    let movements = [];
+    let closers = [];
+    let sdrs = [];
+    let origens = [];
+    let servicos = [];
+
+    async function supabaseFetch(path) {
+      try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Content-Type': 'application/json'
+          }
+        });
+        return await response.json();
+      } catch (err) {
+        console.error('❌ Erro Supabase:', err);
+        return null;
+      }
+    }
+
+    async function loadData() {
+      console.log('🔄 [DASHBOARD] Carregando dados do Supabase...');
+      showSyncStatus(true);
+
+      // Carregar tabelas base
+      closers = await supabaseFetch('closers?order=name') || [];
+      sdrs = await supabaseFetch('sdrs?order=name') || [];
+      origens = await supabaseFetch('origens?order=name') || [];
+      servicos = await supabaseFetch('servicos?order=name') || [];
+
+      // Carregar movimentos (source of truth)
+      movements = await supabaseFetch('movements?order=id.desc') || [];
+      
+      console.log('✅ [DASHBOARD] Dados carregados:', {
+        movements: movements.length,
+        closers: closers.length,
+        sdrs: sdrs.length,
+        origens: origens.length,
+        servicos: servicos.length
+      });
+
+      renderDashboard();
+      showSyncStatus(false);
+      updateLastSync();
+    }
+
+    function renderDashboard() {
+      renderMainKPIs();
+      renderClosersTable();
+      renderOrigensTable();
+      renderServicosTable();
+      renderSDRsTable();
+      renderUltimosLancamentos();
+    }
+
+    function renderMainKPIs() {
+      const stats = calculateStats();
+      const html = `
+        <div class="kpi-card">
+          <div class="kpi-label">Total Agendamentos</div>
+          <div class="kpi-value">${stats.totalAgendamentos}</div>
+          <div class="kpi-subtext">${stats.totalMovimentos} lançamentos</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total Reuniões</div>
+          <div class="kpi-value">${stats.totalReunioes}</div>
+          <div class="kpi-subtext">Taxa: ${stats.taxaConversao.toFixed(1)}%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total Reagendamentos</div>
+          <div class="kpi-value">${stats.totalReagendamentos}</div>
+          <div class="kpi-subtext">-</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total No-Shows</div>
+          <div class="kpi-value">${stats.totalNoShows}</div>
+          <div class="kpi-subtext">-</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total Ganhos</div>
+          <div class="kpi-value">${stats.totalGanhos}</div>
+          <div class="kpi-subtext">Ticket: R$ ${stats.ticketMedio.toFixed(0)}</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Valor Total Ganho</div>
+          <div class="kpi-value">R$ ${stats.valorTotalGanho.toFixed(0)}</div>
+          <div class="kpi-subtext">Última semana</div>
+        </div>
+      `;
+      document.getElementById('mainKPIs').innerHTML = html;
+    }
+
+    function calculateStats() {
+      let totalAgendamentos = 0;
+      let totalReunioes = 0;
+      let totalReagendamentos = 0;
+      let totalNoShows = 0;
+      let totalGanhos = 0;
+      let valorTotalGanho = 0;
+
+      movements.forEach(m => {
+        // Agendamentos
+        if (Array.isArray(m.agendamentos)) {
+          totalAgendamentos += m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0);
+        }
+        // Reuniões
+        if (Array.isArray(m.reunioes)) {
+          totalReunioes += m.reunioes.reduce((sum, r) => sum + (r.quantidade || 0), 0);
+        }
+        // Reagendamentos
+        if (Array.isArray(m.reagendamentos)) {
+          totalReagendamentos += m.reagendamentos.reduce((sum, r) => sum + (r.quantidade || 0), 0);
+        }
+        // No-Shows
+        if (Array.isArray(m.noshows)) {
+          totalNoShows += m.noshows.reduce((sum, n) => sum + (n.quantidade || 0), 0);
+        }
+        // Ganhos
+        if (Array.isArray(m.ganhos)) {
+          totalGanhos += m.ganhos.length;
+          valorTotalGanho += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
+        }
+      });
+
+      const taxaConversao = totalAgendamentos > 0 ? (totalReunioes / totalAgendamentos * 100) : 0;
+      const ticketMedio = totalGanhos > 0 ? (valorTotalGanho / totalGanhos) : 0;
+
+      return {
+        totalMovimentos: movements.length,
+        totalAgendamentos,
+        totalReunioes,
+        totalReagendamentos,
+        totalNoShows,
+        totalGanhos,
+        valorTotalGanho,
+        taxaConversao,
+        ticketMedio
+      };
+    }
+
+    function renderClosersTable() {
+      const data = {};
+      
+      movements.forEach(m => {
+        const closer = closers.find(c => c.id == m.closer_id);
+        if (!closer) return;
+        
+        if (!data[closer.id]) {
+          data[closer.id] = {
+            nome: closer.name,
+            agendamentos: 0,
+            reunioes: 0,
+            ganhos: 0,
+            valor: 0
+          };
+        }
+        
+        if (Array.isArray(m.agendamentos)) {
+          data[closer.id].agendamentos += m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0);
+        }
+        if (Array.isArray(m.reunioes)) {
+          data[closer.id].reunioes += m.reunioes.reduce((sum, r) => sum + (r.quantidade || 0), 0);
+        }
+        if (Array.isArray(m.ganhos)) {
+          data[closer.id].ganhos += m.ganhos.length;
+          data[closer.id].valor += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
+        }
+      });
+
+      let html = '';
+      Object.values(data).forEach(item => {
+        const taxa = item.agendamentos > 0 ? ((item.reunioes / item.agendamentos) * 100).toFixed(1) : '0';
+        const ticket = item.ganhos > 0 ? (item.valor / item.ganhos).toFixed(0) : '0';
+        
+        html += `
+          <tr>
+            <td><strong>${item.nome}</strong></td>
+            <td class="number">${item.agendamentos}</td>
+            <td class="number">${item.reunioes}</td>
+            <td class="percentage">${taxa}%</td>
+            <td class="number">${item.ganhos}</td>
+            <td class="number">R$ ${item.valor.toFixed(0)}</td>
+            <td class="number">R$ ${ticket}</td>
+          </tr>
+        `;
+      });
+      
+      document.getElementById('closersBody').innerHTML = html || '<tr><td colspan="7" class="loading">Nenhum dado</td></tr>';
+    }
+
+    function renderOrigensTable() {
+      const data = {};
+      
+      movements.forEach(m => {
+        if (!Array.isArray(m.ganhos)) return;
+        
+        m.ganhos.forEach(g => {
+          const origem = origens.find(o => o.id == g.origem_id);
+          if (!origem) return;
+          
+          if (!data[origem.id]) {
+            data[origem.id] = {
+              nome: origem.name,
+              agendamentos: 0,
+              reunioes: 0,
+              ganhos: 0,
+              valor: 0
+            };
+          }
+          
+          if (Array.isArray(m.agendamentos)) {
+            data[origem.id].agendamentos += m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0);
+          }
+          if (Array.isArray(m.reunioes)) {
+            data[origem.id].reunioes += m.reunioes.reduce((sum, r) => sum + (r.quantidade || 0), 0);
+          }
+          data[origem.id].ganhos++;
+          data[origem.id].valor += g.valor || 0;
+        });
+      });
+
+      let html = '';
+      Object.values(data).sort((a, b) => b.valor - a.valor).forEach(item => {
+        const taxa = item.agendamentos > 0 ? ((item.reunioes / item.agendamentos) * 100).toFixed(1) : '0';
+        
+        html += `
+          <tr>
+            <td><strong>${item.nome}</strong></td>
+            <td class="number">${item.agendamentos}</td>
+            <td class="number">${item.reunioes}</td>
+            <td class="percentage">${taxa}%</td>
+            <td class="number">${item.ganhos}</td>
+            <td class="number">R$ ${item.valor.toFixed(0)}</td>
+          </tr>
+        `;
+      });
+      
+      document.getElementById('origensBody').innerHTML = html || '<tr><td colspan="6" class="loading">Nenhum dado</td></tr>';
+    }
+
+    function renderServicosTable() {
+      const data = {};
+      
+      movements.forEach(m => {
+        if (!Array.isArray(m.ganhos)) return;
+        
+        m.ganhos.forEach(g => {
+          const servico = servicos.find(s => s.id == g.servico_id);
+          if (!servico) return;
+          
+          if (!data[servico.id]) {
+            data[servico.id] = {
+              nome: servico.name,
+              quantidade: 0,
+              valor: 0
+            };
+          }
+          
+          data[servico.id].quantidade++;
+          data[servico.id].valor += g.valor || 0;
+        });
+      });
+
+      let html = '';
+      Object.values(data).sort((a, b) => b.valor - a.valor).forEach(item => {
+        const media = item.quantidade > 0 ? (item.valor / item.quantidade).toFixed(0) : '0';
+        
+        html += `
+          <tr>
+            <td><strong>${item.nome}</strong></td>
+            <td class="number">${item.quantidade}</td>
+            <td class="number">R$ ${item.valor.toFixed(0)}</td>
+            <td class="number">R$ ${media}</td>
+          </tr>
+        `;
+      });
+      
+      document.getElementById('servicosBody').innerHTML = html || '<tr><td colspan="4" class="loading">Nenhum dado</td></tr>';
+    }
+
+    function renderSDRsTable() {
+      const data = {};
+      
+      movements.forEach(m => {
+        if (Array.isArray(m.agendamentos)) {
+          m.agendamentos.forEach(a => {
+            const sdr = sdrs.find(s => s.id == a.sdr_id);
+            if (!sdr) return;
+            if (!data[sdr.id]) data[sdr.id] = { nome: sdr.name, agendamentos: 0, reunioes: 0, ganhos: 0, valor: 0 };
+            data[sdr.id].agendamentos += a.quantidade || 0;
+          });
+        }
+        
+        if (Array.isArray(m.reunioes)) {
+          m.reunioes.forEach(r => {
+            const sdr = sdrs.find(s => s.id == r.sdr_id);
+            if (!sdr) return;
+            if (!data[sdr.id]) data[sdr.id] = { nome: sdr.name, agendamentos: 0, reunioes: 0, ganhos: 0, valor: 0 };
+            data[sdr.id].reunioes += r.quantidade || 0;
+          });
+        }
+        
+        if (Array.isArray(m.ganhos)) {
+          m.ganhos.forEach(g => {
+            const sdr = sdrs.find(s => s.id == g.sdr_id);
+            if (!sdr) return;
+            if (!data[sdr.id]) data[sdr.id] = { nome: sdr.name, agendamentos: 0, reunioes: 0, ganhos: 0, valor: 0 };
+            data[sdr.id].ganhos++;
+            data[sdr.id].valor += g.valor || 0;
+          });
+        }
+      });
+
+      let html = '';
+      Object.values(data).sort((a, b) => b.valor - a.valor).forEach(item => {
+        const taxa = item.agendamentos > 0 ? ((item.reunioes / item.agendamentos) * 100).toFixed(1) : '0';
+        
+        html += `
+          <tr>
+            <td><strong>${item.nome}</strong></td>
+            <td class="number">${item.agendamentos}</td>
+            <td class="number">${item.reunioes}</td>
+            <td class="percentage">${taxa}%</td>
+            <td class="number">${item.ganhos}</td>
+            <td class="number">R$ ${item.valor.toFixed(0)}</td>
+          </tr>
+        `;
+      });
+      
+      document.getElementById('sdrsBody').innerHTML = html || '<tr><td colspan="6" class="loading">Nenhum dado</td></tr>';
+    }
+
+    function renderUltimosLancamentos() {
+      const ultimos = movements.slice(0, 10);
+      
+      let html = '';
+      ultimos.forEach(m => {
+        const closer = closers.find(c => c.id == m.closer_id);
+        const agend = Array.isArray(m.agendamentos) ? m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0) : 0;
+        const reun = Array.isArray(m.reunioes) ? m.reunioes.reduce((sum, r) => sum + (r.quantidade || 0), 0) : 0;
+        const ganhos = Array.isArray(m.ganhos) ? m.ganhos.length : 0;
+        const valor = Array.isArray(m.ganhos) ? m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0) : 0;
+        
+        html += `
+          <tr>
+            <td>${m.data || 'N/A'}</td>
+            <td><strong>${closer ? closer.name : 'N/A'}</strong></td>
+            <td class="number">${agend}</td>
+            <td class="number">${reun}</td>
+            <td class="number">${ganhos}</td>
+            <td class="number">R$ ${valor.toFixed(0)}</td>
+          </tr>
+        `;
+      });
+      
+      document.getElementById('ultimosBody').innerHTML = html || '<tr><td colspan="6" class="loading">Nenhum dado</td></tr>';
+    }
+
+    function showSyncStatus(show) {
+      const el = document.getElementById('syncStatus');
+      if (show) {
+        el.classList.add('active');
+      } else {
+        el.classList.remove('active');
+      }
+    }
+
+    function updateLastSync() {
+      const now = new Date().toLocaleString('pt-BR');
+      document.getElementById('lastSync').textContent = `Última sincronização: ${now}`;
+    }
+
+    // Carregar dados ao iniciar
+    loadData();
+
+    // Sincronizar a cada 30 segundos
+    setInterval(() => {
+      console.log('🔄 [DASHBOARD] Auto-sync...');
+      loadData();
+    }, 30000);
+  </script>
+</body>
+</html>
