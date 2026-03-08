@@ -410,12 +410,7 @@
       const filterCloser = document.getElementById('filter-closer');
       filterCloser.innerHTML = '<option value="">Todos</option>' + closers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 
-      const origemSelect = document.getElementById('origem-select');
-      // Dropdown de Origem - mostra só nome (sem sub-origens)
-      origemSelect.innerHTML = '<option value="">Selecione...</option>' + origens.map(o => 
-        `<option value="${o.id}">${o.name}</option>`
-      ).join('');
-
+      // Populando TODOS os selects de SDR (agendamentos e reagendamentos)
       document.querySelectorAll('.sdr-select').forEach(sel => {
         const current = sel.value;
         sel.innerHTML = '<option value="">Selecione SDR...</option>' + sdrs.map(s => `<option value="${s.id}" ${s.id == current ? 'selected' : ''}>${s.name}</option>`).join('');
