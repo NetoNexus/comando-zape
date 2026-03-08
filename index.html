@@ -453,7 +453,15 @@
       document.getElementById('editModal').classList.add('show');
     }
 
-    function openEditModalOrigem(id, name, sub_origem_str, type) {
+    function openEditModalOrigem(id, type) {
+      // Buscar o objeto origem do array
+      const origem = origens.find(o => o.id === id);
+      if (!origem) {
+        alert('Origem não encontrada');
+        return;
+      }
+      const name = origem.name;
+      const sub_origem_str = origem.sub_origem;
       editingItem = id;
       editingType = type;
       document.getElementById('modal-title').textContent = `Editar ${type}`;
@@ -722,7 +730,7 @@
           <td>${subOrigemDisplay}</td>
           <td>
             <div class="btn-group">
-              <button class="edit-btn" onclick="openEditModalOrigem(${o.id}, '${o.name}', '${(o.sub_origem || '').replace(/'/g, "\\'")}', 'Origem')">Editar</button>
+              <button class="edit-btn" onclick="openEditModalOrigem(${o.id}, 'Origem')">Editar</button>
               <button class="remove-btn" onclick="deleteOrigem(${o.id})">Deletar</button>
             </div>
           </td>
