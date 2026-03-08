@@ -632,9 +632,16 @@
         valor: g.valor
       }));
 
+      // Converter data de YYYY-MM-DD para DD/MM/YYYY
+      const dateObj = new Date(form.data.value + 'T00:00:00');
+      const formattedDate = String(dateObj.getDate()).padStart(2, '0') + '/' + 
+                           String(dateObj.getMonth() + 1).padStart(2, '0') + '/' + 
+                           dateObj.getFullYear();
+
       const movement = {
         id: movements.length + 1,
-        data: form.data.value,
+        data: formattedDate, // DD/MM/YYYY
+        data_raw: form.data.value, // YYYY-MM-DD para filtro
         closer_id: parseInt(form.closer.value),
         agendamentos: agendamentos,
         reunioes: parseInt(form.reunioes.value),
@@ -668,7 +675,7 @@
       if (!editingMovement) return;
       
       // Preenche campos do modal
-      document.getElementById('edit-movement-data').value = editingMovement.data;
+      document.getElementById('edit-movement-data').value = editingMovement.data_raw || editingMovement.data;
       document.getElementById('edit-movement-reunioes').value = editingMovement.reunioes;
       
       // Popula ganhos dinâmicos
@@ -752,8 +759,18 @@
       const [year, month] = monthInput.split('-');
       
       const filtered = movements.filter(m => {
-        const [d, mo, y] = m.data.split('/');
-        return y === year && mo === month;
+        // Usar data_raw (YYYY-MM-DD) para comparação se disponível, senão fazer parse da data formatada
+        let dataYear, dataMonth;
+        if (m.data_raw) {
+          const [y, mo, d] = m.data_raw.split('-');
+          dataYear = y;
+          dataMonth = mo;
+        } else {
+          const [d, mo, y] = m.data.split('/');
+          dataYear = y;
+          dataMonth = mo;
+        }
+        return dataYear === year && dataMonth === month;
       });
 
       let totalReunioes = 0;
@@ -855,7 +872,7 @@
 
       let filtered = movements;
       if (filterCloserId) filtered = filtered.filter(m => m.closer_id == filterCloserId);
-      if (filterDate) filtered = filtered.filter(m => m.data === filterDate);
+      if (filterDate) filtered = filtered.filter(m => (m.data_raw || m.data) === filterDate);
 
       const tbody = document.getElementById('records-table');
       if (!filtered.length) {
@@ -1075,7 +1092,7 @@
       
       if (!editingMovement) return;
       
-      const data = document.getElementById('edit-movement-data').value;
+      const dataRaw = document.getElementById('edit-movement-data').value; // YYYY-MM-DD
       const reunioes = parseInt(document.getElementById('edit-movement-reunioes').value);
       
       if (editTempGanhos.length === 0) {
@@ -1083,8 +1100,15 @@
         return;
       }
       
+      // Converter data de YYYY-MM-DD para DD/MM/YYYY
+      const dateObj = new Date(dataRaw + 'T00:00:00');
+      const formattedDate = String(dateObj.getDate()).padStart(2, '0') + '/' + 
+                           String(dateObj.getMonth() + 1).padStart(2, '0') + '/' + 
+                           dateObj.getFullYear();
+      
       // Atualiza movimento
-      editingMovement.data = data;
+      editingMovement.data = formattedDate;
+      editingMovement.data_raw = dataRaw;
       editingMovement.reunioes = reunioes;
       editingMovement.ganhos = editTempGanhos;
       
