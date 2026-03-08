@@ -987,29 +987,24 @@
       if (confirm('Tem certeza?')) {
         console.log('✔️ Confirmou exclusão');
         
-        // Remover localmente primeiro
-        const countBefore = movements.length;
-        movements = movements.filter(m => m.id !== id);
-        const countAfter = movements.length;
-        
-        console.log(`📊 Movimento removido localmente: ${countBefore} → ${countAfter}`);
-        localStorage.setItem('movements', JSON.stringify(movements));
-        console.log('💾 Salvo no localStorage');
-        
-        // Deletar do Supabase e aguardar
-        console.log('⏳ Aguardando resposta do Supabase...');
+        // Deletar do Supabase PRIMEIRO
+        console.log('⏳ Deletando do Supabase...');
         const result = await deleteMovementFromSupabase(id);
         
         if (result) {
-          console.log('✅✅ Movimento deletado do Supabase com sucesso! ID:', id);
+          console.log('✅ Deletado do Supabase com sucesso!');
+          // DEPOIS recarregar do Supabase (não usar localStorage)
+          console.log('🔄 Recarregando do Supabase...');
+          await loadMovementsFromSupabase();
+          console.log('💾 Dados recarregados do Supabase');
+          
+          renderTable();
+          loadAcompanhamento();
+          console.log('✅✅ Pronto!');
         } else {
-          console.warn('⚠️ Falhou no Supabase, mas foi removido localmente');
+          console.error('❌❌ Falhou ao deletar do Supabase!');
+          alert('Erro ao deletar. Tente novamente.');
         }
-        
-        console.log('🔄 Renderizando tabelas...');
-        renderTable();
-        loadAcompanhamento();
-        console.log('✅ Pronto!');
       } else {
         console.log('❌ Cancelou exclusão');
       }
