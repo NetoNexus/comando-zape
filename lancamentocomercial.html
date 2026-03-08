@@ -1080,14 +1080,26 @@
         }
       });
 
-      document.getElementById('total-agendamentos').textContent = totalAgendamentos;
-      document.getElementById('total-reunioes').textContent = totalReunioes;
-      document.getElementById('total-reagendamentos').textContent = totalReagendamentos;
-      document.getElementById('total-noshows').textContent = totalNoShows;
-      document.getElementById('total-quantidade').textContent = totalQuantidade;
-      document.getElementById('total-valor').textContent = 'R$ ' + totalValor.toFixed(2);
+      const el_agendamentos = document.getElementById('total-agendamentos');
+      const el_reunioes = document.getElementById('total-reunioes');
+      const el_reagendamentos = document.getElementById('total-reagendamentos');
+      const el_noshows = document.getElementById('total-noshows');
+      const el_quantidade = document.getElementById('total-quantidade');
+      const el_valor = document.getElementById('total-valor');
+      
+      if (el_agendamentos) el_agendamentos.textContent = totalAgendamentos;
+      if (el_reunioes) el_reunioes.textContent = totalReunioes;
+      if (el_reagendamentos) el_reagendamentos.textContent = totalReagendamentos;
+      if (el_noshows) el_noshows.textContent = totalNoShows;
+      if (el_quantidade) el_quantidade.textContent = totalQuantidade;
+      if (el_valor) el_valor.textContent = 'R$ ' + totalValor.toFixed(2);
 
       const tbody = document.getElementById('acompanhamento-table');
+      if (!tbody) {
+        console.warn('⚠️ acompanhamento-table element not found');
+        return;
+      }
+      
       if (!filtered.length) {
         tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#999;">Nenhum registro neste mês</td></tr>';
         return;
