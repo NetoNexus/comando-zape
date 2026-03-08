@@ -1,0 +1,421 @@
+/* ========== MOBILE UX IMPROVEMENTS ========== */
+/* Somente CSS visual - zero mudanças no código ou sincronização */
+
+@media (max-width: 768px) {
+  /* ===== GERAL ===== */
+  body {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  h1, h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+
+  /* ===== FORMULÁRIO ===== */
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  label {
+    font-size: 13px;
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #B2FF00;
+  }
+
+  select, input[type="text"], input[type="date"], input[type="number"] {
+    width: 100%;
+    padding: 12px !important;
+    font-size: 14px;
+    border: 1px solid #383838;
+    border-radius: 4px;
+    background: #1a1a1a;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+
+  input[type="number"] {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+
+  /* ===== BOTÕES ===== */
+  button {
+    padding: 14px 16px !important;
+    font-size: 14px !important;
+    border-radius: 4px;
+    width: 100%;
+    margin-bottom: 10px;
+    cursor: pointer;
+    border: none;
+    font-weight: 600;
+  }
+
+  .btn-primary, button.btn, .add-btn {
+    background: #B2FF00;
+    color: #2A2A2A;
+  }
+
+  .delete-btn, .remove-btn {
+    background: #FF6B6B;
+    color: #fff;
+    padding: 10px 12px !important;
+    width: auto;
+    margin: 5px 2px;
+    font-size: 12px;
+  }
+
+  .edit-btn {
+    background: #B2FF00;
+    color: #2A2A2A;
+    padding: 10px 12px !important;
+    width: auto;
+    margin: 5px 2px;
+    font-size: 12px;
+  }
+
+  /* ===== CONTAINERS ===== */
+  .dynamic-field {
+    display: grid;
+    grid-template-columns: 1fr 80px 70px;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 12px;
+    background: #2A2A2A;
+    border-radius: 4px;
+    border: 1px solid #383838;
+  }
+
+  .dynamic-field select {
+    margin-bottom: 0;
+  }
+
+  .dynamic-field input {
+    margin-bottom: 0;
+  }
+
+  .dynamic-field button {
+    margin-bottom: 0;
+    padding: 8px !important;
+    font-size: 12px;
+  }
+
+  /* ===== TABELAS ===== */
+  table {
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+  }
+
+  thead {
+    display: none; /* Hide headers on mobile */
+  }
+
+  tbody {
+    display: block;
+  }
+
+  tr {
+    display: block;
+    margin-bottom: 15px;
+    border: 1px solid #383838;
+    border-radius: 4px;
+    padding: 12px;
+    background: #2A2A2A;
+  }
+
+  td {
+    display: block;
+    padding: 8px 0;
+    border: none;
+    font-size: 13px;
+  }
+
+  td:before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #B2FF00;
+    display: inline-block;
+    width: 100px;
+    margin-right: 10px;
+  }
+
+  /* Remove labels para tabelas de histórico */
+  .records-table td:before {
+    content: "";
+  }
+
+  /* ===== MODAIS ===== */
+  .modal {
+    padding: 10px !important;
+  }
+
+  .modal-content {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 20px !important;
+  }
+
+  .modal-header {
+    margin-bottom: 20px;
+  }
+
+  .modal-header h2 {
+    font-size: 18px;
+  }
+
+  /* ===== GRID/FLEX ===== */
+  .kpi-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px;
+  }
+
+  .kpi-card {
+    padding: 15px !important;
+  }
+
+  .kpi-label {
+    font-size: 11px;
+  }
+
+  .kpi-value {
+    font-size: 24px;
+  }
+
+  /* ===== SEÇÕES ===== */
+  .section-title {
+    font-size: 16px;
+    margin-bottom: 15px;
+  }
+
+  /* ===== ESPAÇAMENTO ===== */
+  .section {
+    margin-bottom: 30px;
+  }
+
+  .two-column {
+    grid-template-columns: 1fr !important;
+    gap: 20px;
+  }
+
+  /* ===== INPUTS COM ÍCONES ===== */
+  .input-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .input-group input {
+    flex: 1;
+    margin-bottom: 0;
+  }
+
+  .input-group button {
+    width: auto;
+    padding: 12px 16px !important;
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
+
+  /* ===== COLLAPSIBLES ===== */
+  .collapsible {
+    width: 100%;
+    padding: 14px;
+    background: #2A2A2A;
+    border: 1px solid #383838;
+    color: #B2FF00;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-align: left;
+  }
+
+  .collapsible:hover {
+    background: #333;
+  }
+
+  /* ===== HEADER/FOOTER ===== */
+  header {
+    margin-bottom: 20px;
+    padding: 15px 0;
+  }
+
+  /* ===== FILTER/SEARCH ===== */
+  .filter-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .filter-group select {
+    margin-bottom: 0;
+  }
+
+  .filter-group button {
+    margin-bottom: 0;
+  }
+
+  /* ===== SPECIFIC PAGES ===== */
+
+  /* lancamentocomercial.html */
+  #agendamentos-container,
+  #reunioes-container,
+  #reagendamentos-container,
+  #noshows-container {
+    margin-bottom: 15px;
+  }
+
+  .add-btn {
+    width: 100%;
+    padding: 14px !important;
+    background: #B2FF00;
+    color: #2A2A2A;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 15px;
+    font-size: 14px;
+  }
+
+  /* dashboard-comercial.html */
+  #mainKPIs {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sync-status {
+    bottom: 10px;
+    right: 10px;
+    padding: 10px 15px;
+    font-size: 11px;
+  }
+
+  /* ===== TEXTO ===== */
+  .loading {
+    padding: 20px 10px;
+    font-size: 13px;
+  }
+
+  .last-sync {
+    font-size: 10px;
+    margin-top: 10px;
+  }
+
+  /* ===== SCROLL HORIZONTAL ===== */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: -10px;
+    padding: 10px;
+  }
+
+  /* ===== LINKS ===== */
+  a {
+    font-size: 14px;
+    color: #B2FF00;
+    text-decoration: none;
+  }
+
+  /* ===== SIDEBAR/MENU ===== */
+  .sidebar {
+    position: fixed;
+    left: -100%;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    background: #1a1a1a;
+    border-right: 1px solid #383838;
+    z-index: 999;
+    transition: left 0.3s ease;
+    padding: 20px;
+    overflow-y: auto;
+  }
+
+  .sidebar.show {
+    left: 0;
+  }
+
+  .menu-toggle {
+    display: block;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1000;
+    background: #B2FF00;
+    color: #2A2A2A;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  /* ===== TOUCH TARGETS ===== */
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* ===== PREVENT ZOOM ===== */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="date"],
+  select,
+  textarea {
+    font-size: 16px; /* Prevents iOS zoom on input focus */
+  }
+
+  /* ===== LANDSCAPE MODE ===== */
+  @media (max-width: 768px) and (orientation: landscape) {
+    body {
+      padding: 5px;
+    }
+
+    h1, h2 {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .kpi-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    button {
+      padding: 10px 12px !important;
+      font-size: 12px !important;
+    }
+  }
+}
+
+/* ===== TABLET (768px - 1024px) ===== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .two-column {
+    grid-template-columns: 1fr !important;
+  }
+
+  button {
+    padding: 12px 16px !important;
+    font-size: 13px !important;
+  }
+
+  table td:before {
+    content: "";
+  }
+}
+
+/* ===== DESKTOP (1025px+) ===== */
+@media (min-width: 1025px) {
+  /* Default styles, no changes needed */
+}
