@@ -9,29 +9,34 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #1A1A1A; color: #fff; font-family: 'Albert Sans', sans-serif; }
     
-    .login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-    .login-container { background: #2A2A2A; padding: 40px; border-radius: 12px; max-width: 400px; width: 100%; }
-    .logo { font-size: 32px; font-weight: 900; color: #B2FF00; text-align: center; margin-bottom: 32px; }
-    .title { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 24px; color: #fff; }
+    #login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1A1A1A 0%, #1F1F1F 100%); }
+    #login-page.hidden { display: none; }
+
+    .login-container { background: #2A2A2A; border: 1px solid #383838; padding: 48px 40px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+    .login-logo { font-size: 32px; font-weight: 900; text-align: center; color: #B2FF00; margin-bottom: 32px; letter-spacing: 2px; }
+    .login-title { font-size: 18px; font-weight: 700; margin-bottom: 24px; text-align: center; color: #fff; }
     
     .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 8px; color: #999; }
-    .form-group input { width: 100%; padding: 12px; background: #1A1A1A; border: 1px solid #383838; color: #fff; border-radius: 6px; font-family: inherit; }
-    .form-group input:focus { outline: none; border-color: #B2FF00; }
+    .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 8px; color: #999; text-transform: uppercase; letter-spacing: 1px; }
+    .form-group input { width: 100%; padding: 12px 16px; background: #1A1A1A; border: 1px solid #383838; color: #fff; border-radius: 6px; font-family: inherit; font-weight: 600; }
+    .form-group input:focus { outline: none; border-color: #B2FF00; box-shadow: 0 0 8px rgba(178,255,0,0.2); }
     
-    .btn { width: 100%; padding: 12px; background: #B2FF00; color: #1A1A1A; border: none; border-radius: 6px; font-weight: 900; font-size: 14px; cursor: pointer; margin-top: 16px; }
-    .btn:hover { opacity: 0.9; }
+    .login-btn { width: 100%; padding: 12px 20px; background: #B2FF00; color: #1A1A1A; border: none; border-radius: 6px; font-weight: 900; font-size: 14px; cursor: pointer; margin-top: 16px; }
+    .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(178,255,0,0.3); }
     
-    .error { color: #F44336; padding: 12px; border-radius: 6px; margin-bottom: 16px; display: none; }
-    .error.show { display: block; }
+    .login-error { background: rgba(244,67,54,0.1); border: 1px solid #F44336; color: #F44336; padding: 12px 16px; border-radius: 6px; font-size: 12px; margin-bottom: 16px; display: none; }
+    .login-error.show { display: block; }
     
-    .dashboard { display: none; }
-    .dashboard.active { display: block; }
-    
-    .sidebar { background: #242424; padding: 24px; width: 240px; position: fixed; height: 100vh; left: 0; top: 0; border-right: 1px solid #383838; }
-    .sidebar-logo { color: #B2FF00; font-weight: 900; margin-bottom: 32px; font-size: 16px; }
-    .sidebar-menu { display: flex; flex-direction: column; gap: 8px; }
-    .menu-item { padding: 12px 16px; cursor: pointer; font-size: 12px; color: #999; border-radius: 6px; border-left: 3px solid transparent; }
+    .demo-users { margin-top: 32px; padding-top: 24px; border-top: 1px solid #383838; font-size: 11px; color: #999; text-align: center; }
+    .demo-users-list { margin-top: 12px; text-align: left; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; font-family: monospace; font-size: 10px; line-height: 1.8; }
+
+    #dashboard-container { display: none; flex-direction: row; min-height: 100vh; }
+    #dashboard-container.active { display: flex; }
+
+    aside { width: 240px; background: linear-gradient(180deg, #242424 0%, #1F1F1F 100%); border-right: 1px solid #383838; padding: 24px 0; position: fixed; height: 100vh; overflow-y: auto; }
+    .sidebar-logo { padding: 0 20px; margin-bottom: 30px; font-size: 16px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #B2FF00; }
+    .sidebar-menu { display: flex; flex-direction: column; gap: 8px; padding: 0 12px; }
+    .menu-item { padding: 12px 16px; cursor: pointer; font-size: 12px; color: #999; border-radius: 6px; border-left: 3px solid transparent; transition: all 0.3s; }
     .menu-item:hover { background: rgba(178,255,0,0.05); color: #B2FF00; }
     .menu-item.active { background: rgba(178,255,0,0.1); color: #B2FF00; border-left-color: #B2FF00; font-weight: 700; }
     .menu-item.expandable { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -40,40 +45,56 @@
     .submenu { display: none; flex-direction: column; gap: 0; padding-left: 16px; }
     .submenu.show { display: flex; }
     .submenu .menu-item { padding: 10px 12px; font-size: 11px; border-radius: 4px; }
-    .submenu .menu-item::before { content: ''; }
-    .user-info { margin-top: auto; padding-top: 24px; border-top: 1px solid #383838; font-size: 10px; }
-    .logout-btn { background: #F44336; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-top: 8px; }
+    .sidebar-footer { padding: 12px 20px; margin-top: auto; border-top: 1px solid #383838; font-size: 10px; color: #999; }
+    .user-info { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .user-name { color: #B2FF00; font-weight: 700; font-size: 11px; }
+    .logout-btn { background: #F44336; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 10px; cursor: pointer; }
+    .logout-btn:hover { opacity: 0.8; }
+
+    main { margin-left: 240px; flex: 1; padding: 24px 32px; overflow-y: auto; background: linear-gradient(135deg, #1A1A1A 0%, #1F1F1F 100%); }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid #383838; }
+    header h1 { font-size: 28px; font-weight: 900; letter-spacing: 1px; }
     
-    main { margin-left: 240px; padding: 24px 32px; }
     .page { display: none; }
-    .page.active { display: block; }
-    
-    header { margin-bottom: 32px; border-bottom: 1px solid #383838; padding-bottom: 20px; }
-    header h1 { font-size: 28px; font-weight: 900; }
-    
-    .card { background: #2A2A2A; padding: 20px; margin-bottom: 24px; border-radius: 8px; border: 1px solid #383838; }
-    .card-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
-    
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-    .form-row.full { grid-template-columns: 1fr; }
-    
-    .form-group select, .form-group textarea { width: 100%; padding: 10px; background: #1A1A1A; border: 1px solid #383838; color: #fff; border-radius: 6px; font-family: inherit; }
+    .page.active { display: block; animation: fadeIn 0.3s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .card { background: #2A2A2A; border: 1px solid #383838; padding: 20px; margin-bottom: 24px; border-radius: 8px; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+    .card:hover { border-color: #B2FF00; box-shadow: 0 8px 12px rgba(178,255,0,0.1); }
+    .card-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; color: #fff; }
+
+    .form-group input, .form-group select { width: 100%; padding: 10px 12px; background: #1A1A1A; border: 1px solid #383838; color: #fff; border-radius: 6px; font-family: inherit; margin-bottom: 16px; }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: #B2FF00; box-shadow: 0 0 8px rgba(178,255,0,0.2); }
+
+    .btn { background: #B2FF00; color: #1A1A1A; padding: 12px 24px; border: none; border-radius: 6px; font-weight: 900; font-size: 14px; cursor: pointer; margin-top: 16px; transition: all 0.3s; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(178,255,0,0.3); }
     
     .success { color: #4CAF50; padding: 12px; border-radius: 6px; margin-bottom: 16px; display: none; }
     .success.show { display: block; }
-    
+
     table { width: 100%; border-collapse: collapse; font-size: 12px; }
     table th { padding: 12px; text-align: left; font-weight: 700; color: #B2FF00; border-bottom: 1px solid #383838; }
     table td { padding: 12px; border-bottom: 1px solid #383838; }
+    table tr:hover { background: rgba(178,255,0,0.03); }
+    
+    .remove-btn { background: #F44336; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 700; }
+    .remove-btn:hover { opacity: 0.8; }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .kpi-card { background: linear-gradient(135deg, #2A2A2A 0%, rgba(45,45,45,0.5) 100%); border: 1px solid #383838; padding: 20px; text-align: center; border-radius: 8px; transition: all 0.3s; }
+    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #B2FF00, transparent); }
+    .kpi-card:hover { border-color: #B2FF00; box-shadow: 0 0 12px rgba(178,255,0,0.1); transform: translateY(-2px); }
+    .kpi-label { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .kpi-value { font-size: 32px; font-weight: 900; color: #B2FF00; }
   </style>
 </head>
 <body>
   <!-- LOGIN -->
   <div id="login-page" class="login-page">
     <div class="login-container">
-      <div class="logo">ZAPE</div>
-      <div class="title">Acesso ao Sistema</div>
-      <div class="error" id="error-msg"></div>
+      <div class="login-logo">ZAPE</div>
+      <div class="login-title">Acesso ao Sistema</div>
+      <div class="login-error" id="error-msg"></div>
       <form onsubmit="handleLogin(event)">
         <div class="form-group">
           <label>Usuário</label>
@@ -85,18 +106,20 @@
         </div>
         <button type="submit" class="btn">Entrar</button>
       </form>
-      <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #383838; font-size: 11px; color: #999; text-align: center;">
-        <strong>Usuários de Teste:</strong><br><br>
-        adm / 123456<br>
-        comercial / 123456<br>
-        analista / 123456
+      <div class="demo-users">
+        <strong>Usuários de Teste:</strong>
+        <div class="demo-users-list">
+          adm / 123456<br>
+          comercial / 123456<br>
+          analista / 123456
+        </div>
       </div>
     </div>
   </div>
 
   <!-- DASHBOARD -->
-  <div id="dashboard" class="dashboard">
-    <div class="sidebar">
+  <div id="dashboard-container">
+    <aside>
       <div class="sidebar-logo">ZAPE</div>
       <div class="sidebar-menu">
         <div class="menu-item active" onclick="goToPage('painel')">Painel</div>
@@ -113,13 +136,13 @@
         </div>
         <div class="menu-item" onclick="goToPage('usuarios')">Gerenciar Usuários</div>
       </div>
-      <div class="user-info">
-        <div style="color: #B2FF00; font-weight: 700; margin-bottom: 8px;">
-          <span id="user-display">--</span>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <span class="user-name" id="user-display">--</span>
+          <button class="logout-btn" onclick="logout()">Sair</button>
         </div>
-        <button class="logout-btn" onclick="logout()">Sair</button>
       </div>
-    </div>
+    </aside>
 
     <main>
       <!-- PAINEL -->
@@ -131,118 +154,182 @@
         </div>
       </div>
 
-      <!-- LANÇAMENTO -->
-      <div id="comercial" class="page">
-        <header><h1>Comercial</h1></header>
-        <div class="card">
-          <div class="card-title">Dashboard Comercial</div>
-          <p>Acesse a página de lançamento de dados para registrar novos leads:</p>
-          <br>
-          <a href="/comando-zape/lancamentocomercial" style="display:inline-block;background:#B2FF00;color:#1A1A1A;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:900;cursor:pointer;">Ir para Lançamento de Dados</a>
-        </div>
-      </div>
-
       <!-- DASH COMERCIAL -->
       <div id="dash-comercial" class="page">
         <header><h1>Dashboard Comercial</h1></header>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px;">
-          <div class="card" style="text-align: center; padding: 24px;">
-            <div style="font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 8px;">Leads Recebidos</div>
-            <div style="font-size: 32px; font-weight: 900; color: #B2FF00;">156</div>
-            <div style="font-size: 9px; color: #999; margin-top: 8px;">total</div>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Leads Recebidos</div>
+            <div class="kpi-value">156</div>
           </div>
-          <div class="card" style="text-align: center; padding: 24px;">
-            <div style="font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 8px;">Taxa Conversão</div>
-            <div style="font-size: 32px; font-weight: 900; color: #B2FF00;">24%</div>
-            <div style="font-size: 9px; color: #999; margin-top: 8px;">%</div>
+          <div class="kpi-card">
+            <div class="kpi-label">Taxa Conversão</div>
+            <div class="kpi-value">24%</div>
           </div>
-          <div class="card" style="text-align: center; padding: 24px;">
-            <div style="font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 8px;">Receita Total</div>
-            <div style="font-size: 32px; font-weight: 900; color: #B2FF00;">445.8K</div>
-            <div style="font-size: 9px; color: #999; margin-top: 8px;">R$</div>
+          <div class="kpi-card">
+            <div class="kpi-label">Receita Total</div>
+            <div class="kpi-value">445.8K</div>
           </div>
         </div>
-
         <div class="card">
           <div class="card-title">Resumo Comercial</div>
           <table>
-            <thead>
-              <tr>
-                <th>Métrica</th>
-                <th>Valor</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Métrica</th><th>Valor</th></tr></thead>
             <tbody>
               <tr><td>Leads Qualificados</td><td>68%</td></tr>
               <tr><td>Em Negociação</td><td>32</td></tr>
               <tr><td>Ticket Médio</td><td>R$ 2.850</td></tr>
-              <tr><td>Melhor Origem</td><td>WhatsApp</td></tr>
             </tbody>
           </table>
         </div>
+      </div>
 
+      <!-- CADASTRO CLOSERS -->
+      <div id="cadastro-closers" class="page">
+        <header><h1>Cadastrar Closers</h1></header>
         <div class="card">
-          <div class="card-title">Ações Rápidas</div>
-          <a href="/comando-zape/lancamentocomercial" style="display: inline-block; background: #B2FF00; color: #1A1A1A; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 900; cursor: pointer;">Registrar Novo Lead</a>
+          <div class="card-title">Adicionar Novo Closer</div>
+          <div class="success" id="closer-success-msg">Closer adicionado!</div>
+          <form onsubmit="addCloser(event)">
+            <div class="form-group">
+              <label>Nome do Closer</label>
+              <input type="text" id="closer-name" placeholder="Digite o nome" required>
+            </div>
+            <button type="submit" class="btn">Cadastrar</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-title">Closers Cadastrados</div>
+          <table>
+            <thead><tr><th>Nome</th><th>Ação</th></tr></thead>
+            <tbody id="closers-table">
+              <tr><td colspan="2" style="text-align:center;color:#999;">Carregando...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <!-- USUÁRIOS -->
+      <!-- CADASTRO SDRs -->
+      <div id="cadastro-sdrs" class="page">
+        <header><h1>Cadastrar SDRs</h1></header>
+        <div class="card">
+          <div class="card-title">Adicionar Novo SDR</div>
+          <div class="success" id="sdr-success-msg">SDR adicionado!</div>
+          <form onsubmit="addSDR(event)">
+            <div class="form-group">
+              <label>Nome do SDR</label>
+              <input type="text" id="sdr-name" placeholder="Digite o nome" required>
+            </div>
+            <button type="submit" class="btn">Cadastrar</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-title">SDRs Cadastrados</div>
+          <table>
+            <thead><tr><th>Nome</th><th>Ação</th></tr></thead>
+            <tbody id="sdrs-table">
+              <tr><td colspan="2" style="text-align:center;color:#999;">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CADASTRO ORIGENS -->
+      <div id="cadastro-origens" class="page">
+        <header><h1>Cadastrar Origens</h1></header>
+        <div class="card">
+          <div class="card-title">Adicionar Nova Origem</div>
+          <div class="success" id="origem-success-msg">Origem adicionada!</div>
+          <form onsubmit="addOrigem(event)">
+            <div class="form-group">
+              <label>Nome da Origem</label>
+              <input type="text" id="origem-name" placeholder="ex: WhatsApp, Facebook..." required>
+            </div>
+            <button type="submit" class="btn">Cadastrar</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-title">Origens Cadastradas</div>
+          <table>
+            <thead><tr><th>Nome</th><th>Ação</th></tr></thead>
+            <tbody id="origens-table">
+              <tr><td colspan="2" style="text-align:center;color:#999;">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- GERENCIAR USUÁRIOS -->
       <div id="usuarios" class="page">
         <header><h1>Gerenciar Usuários</h1></header>
         <div class="card">
           <div class="card-title">Criar Novo Usuário</div>
           <div class="success" id="user-success-msg">Usuário criado com sucesso!</div>
           <form onsubmit="createUser(event)">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Usuário</label>
-                <input type="text" name="username" placeholder="nome_usuario" required>
-              </div>
-              <div class="form-group">
-                <label>Senha</label>
-                <input type="password" name="password" placeholder="Senha" required>
-              </div>
+            <div class="form-group">
+              <label>Usuário</label>
+              <input type="text" name="username" placeholder="nome_usuario" required>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Nome Completo</label>
-                <input type="text" name="fullname" placeholder="Nome completo" required>
-              </div>
-              <div class="form-group">
-                <label>Função</label>
-                <select name="role" required>
-                  <option value="">Selecione...</option>
-                  <option value="adm">Administrador</option>
-                  <option value="comercial">Comercial</option>
-                  <option value="analista">Analista</option>
-                </select>
-              </div>
+            <div class="form-group">
+              <label>Senha</label>
+              <input type="password" name="password" placeholder="Senha" required>
+            </div>
+            <div class="form-group">
+              <label>Nome Completo</label>
+              <input type="text" name="fullname" placeholder="Nome completo" required>
+            </div>
+            <div class="form-group">
+              <label>Função</label>
+              <select name="role" required>
+                <option value="">Selecione...</option>
+                <option value="adm">Administrador</option>
+                <option value="comercial">Comercial</option>
+                <option value="analista">Analista</option>
+              </select>
             </div>
             <button type="submit" class="btn">Criar Usuário</button>
           </form>
-
-          <div style="margin-top: 32px;">
-            <div class="card-title">Usuários do Sistema</div>
-            <table>
-              <thead>
-                <tr>
-                  <th>Usuário</th>
-                  <th>Nome</th>
-                  <th>Função</th>
-                </tr>
-              </thead>
-              <tbody id="users-table">
-              </tbody>
-            </table>
-          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Usuários do Sistema</div>
+          <table>
+            <thead><tr><th>Usuário</th><th>Nome</th><th>Função</th></tr></thead>
+            <tbody id="users-table"></tbody>
+          </table>
         </div>
       </div>
     </main>
   </div>
 
   <script>
+    // ========== SUPABASE CONFIG ==========
+    const SUPABASE_URL = 'https://mrchphqqgbssndijichd.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yY2hwaHFxZ2Jzc25kaWppY2hkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTM3NzQsImV4cCI6MjA4ODQ4OTc3NH0.27BBzargnQ1jLuZNdlrohOxl8VqNtZLiwZqJcT4xpoA';
+
+    // ========== SUPABASE FETCH ==========
+    async function supabaseFetch(table, method = 'GET', data = null) {
+      const url = `${SUPABASE_URL}/rest/v1/${table}`;
+      const options = {
+        method,
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        }
+      };
+      if (data) options.body = JSON.stringify(data);
+      try {
+        const response = await fetch(url, options);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return await response.json();
+      } catch (err) {
+        console.error(`Supabase error (${table}):`, err);
+        return [];
+      }
+    }
+
+    // ========== USERS ==========
     const defaultUsers = [
       { id: 1, username: 'adm', password: '123456', fullname: 'Administrador', role: 'adm' },
       { id: 2, username: 'comercial', password: '123456', fullname: 'Time Comercial', role: 'comercial' },
@@ -251,14 +338,15 @@
 
     let currentUser = null;
     let users = JSON.parse(localStorage.getItem('users')) || defaultUsers;
-    let leads = JSON.parse(localStorage.getItem('leads')) || [];
+    let closers = [];
+    let sdrs = [];
+    let origens = [];
 
+    // ========== LOGIN ==========
     function handleLogin(e) {
       e.preventDefault();
       const username = document.getElementById('user').value.trim();
       const password = document.getElementById('pass').value.trim();
-      
-      console.log('Login attempt:', username, password);
       const user = users.find(u => u.username === username && u.password === password);
       
       if (user) {
@@ -274,46 +362,149 @@
     }
 
     function showDashboard() {
-      document.getElementById('login-page').style.display = 'none';
-      document.getElementById('dashboard').classList.add('active');
+      document.getElementById('login-page').classList.add('hidden');
+      document.getElementById('dashboard-container').classList.add('active');
       document.getElementById('user-display').textContent = currentUser.fullname;
       loadUsersTable();
+      initSupabase();
     }
 
     function logout() {
       currentUser = null;
       localStorage.removeItem('current_user');
-      document.getElementById('dashboard').classList.remove('active');
-      document.getElementById('login-page').style.display = 'flex';
+      document.getElementById('dashboard-container').classList.remove('active');
+      document.getElementById('login-page').classList.remove('hidden');
       document.getElementById('user').value = '';
       document.getElementById('pass').value = '';
     }
 
+    // ========== NAVIGATION ==========
     function goToPage(page) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.getElementById(page).classList.add('active');
-      
       document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
       if (event.target) event.target.classList.add('active');
     }
 
     function toggleSubmenu(submenuId) {
       const submenu = document.getElementById(submenuId);
-      const button = event.target;
-      
+      const button = event.target.closest('.menu-item.expandable');
       submenu.classList.toggle('show');
       button.classList.toggle('expanded');
     }
 
+    // ========== CLOSERS ==========
+    async function loadClosers() {
+      closers = await supabaseFetch('closers?order=name');
+      renderClosersTable();
+    }
+
+    async function addCloser(e) {
+      e.preventDefault();
+      const name = document.getElementById('closer-name').value.trim();
+      if (!name) return alert('Nome obrigatório');
+      const result = await supabaseFetch('closers', 'POST', { name });
+      if (result && result.length) {
+        document.getElementById('closer-name').value = '';
+        showSuccessMsg('closer-success-msg');
+        loadClosers();
+      }
+    }
+
+    function renderClosersTable() {
+      const tbody = document.getElementById('closers-table');
+      if (!closers.length) {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center">Nenhum closer</td></tr>';
+        return;
+      }
+      tbody.innerHTML = closers.map(c => `<tr>
+        <td>${c.name}</td>
+        <td><button class="remove-btn" onclick="deleteCloser(${c.id})">Deletar</button></td>
+      </tr>`).join('');
+    }
+
+    async function deleteCloser(id) {
+      if (!confirm('Tem certeza?')) return;
+      await supabaseFetch(`closers?id=eq.${id}`, 'DELETE');
+      loadClosers();
+    }
+
+    // ========== SDRs ==========
+    async function loadSDRs() {
+      sdrs = await supabaseFetch('sdrs?order=name');
+      renderSDRsTable();
+    }
+
+    async function addSDR(e) {
+      e.preventDefault();
+      const name = document.getElementById('sdr-name').value.trim();
+      if (!name) return alert('Nome obrigatório');
+      const result = await supabaseFetch('sdrs', 'POST', { name });
+      if (result && result.length) {
+        document.getElementById('sdr-name').value = '';
+        showSuccessMsg('sdr-success-msg');
+        loadSDRs();
+      }
+    }
+
+    function renderSDRsTable() {
+      const tbody = document.getElementById('sdrs-table');
+      if (!sdrs.length) {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center">Nenhum SDR</td></tr>';
+        return;
+      }
+      tbody.innerHTML = sdrs.map(s => `<tr>
+        <td>${s.name}</td>
+        <td><button class="remove-btn" onclick="deleteSDR(${s.id})">Deletar</button></td>
+      </tr>`).join('');
+    }
+
+    async function deleteSDR(id) {
+      if (!confirm('Tem certeza?')) return;
+      await supabaseFetch(`sdrs?id=eq.${id}`, 'DELETE');
+      loadSDRs();
+    }
+
+    // ========== ORIGENS ==========
+    async function loadOrigens() {
+      origens = await supabaseFetch('origens?order=name');
+      renderOrigensTable();
+    }
+
+    async function addOrigem(e) {
+      e.preventDefault();
+      const name = document.getElementById('origem-name').value.trim();
+      if (!name) return alert('Nome obrigatório');
+      const result = await supabaseFetch('origens', 'POST', { name });
+      if (result && result.length) {
+        document.getElementById('origem-name').value = '';
+        showSuccessMsg('origem-success-msg');
+        loadOrigens();
+      }
+    }
+
+    function renderOrigensTable() {
+      const tbody = document.getElementById('origens-table');
+      if (!origens.length) {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center">Nenhuma origem</td></tr>';
+        return;
+      }
+      tbody.innerHTML = origens.map(o => `<tr>
+        <td>${o.name}</td>
+        <td><button class="remove-btn" onclick="deleteOrigem(${o.id})">Deletar</button></td>
+      </tr>`).join('');
+    }
+
+    async function deleteOrigem(id) {
+      if (!confirm('Tem certeza?')) return;
+      await supabaseFetch(`origens?id=eq.${id}`, 'DELETE');
+      loadOrigens();
+    }
+
+    // ========== USUÁRIOS ==========
     function createUser(e) {
       e.preventDefault();
       const form = e.target;
-      
-      if (users.find(u => u.username === form.username.value)) {
-        alert('Usuário já existe!');
-        return;
-      }
-      
       const newUser = {
         id: users.length + 1,
         username: form.username.value,
@@ -321,14 +512,13 @@
         fullname: form.fullname.value,
         role: form.role.value
       };
-      
+      if (users.find(u => u.username === newUser.username)) {
+        alert('Usuário já existe!');
+        return;
+      }
       users.push(newUser);
       localStorage.setItem('users', JSON.stringify(users));
-      
-      const msg = document.getElementById('user-success-msg');
-      msg.classList.add('show');
-      setTimeout(() => msg.classList.remove('show'), 3000);
-      
+      showSuccessMsg('user-success-msg');
       form.reset();
       loadUsersTable();
     }
@@ -342,7 +532,22 @@
       </tr>`).join('');
     }
 
-    // Check for existing session
+    // ========== HELPER ==========
+    function showSuccessMsg(elementId) {
+      const el = document.getElementById(elementId);
+      if (el) {
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 3000);
+      }
+    }
+
+    async function initSupabase() {
+      await loadClosers();
+      await loadSDRs();
+      await loadOrigens();
+    }
+
+    // ========== INIT ==========
     window.addEventListener('load', function() {
       const saved = localStorage.getItem('current_user');
       if (saved) {

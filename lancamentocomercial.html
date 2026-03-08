@@ -11,7 +11,7 @@
     
     .container { max-width: 1200px; margin: 0 auto; padding: 32px; }
     
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid #383838; }
+    header { margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid #383838; }
     header h1 { font-size: 28px; font-weight: 900; }
     
     .card { background: #2A2A2A; padding: 20px; margin-bottom: 24px; border-radius: 8px; border: 1px solid #383838; }
@@ -53,22 +53,16 @@
       <h1>Lançamento Comercial</h1>
     </header>
 
-    <!-- Formulário -->
     <div class="card">
       <div class="card-title">Registrar Movimentação Comercial</div>
       <div class="success" id="success-msg">Registro salvo com sucesso!</div>
       
       <form onsubmit="registerMovement(event)">
-        <!-- Nome Closer e Data -->
         <div class="form-row">
           <div class="form-group">
             <label>Nome Closer</label>
-            <select name="closer" required>
-              <option value="">Selecione...</option>
-              <option value="João Silva">João Silva</option>
-              <option value="Maria Santos">Maria Santos</option>
-              <option value="Pedro Costa">Pedro Costa</option>
-              <option value="Ana Oliveira">Ana Oliveira</option>
+            <select name="closer" id="closer-select" required>
+              <option value="">Carregando...</option>
             </select>
           </div>
           <div class="form-group">
@@ -77,17 +71,21 @@
           </div>
         </div>
 
-        <!-- Agendamentos (Dinâmico) -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Origem</label>
+            <select name="origem" id="origem-select" required>
+              <option value="">Carregando...</option>
+            </select>
+          </div>
+        </div>
+
         <div class="form-group">
           <label>Agendamentos Realizados</label>
           <div class="dynamic-fields" id="agendamentos-container">
             <div class="dynamic-field">
-              <select class="sdr-select" required>
-                <option value="">Selecione SDR...</option>
-                <option value="SDR 1">SDR 1</option>
-                <option value="SDR 2">SDR 2</option>
-                <option value="SDR 3">SDR 3</option>
-                <option value="SDR 4">SDR 4</option>
+              <select class="sdr-select" id="sdr-select-1" required>
+                <option value="">Carregando SDRs...</option>
               </select>
               <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
               <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
@@ -96,7 +94,6 @@
           <button type="button" class="add-btn" onclick="addAgendamento()">+ Adicionar SDR</button>
         </div>
 
-        <!-- Reuniões Comparecidas -->
         <div class="form-row">
           <div class="form-group">
             <label>Reuniões Comparecidas</label>
@@ -115,7 +112,6 @@
             </select>
           </div>
 
-          <!-- Reagendamentos (Dinâmico) -->
           <div style="grid-column: span 1;">
             <div class="form-group" style="margin-bottom: 0;">
               <label>Reagendamentos</label>
@@ -123,11 +119,7 @@
             <div class="dynamic-fields" id="reagendamentos-container" style="margin-bottom: 0;">
               <div class="dynamic-field">
                 <select class="sdr-select" required>
-                  <option value="">Selecione SDR...</option>
-                  <option value="SDR 1">SDR 1</option>
-                  <option value="SDR 2">SDR 2</option>
-                  <option value="SDR 3">SDR 3</option>
-                  <option value="SDR 4">SDR 4</option>
+                  <option value="">Carregando SDRs...</option>
                 </select>
                 <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
                 <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
@@ -138,7 +130,6 @@
 
         <button type="button" class="add-btn" onclick="addReagendamento()">+ Adicionar SDR (Reagendamentos)</button>
 
-        <!-- Quantidade Ganho e Valor Ganho -->
         <div class="form-row">
           <div class="form-group">
             <label>Quantidade Ganho</label>
@@ -166,7 +157,6 @@
       </form>
     </div>
 
-    <!-- Tabela de Registros -->
     <div class="card">
       <div class="card-title">Histórico de Movimentações</div>
       <table>
@@ -174,6 +164,7 @@
           <tr>
             <th>Data</th>
             <th>Closer</th>
+            <th>Origem</th>
             <th>Agendamentos</th>
             <th>Reuniões</th>
             <th>Reagendamentos</th>
@@ -182,14 +173,64 @@
           </tr>
         </thead>
         <tbody id="records-table">
-          <tr><td colspan="7" style="text-align:center;color:#999;">Nenhum registro</td></tr>
+          <tr><td colspan="8" style="text-align:center;color:#999;">Carregando...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
   <script>
+    const SUPABASE_URL = 'https://mrchphqqgbssndijichd.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yY2hwaHFxZ2Jzc25kaWppY2hkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTM3NzQsImV4cCI6MjA4ODQ4OTc3NH0.27BBzargnQ1jLuZNdlrohOxl8VqNtZLiwZqJcT4xpoA';
+
+    async function supabaseFetch(table, method = 'GET', data = null) {
+      const url = `${SUPABASE_URL}/rest/v1/${table}`;
+      const options = {
+        method,
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        }
+      };
+      if (data) options.body = JSON.stringify(data);
+      try {
+        const response = await fetch(url, options);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return await response.json();
+      } catch (err) {
+        console.error(`Supabase error:`, err);
+        return [];
+      }
+    }
+
+    let closers = [];
+    let sdrs = [];
+    let origens = [];
     let movements = JSON.parse(localStorage.getItem('movements')) || [];
+
+    async function loadData() {
+      closers = await supabaseFetch('closers?order=name');
+      sdrs = await supabaseFetch('sdrs?order=name');
+      origens = await supabaseFetch('origens?order=name');
+
+      populateSelects();
+      renderTable();
+    }
+
+    function populateSelects() {
+      const closerSelect = document.getElementById('closer-select');
+      closerSelect.innerHTML = '<option value="">Selecione...</option>' + closers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+      const origemSelect = document.getElementById('origem-select');
+      origemSelect.innerHTML = '<option value="">Selecione...</option>' + origens.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
+
+      document.querySelectorAll('.sdr-select').forEach(sel => {
+        const current = sel.value;
+        sel.innerHTML = '<option value="">Selecione SDR...</option>' + sdrs.map(s => `<option value="${s.id}" ${s.id == current ? 'selected' : ''}>${s.name}</option>`).join('');
+      });
+    }
 
     function addAgendamento() {
       const container = document.getElementById('agendamentos-container');
@@ -198,10 +239,7 @@
       newField.innerHTML = `
         <select class="sdr-select" required>
           <option value="">Selecione SDR...</option>
-          <option value="SDR 1">SDR 1</option>
-          <option value="SDR 2">SDR 2</option>
-          <option value="SDR 3">SDR 3</option>
-          <option value="SDR 4">SDR 4</option>
+          ${sdrs.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
         </select>
         <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
         <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
@@ -216,10 +254,7 @@
       newField.innerHTML = `
         <select class="sdr-select" required>
           <option value="">Selecione SDR...</option>
-          <option value="SDR 1">SDR 1</option>
-          <option value="SDR 2">SDR 2</option>
-          <option value="SDR 3">SDR 3</option>
-          <option value="SDR 4">SDR 4</option>
+          ${sdrs.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
         </select>
         <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
         <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
@@ -235,30 +270,29 @@
       e.preventDefault();
       const form = e.target;
 
-      // Coletar agendamentos
       const agendamentos = [];
       document.querySelectorAll('#agendamentos-container .dynamic-field').forEach(field => {
-        const sdr = field.querySelector('.sdr-select').value;
+        const sdrId = field.querySelector('.sdr-select').value;
         const qty = field.querySelector('.quantidade').value;
-        if (sdr && qty) {
-          agendamentos.push({ sdr, quantidade: qty });
+        if (sdrId && qty) {
+          agendamentos.push({ sdr_id: sdrId, quantidade: qty });
         }
       });
 
-      // Coletar reagendamentos
       const reagendamentos = [];
       document.querySelectorAll('#reagendamentos-container .dynamic-field').forEach(field => {
-        const sdr = field.querySelector('.sdr-select').value;
+        const sdrId = field.querySelector('.sdr-select').value;
         const qty = field.querySelector('.quantidade').value;
-        if (sdr && qty) {
-          reagendamentos.push({ sdr, quantidade: qty });
+        if (sdrId && qty) {
+          reagendamentos.push({ sdr_id: sdrId, quantidade: qty });
         }
       });
 
       const movement = {
         id: movements.length + 1,
-        data: form.dataset.value,
-        closer: form.closer.value,
+        data: form.data.value,
+        closer_id: form.closer.value,
+        origem_id: form.origem.value,
         agendamentos: agendamentos,
         reunioes: form.reunioes.value,
         reagendamentos: reagendamentos,
@@ -275,6 +309,7 @@
       setTimeout(() => msg.classList.remove('show'), 3000);
 
       form.reset();
+      document.querySelector('input[type="date"]').valueAsDate = new Date();
       renderTable();
     }
 
@@ -282,24 +317,38 @@
       const tbody = document.getElementById('records-table');
 
       if (movements.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;">Nenhum registro</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;">Nenhum registro</td></tr>';
         return;
       }
 
-      tbody.innerHTML = movements.map(m => `<tr>
-        <td>${m.timestamp}</td>
-        <td>${m.closer}</td>
-        <td>${m.agendamentos.map(a => a.sdr + ': ' + a.quantidade).join(', ') || '--'}</td>
-        <td>${m.reunioes}</td>
-        <td>${m.reagendamentos.map(r => r.sdr + ': ' + r.quantidade).join(', ') || '--'}</td>
-        <td>${m.quantidade_ganho}</td>
-        <td>R$ ${parseFloat(m.valor_ganho).toFixed(2)}</td>
-      </tr>`).join('');
+      tbody.innerHTML = movements.map(m => {
+        const closerName = closers.find(c => c.id == m.closer_id)?.name || '--';
+        const origemName = origens.find(o => o.id == m.origem_id)?.name || '--';
+        const agendStr = m.agendamentos.map(a => {
+          const sdrName = sdrs.find(s => s.id == a.sdr_id)?.name || 'N/A';
+          return `${sdrName}: ${a.quantidade}`;
+        }).join(', ') || '--';
+        const reagendStr = m.reagendamentos.map(r => {
+          const sdrName = sdrs.find(s => s.id == r.sdr_id)?.name || 'N/A';
+          return `${sdrName}: ${r.quantidade}`;
+        }).join(', ') || '--';
+
+        return `<tr>
+          <td>${m.timestamp}</td>
+          <td>${closerName}</td>
+          <td>${origemName}</td>
+          <td>${agendStr}</td>
+          <td>${m.reunioes}</td>
+          <td>${reagendStr}</td>
+          <td>${m.quantidade_ganho}</td>
+          <td>R$ ${parseFloat(m.valor_ganho).toFixed(2)}</td>
+        </tr>`;
+      }).join('');
     }
 
     window.addEventListener('load', function() {
       document.querySelector('input[type="date"]').valueAsDate = new Date();
-      renderTable();
+      loadData();
     });
   </script>
 </body>
