@@ -571,10 +571,16 @@
 
     async function loadMovementsFromSupabase() {
       try {
+        // Guardar IDs locais ANTES de carregar Supabase
+        const localMovements = JSON.parse(localStorage.getItem('movements') || '[]');
+        const localIds = new Set(localMovements.map(m => m.id));
+        console.log('💾 IDs em localStorage:', Array.from(localIds));
+        
         const data = await supabaseFetch('movements?order=id.desc');
         if (data && Array.isArray(data)) {
-          movements = data.map(m => ({
-            id: m.id, // IMPORTANTE: Usar ID do Supabase, não local!
+          // Converter dados do Supabase
+          const supabaseMovements = data.map(m => ({
+            id: m.id,
             data: m.data,
             data_raw: m.data_raw,
             closer_id: m.closer_id,
@@ -586,8 +592,15 @@
             timestamp: m.created_at,
             expanded: false
           }));
+          
+          console.log('🌐 IDs no Supabase:', supabaseMovements.map(m => m.id));
+          
+          // Filtrar: só incluir movimentos que TAMBÉM tão no localStorage
+          // Isso preserva deletions locais (se apagou localmente, não carrega do Supabase)
+          movements = supabaseMovements.filter(m => localIds.has(m.id));
+          
+          console.log('✅ Movements após merge:', movements.length, 'IDs (deletions locais preservadas)');
           localStorage.setItem('movements', JSON.stringify(movements));
-          console.log('✅ Movements carregados do Supabase:', movements.length, 'IDs sincronizados com Supabase');
           return true;
         }
       } catch (err) {
@@ -1000,20 +1013,35 @@
         loadAcompanhamento();
         console.log('✅ UI atualizada - movimento sumiu!');
         
-        // PASSO 3: Sincronizar com Supabase em BACKGROUND (sem await, sem bloquear)
-        console.log('🔄 Sincronizando com Supabase em background...');
-        deleteMovementFromSupabase(id).then(result => {
-          if (result) {
-            console.log('✅ Deletado do Supabase com sucesso!');
-          } else {
-            console.warn('⚠️ Falhou ao deletar do Supabase, mas foi removido localmente');
-          }
-        });
+        // PASSO 3: Sincronizar com Supabase em BACKGROUND com RETRY
+        console.log('🔄 Sincronizando com Supabase (com retry automático)...');
+        deleteMovementWithRetry(id);
         
         console.log('✅✅ Pronto! Deletado localmente + sincronizando...');
       } else {
         console.log('❌ Cancelou exclusão');
       }
+    }
+    
+    async function deleteMovementWithRetry(id, maxRetries = 3) {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        console.log(`🔄 Tentativa ${attempt}/${maxRetries} de deletar do Supabase...`);
+        const result = await deleteMovementFromSupabase(id);
+        
+        if (result) {
+          console.log('✅ Deletado do Supabase com sucesso!');
+          return true;
+        }
+        
+        if (attempt < maxRetries) {
+          // Esperar 1 segundo antes de tentar novamente
+          await new Promise(r => setTimeout(r, 1000));
+        }
+      }
+      
+      console.error('❌ Falhou ao deletar do Supabase após 3 tentativas');
+      console.warn('⚠️ Mas foi removido localmente - tente novamente mais tarde');
+      return false;
     }
 
     function toggleHistorico() {
