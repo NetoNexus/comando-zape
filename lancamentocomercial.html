@@ -242,6 +242,10 @@
             <div id="total-reagendamentos" style="font-size: 24px; font-weight: 900; color: #B2FF00;">0</div>
           </div>
           <div style="background: #1A1A1A; padding: 16px; border-radius: 6px; text-align: center;">
+            <div style="font-size: 10px; color: #999; margin-bottom: 8px;">Total No-Shows</div>
+            <div id="total-noshows" style="font-size: 24px; font-weight: 900; color: #B2FF00;">0</div>
+          </div>
+          <div style="background: #1A1A1A; padding: 16px; border-radius: 6px; text-align: center;">
             <div style="font-size: 10px; color: #999; margin-bottom: 8px;">Valor Total Ganho</div>
             <div id="total-valor" style="font-size: 24px; font-weight: 900; color: #B2FF00;">R$ 0,00</div>
           </div>
@@ -705,6 +709,7 @@
       document.getElementById('toggle-reagendamentos-btn').classList.remove('open');
       document.getElementById('toggle-noshow-btn').classList.remove('open');
       renderTable();
+      loadAcompanhamento(); // Sincronizar acompanhamento em tempo real
     }
 
     function openEditMovementModal(id) {
@@ -763,6 +768,7 @@
         movements = movements.filter(m => m.id !== id);
         localStorage.setItem('movements', JSON.stringify(movements));
         renderTable();
+        loadAcompanhamento(); // Sincronizar acompanhamento em tempo real
       }
     }
 
@@ -803,6 +809,7 @@
       let totalVendas = 0;
       let totalAgendamentos = 0;
       let totalReagendamentos = 0;
+      let totalNoShows = 0;
       let totalValor = 0;
       let totalQuantidade = 0;
 
@@ -811,6 +818,7 @@
         totalVendas += 1;
         totalAgendamentos += m.agendamentos.reduce((sum, a) => sum + parseInt(a.quantidade || 0), 0);
         totalReagendamentos += m.reagendamentos.reduce((sum, r) => sum + parseInt(r.quantidade || 0), 0);
+        totalNoShows += (m.noshows && Array.isArray(m.noshows)) ? m.noshows.reduce((sum, n) => sum + parseInt(n.quantidade || 0), 0) : 0;
         
         // Calcular ganhos
         if (m.ganhos && Array.isArray(m.ganhos)) {
@@ -825,12 +833,13 @@
       document.getElementById('total-vendas').textContent = totalVendas;
       document.getElementById('total-agendamentos').textContent = totalAgendamentos;
       document.getElementById('total-reagendamentos').textContent = totalReagendamentos;
+      document.getElementById('total-noshows').textContent = totalNoShows;
       document.getElementById('total-valor').textContent = 'R$ ' + totalValor.toFixed(2);
       document.getElementById('total-quantidade').textContent = totalQuantidade;
 
       const tbody = document.getElementById('acompanhamento-table');
       if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;">Nenhum registro neste mês</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#999;">Nenhum registro neste mês</td></tr>';
         return;
       }
 
@@ -1133,6 +1142,7 @@
       showSuccessMsg();
       closeEditMovementModal();
       renderTable();
+      loadAcompanhamento(); // Sincronizar acompanhamento em tempo real
     }
 
     window.addEventListener('load', function() {
