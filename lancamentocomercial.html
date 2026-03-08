@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lançamento Comercial - Comando Zape</title>
+  <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1A1A1A; color: #fff; font-family: 'Albert Sans', sans-serif; }
+    
+    .container { max-width: 1200px; margin: 0 auto; padding: 32px; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid #383838; }
+    header h1 { font-size: 28px; font-weight: 900; }
+    
+    .breadcrumb { font-size: 11px; color: #999; }
+    .breadcrumb a { color: #B2FF00; text-decoration: none; cursor: pointer; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    
+    .card { background: #2A2A2A; padding: 20px; margin-bottom: 24px; border-radius: 8px; border: 1px solid #383838; }
+    .card-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; color: #fff; }
+    
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 700; color: #999; margin-bottom: 8px; text-transform: uppercase; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; background: #1A1A1A; border: 1px solid #383838; color: #fff; border-radius: 6px; font-family: inherit; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #B2FF00; box-shadow: 0 0 8px rgba(178,255,0,0.2); }
+    
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .form-row.full { grid-template-columns: 1fr; }
+    
+    .btn { background: #B2FF00; color: #1A1A1A; padding: 12px 24px; border: none; border-radius: 6px; font-weight: 900; font-size: 14px; cursor: pointer; margin-top: 16px; }
+    .btn:hover { opacity: 0.9; }
+    .btn-secondary { background: #383838; color: #fff; }
+    
+    .success { color: #4CAF50; padding: 12px; border-radius: 6px; margin-bottom: 16px; display: none; }
+    .success.show { display: block; }
+    
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    table th { padding: 12px; text-align: left; font-weight: 700; color: #B2FF00; border-bottom: 1px solid #383838; }
+    table td { padding: 12px; border-bottom: 1px solid #383838; }
+    table tr:hover { background: rgba(178,255,0,0.03); }
+    
+    .back-link { display: inline-block; margin-bottom: 24px; padding: 8px 16px; background: #383838; color: #fff; text-decoration: none; border-radius: 4px; font-size: 12px; }
+    .back-link:hover { background: #B2FF00; color: #1A1A1A; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back-link">← Voltar ao Dashboard</a>
+
+    <header>
+      <h1>Lançamento de Dados Comercial</h1>
+    </header>
+
+    <!-- Registrar Lead -->
+    <div class="card">
+      <div class="card-title">Registrar Novo Lead</div>
+      <div class="success" id="success-msg">Lead registrado com sucesso!</div>
+      
+      <form onsubmit="registerLead(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nome</label>
+            <input type="text" name="name" placeholder="Nome completo" required>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" placeholder="email@exemplo.com" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Telefone</label>
+            <input type="tel" name="phone" placeholder="(11) 9999-9999">
+          </div>
+          <div class="form-group">
+            <label>Origem</label>
+            <select name="source" required>
+              <option value="">Selecione...</option>
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="Facebook">Facebook</option>
+              <option value="Instagram">Instagram</option>
+              <option value="Google">Google</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Status</label>
+            <select name="status" required>
+              <option value="">Selecione...</option>
+              <option value="Novo">Novo</option>
+              <option value="Qualificado">Qualificado</option>
+              <option value="Em negociação">Em negociação</option>
+              <option value="Convertido">Convertido</option>
+              <option value="Perdido">Perdido</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Valor Estimado (R$)</label>
+            <input type="number" name="value" placeholder="0,00" step="0.01">
+          </div>
+        </div>
+
+        <div class="form-row full">
+          <div class="form-group">
+            <label>Observações</label>
+            <textarea name="notes" placeholder="Adicione detalhes sobre o lead..." rows="4"></textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="btn">Registrar Lead</button>
+      </form>
+    </div>
+
+    <!-- Tabela de Leads -->
+    <div class="card">
+      <div class="card-title">Leads Registrados</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Telefone</th>
+            <th>Origem</th>
+            <th>Status</th>
+            <th>Valor</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody id="leads-table">
+          <tr><td colspan="7" style="text-align:center;color:#999;">Nenhum lead registrado</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let leads = JSON.parse(localStorage.getItem('leads')) || [];
+
+    function registerLead(e) {
+      e.preventDefault();
+      const form = e.target;
+      
+      const lead = {
+        id: leads.length + 1,
+        name: form.name.value,
+        email: form.email.value,
+        phone: form.phone.value,
+        source: form.source.value,
+        status: form.status.value,
+        value: form.value.value,
+        notes: form.notes.value,
+        date: new Date().toLocaleDateString('pt-BR')
+      };
+      
+      leads.push(lead);
+      localStorage.setItem('leads', JSON.stringify(leads));
+      
+      const msg = document.getElementById('success-msg');
+      msg.classList.add('show');
+      setTimeout(() => msg.classList.remove('show'), 3000);
+      
+      form.reset();
+      renderLeadsTable();
+    }
+
+    function renderLeadsTable() {
+      const tbody = document.getElementById('leads-table');
+      
+      if (leads.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;">Nenhum lead registrado</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = leads.map(lead => `<tr>
+        <td>${lead.name}</td>
+        <td>${lead.email}</td>
+        <td>${lead.phone || '--'}</td>
+        <td>${lead.source}</td>
+        <td>${lead.status}</td>
+        <td>${lead.value ? 'R$ ' + parseFloat(lead.value).toFixed(2) : '--'}</td>
+        <td>${lead.date}</td>
+      </tr>`).join('');
+    }
+
+    // Render table on load
+    window.addEventListener('load', function() {
+      renderLeadsTable();
+    });
+  </script>
+</body>
+</html>

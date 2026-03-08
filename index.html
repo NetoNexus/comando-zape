@@ -93,7 +93,7 @@
       <div class="sidebar-logo">ZAPE</div>
       <div class="sidebar-menu">
         <div class="menu-item active" onclick="goToPage('painel')">Painel</div>
-        <div class="menu-item" onclick="goToPage('lancamento')">Lançamento de Dados</div>
+        <div class="menu-item" onclick="goToPage('comercial')">Comercial</div>
         <div class="menu-item" onclick="goToPage('usuarios')">Gerenciar Usuários</div>
       </div>
       <div class="user-info">
@@ -115,72 +115,13 @@
       </div>
 
       <!-- LANÇAMENTO -->
-      <div id="lancamento" class="page">
-        <header><h1>Lançamento de Dados</h1></header>
+      <div id="comercial" class="page">
+        <header><h1>Comercial</h1></header>
         <div class="card">
-          <div class="card-title">Registrar Novo Lead</div>
-          <div class="success" id="success-msg">Lead registrado com sucesso!</div>
-          <form onsubmit="registerLead(event)">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Nome</label>
-                <input type="text" name="name" placeholder="Nome completo" required>
-              </div>
-              <div class="form-group">
-                <label>Email</label>
-                <input type="email" name="email" placeholder="email@exemplo.com" required>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Telefone</label>
-                <input type="tel" name="phone" placeholder="(11) 9999-9999">
-              </div>
-              <div class="form-group">
-                <label>Origem</label>
-                <select name="source" required>
-                  <option value="">Selecione...</option>
-                  <option value="WhatsApp">WhatsApp</option>
-                  <option value="Facebook">Facebook</option>
-                  <option value="Instagram">Instagram</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Status</label>
-                <select name="status" required>
-                  <option value="">Selecione...</option>
-                  <option value="Novo">Novo</option>
-                  <option value="Qualificado">Qualificado</option>
-                  <option value="Convertido">Convertido</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Valor Estimado (R$)</label>
-                <input type="number" name="value" placeholder="0,00" step="0.01">
-              </div>
-            </div>
-            <button type="submit" class="btn">Registrar Lead</button>
-          </form>
-
-          <div style="margin-top: 32px;">
-            <div class="card-title">Leads Registrados</div>
-            <table>
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th>Email</th>
-                  <th>Origem</th>
-                  <th>Status</th>
-                  <th>Valor</th>
-                </tr>
-              </thead>
-              <tbody id="leads-table">
-                <tr><td colspan="5" style="text-align:center;color:#999;">Nenhum lead registrado</td></tr>
-              </tbody>
-            </table>
-          </div>
+          <div class="card-title">Dashboard Comercial</div>
+          <p>Acesse a página de lançamento de dados para registrar novos leads:</p>
+          <br>
+          <a href="/comando-zape/lancamentocomercial" style="display:inline-block;background:#B2FF00;color:#1A1A1A;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:900;cursor:pointer;">Ir para Lançamento de Dados</a>
         </div>
       </div>
 
@@ -274,7 +215,6 @@
       document.getElementById('dashboard').classList.add('active');
       document.getElementById('user-display').textContent = currentUser.fullname;
       loadUsersTable();
-      loadLeadsTable();
     }
 
     function logout() {
@@ -292,30 +232,6 @@
       
       document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
       event.target.classList.add('active');
-    }
-
-    function registerLead(e) {
-      e.preventDefault();
-      const form = e.target;
-      const lead = {
-        id: leads.length + 1,
-        name: form.name.value,
-        email: form.email.value,
-        phone: form.phone.value,
-        source: form.source.value,
-        status: form.status.value,
-        value: form.value.value,
-        date: new Date().toLocaleDateString('pt-BR')
-      };
-      leads.push(lead);
-      localStorage.setItem('leads', JSON.stringify(leads));
-      
-      const msg = document.getElementById('success-msg');
-      msg.classList.add('show');
-      setTimeout(() => msg.classList.remove('show'), 3000);
-      
-      form.reset();
-      loadLeadsTable();
     }
 
     function createUser(e) {
@@ -344,21 +260,6 @@
       
       form.reset();
       loadUsersTable();
-    }
-
-    function loadLeadsTable() {
-      const tbody = document.getElementById('leads-table');
-      if (leads.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999;">Nenhum lead registrado</td></tr>';
-        return;
-      }
-      tbody.innerHTML = leads.map(lead => `<tr>
-        <td>${lead.name}</td>
-        <td>${lead.email}</td>
-        <td>${lead.source}</td>
-        <td>${lead.status}</td>
-        <td>${lead.value ? 'R$ ' + parseFloat(lead.value).toFixed(2) : '--'}</td>
-      </tr>`).join('');
     }
 
     function loadUsersTable() {
