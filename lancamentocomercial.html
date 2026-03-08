@@ -1077,13 +1077,12 @@
         }
       });
 
-      document.getElementById('total-reunioes').textContent = totalReunioes;
-      document.getElementById('total-vendas').textContent = totalVendas;
       document.getElementById('total-agendamentos').textContent = totalAgendamentos;
+      document.getElementById('total-reunioes').textContent = totalReunioes;
       document.getElementById('total-reagendamentos').textContent = totalReagendamentos;
       document.getElementById('total-noshows').textContent = totalNoShows;
-      document.getElementById('total-valor').textContent = 'R$ ' + totalValor.toFixed(2);
       document.getElementById('total-quantidade').textContent = totalQuantidade;
+      document.getElementById('total-valor').textContent = 'R$ ' + totalValor.toFixed(2);
 
       const tbody = document.getElementById('acompanhamento-table');
       if (!filtered.length) {
