@@ -598,7 +598,11 @@
 
     async function deleteMovementFromSupabase(movementId) {
       try {
-        const response = await fetch(`${SUPABASE_URL}/rest/v1/movements?id=eq.${movementId}`, {
+        console.log('🗑️ Tentando deletar do Supabase ID:', movementId);
+        const url = `${SUPABASE_URL}/rest/v1/movements?id=eq.${movementId}`;
+        console.log('📍 URL:', url);
+        
+        const response = await fetch(url, {
           method: 'DELETE',
           headers: {
             'apikey': SUPABASE_KEY,
@@ -606,16 +610,22 @@
             'Prefer': 'return=minimal'
           }
         });
+        
+        console.log('📊 Status:', response.status, response.statusText);
+        
         if (response.ok) {
-          console.log('✅ Movement DELETE no Supabase:', movementId);
+          console.log('✅ Movement DELETE no Supabase com sucesso:', movementId);
+          return true;
+        } else if (response.status === 204) {
+          console.log('✅ Movement DELETE no Supabase (204):', movementId);
           return true;
         } else {
           const errText = await response.text();
-          console.error('❌ Erro ao deletar:', errText);
+          console.error('❌ Erro ao deletar. Status:', response.status, 'Mensagem:', errText);
           return false;
         }
       } catch (err) {
-        console.error('❌ Erro Supabase:', err);
+        console.error('❌ Erro Supabase fetch:', err);
         return false;
       }
     }
@@ -972,24 +982,36 @@
     }
 
     async function deleteMovement(id) {
+      console.log('🎯 deleteMovement() chamado com ID:', id);
+      
       if (confirm('Tem certeza?')) {
-        // Remover localmente primeiro
-        movements = movements.filter(m => m.id !== id);
-        localStorage.setItem('movements', JSON.stringify(movements));
+        console.log('✔️ Confirmou exclusão');
         
-        console.log('🗑️ Deletando movimento ID:', id);
+        // Remover localmente primeiro
+        const countBefore = movements.length;
+        movements = movements.filter(m => m.id !== id);
+        const countAfter = movements.length;
+        
+        console.log(`📊 Movimento removido localmente: ${countBefore} → ${countAfter}`);
+        localStorage.setItem('movements', JSON.stringify(movements));
+        console.log('💾 Salvo no localStorage');
         
         // Deletar do Supabase e aguardar
+        console.log('⏳ Aguardando resposta do Supabase...');
         const result = await deleteMovementFromSupabase(id);
+        
         if (result) {
-          console.log('✅ Movimento deletado do Supabase com sucesso');
+          console.log('✅✅ Movimento deletado do Supabase com sucesso! ID:', id);
         } else {
-          console.error('❌ Erro ao deletar do Supabase, mas foi removido localmente');
-          // Se falhar no Supabase, manter localmente removido
+          console.warn('⚠️ Falhou no Supabase, mas foi removido localmente');
         }
         
+        console.log('🔄 Renderizando tabelas...');
         renderTable();
-        loadAcompanhamento(); // Sincronizar acompanhamento em tempo real
+        loadAcompanhamento();
+        console.log('✅ Pronto!');
+      } else {
+        console.log('❌ Cancelou exclusão');
       }
     }
 
