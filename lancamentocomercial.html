@@ -732,6 +732,9 @@
 
       const filterCloser = document.getElementById('filter-closer');
       filterCloser.innerHTML = '<option value="">Todos</option>' + closers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      
+      // Preencher closers no acompanhamento
+      initAcompanhamentoClosers();
 
       // Populando TODOS os selects de SDR (agendamentos e reagendamentos)
       document.querySelectorAll('.sdr-select').forEach(sel => {
@@ -1327,22 +1330,23 @@
       renderTable();
     }
 
-    function loadAcompanhamento() {
-      // Preencher select de closers (SEMPRE, pra garantir que tá atualizado)
+    function initAcompanhamentoClosers() {
+      // Preencher select de closers UMA VEZ
       const closerSelect = document.getElementById('filter-closer-acompanhamento');
-      if (closerSelect) {
-        // Limpar opções antigas (menos a primeira "Todos")
-        while (closerSelect.options.length > 1) {
-          closerSelect.remove(1);
-        }
-        // Adicionar closers atuais
-        closers.forEach(c => {
-          const opt = document.createElement('option');
-          opt.value = c.id;
-          opt.textContent = c.name;
-          closerSelect.appendChild(opt);
-        });
-      }
+      if (!closerSelect || closerSelect.options.length > 1) return; // Já preenchido
+      
+      closers.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name;
+        closerSelect.appendChild(opt);
+      });
+      console.log('✅ Closers carregados no select de acompanhamento');
+    }
+
+    function loadAcompanhamento() {
+      // Preencher closers se ainda não foi feito
+      initAcompanhamentoClosers();
 
       let monthInput = document.getElementById('filter-month-acompanhamento').value;
       if (!monthInput) {
