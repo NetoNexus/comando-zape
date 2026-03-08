@@ -997,27 +997,187 @@
     function openEditMovementModal(id) {
       editingMovement = movements.find(m => m.id == id);
       if (!editingMovement) {
-        console.error('Movimento não encontrado. ID:', id, 'Movements:', movements);
         alert('Erro ao abrir movimento para edição');
         return;
       }
       
-      // Preenche campos do modal
-      document.getElementById('edit-movement-data').value = editingMovement.data_raw || editingMovement.data;
-      document.getElementById('edit-movement-reunioes').value = editingMovement.reunioes;
+      console.log('📝 Abrindo modal de edição:', editingMovement);
       
-      // Popula ganhos dinâmicos
+      // Preencher CLOSER
+      document.getElementById('edit-closer-select').value = editingMovement.closer_id;
+      
+      // Preencher DATA
+      document.getElementById('edit-movement-data').value = editingMovement.data_raw || editingMovement.data;
+      
+      // Preencher AGENDAMENTOS
+      document.getElementById('edit-agendamentos-container').innerHTML = '';
+      (editingMovement.agendamentos || []).forEach(a => {
+        const field = document.createElement('div');
+        field.className = 'dynamic-field';
+        field.innerHTML = `
+          <select class="sdr-select" value="${a.sdr_id}" required>
+            <option value="">Selecione SDR...</option>
+            ${sdrs.map(s => `<option value="${s.id}" ${s.id == a.sdr_id ? 'selected' : ''}>${s.name}</option>`).join('')}
+          </select>
+          <input type="number" class="quantidade" value="${a.quantidade}" placeholder="Quantidade" min="1" required>
+          <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+        `;
+        document.getElementById('edit-agendamentos-container').appendChild(field);
+      });
+      
+      // Preencher REUNIÕES
+      document.getElementById('edit-reunioes-container').innerHTML = '';
+      (editingMovement.reunioes || []).forEach(r => {
+        const field = document.createElement('div');
+        field.className = 'dynamic-field';
+        field.innerHTML = `
+          <select class="sdr-select" value="${r.sdr_id}" required>
+            <option value="">Selecione SDR...</option>
+            ${sdrs.map(s => `<option value="${s.id}" ${s.id == r.sdr_id ? 'selected' : ''}>${s.name}</option>`).join('')}
+          </select>
+          <input type="number" class="quantidade" value="${r.quantidade}" placeholder="Quantidade" min="1" required>
+          <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+        `;
+        document.getElementById('edit-reunioes-container').appendChild(field);
+      });
+      
+      // Preencher REAGENDAMENTOS
+      document.getElementById('edit-reagendamentos-container').innerHTML = '';
+      (editingMovement.reagendamentos || []).forEach(r => {
+        const field = document.createElement('div');
+        field.className = 'dynamic-field';
+        field.innerHTML = `
+          <select class="sdr-select" value="${r.sdr_id}" required>
+            <option value="">Selecione SDR...</option>
+            ${sdrs.map(s => `<option value="${s.id}" ${s.id == r.sdr_id ? 'selected' : ''}>${s.name}</option>`).join('')}
+          </select>
+          <input type="number" class="quantidade" value="${r.quantidade}" placeholder="Quantidade" min="1" required>
+          <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+        `;
+        document.getElementById('edit-reagendamentos-container').appendChild(field);
+      });
+      
+      // Preencher NO-SHOWS
+      document.getElementById('edit-noshows-container').innerHTML = '';
+      (editingMovement.noshows || []).forEach(n => {
+        const field = document.createElement('div');
+        field.className = 'dynamic-field';
+        field.innerHTML = `
+          <select class="sdr-select" value="${n.sdr_id}" required>
+            <option value="">Selecione SDR...</option>
+            ${sdrs.map(s => `<option value="${s.id}" ${s.id == n.sdr_id ? 'selected' : ''}>${s.name}</option>`).join('')}
+          </select>
+          <input type="number" class="quantidade" value="${n.quantidade}" placeholder="Quantidade" min="1" required>
+          <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+        `;
+        document.getElementById('edit-noshows-container').appendChild(field);
+      });
+      
+      // Preencher GANHOS
       editTempGanhos = JSON.parse(JSON.stringify(editingMovement.ganhos || []));
       renderEditGanhos();
       
       document.getElementById('editMovementModal').classList.add('show');
-      console.log('✅ Modal aberto para edição:', editingMovement);
+      console.log('✅ Modal aberto com TODOS os campos preenchidos');
     }
 
     function closeEditMovementModal() {
       document.getElementById('editMovementModal').classList.remove('show');
       editingMovement = null;
       editTempGanhos = [];
+    }
+    
+    // Helper functions para adicionar campos no modal de edição
+    function addEditAgendamento() {
+      const container = document.getElementById('edit-agendamentos-container');
+      const newField = document.createElement('div');
+      newField.className = 'dynamic-field';
+      newField.innerHTML = `
+        <select class="sdr-select" required>
+          <option value="">Selecione SDR...</option>
+          ${sdrs.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+        </select>
+        <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
+        <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+      `;
+      container.appendChild(newField);
+    }
+    
+    function addEditReuniao() {
+      const container = document.getElementById('edit-reunioes-container');
+      const newField = document.createElement('div');
+      newField.className = 'dynamic-field';
+      newField.innerHTML = `
+        <select class="sdr-select" required>
+          <option value="">Selecione SDR...</option>
+          ${sdrs.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+        </select>
+        <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
+        <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+      `;
+      container.appendChild(newField);
+    }
+    
+    function addEditReagendamento() {
+      const container = document.getElementById('edit-reagendamentos-container');
+      const newField = document.createElement('div');
+      newField.className = 'dynamic-field';
+      newField.innerHTML = `
+        <select class="sdr-select" required>
+          <option value="">Selecione SDR...</option>
+          ${sdrs.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+        </select>
+        <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
+        <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+      `;
+      container.appendChild(newField);
+    }
+    
+    function addEditNoShow() {
+      const container = document.getElementById('edit-noshows-container');
+      const newField = document.createElement('div');
+      newField.className = 'dynamic-field';
+      newField.innerHTML = `
+        <select class="sdr-select" required>
+          <option value="">Selecione SDR...</option>
+          ${sdrs.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+        </select>
+        <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
+        <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+      `;
+      container.appendChild(newField);
+    }
+    
+    function openEditGanhoModal() {
+      // Reutiliza o mesmo modal de ganho da criação
+      // (usa editTempGanhos em vez de tempGanhos)
+      document.getElementById('ganhoModal').classList.add('show');
+      document.getElementById('ganho-origem-select').focus();
+    }
+    
+    function renderEditGanhos() {
+      const tbody = document.getElementById('edit-ganhos-tbody');
+      if (!editTempGanhos || editTempGanhos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="padding: 8px; text-align: center; color: #999;">Nenhum ganho registrado</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = editTempGanhos.map((g, idx) => `
+        <tr>
+          <td style="padding: 8px;">${g.origem_name || 'N/A'}</td>
+          <td style="padding: 8px;">${g.servico_name || 'N/A'}</td>
+          <td style="padding: 8px;">${g.sdr_name || 'N/A'}</td>
+          <td style="padding: 8px;">R$ ${g.valor.toFixed(2)}</td>
+          <td style="padding: 8px;">
+            <button type="button" class="delete-btn" onclick="removeEditGanho(${idx})" style="padding: 4px 8px; font-size: 11px;">Remover</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+    
+    function removeEditGanho(idx) {
+      editTempGanhos.splice(idx, 1);
+      renderEditGanhos();
     }
 
     function openEditModal(id) {
@@ -1569,35 +1729,92 @@
       
       if (!editingMovement) return;
       
-      const dataRaw = document.getElementById('edit-movement-data').value; // YYYY-MM-DD
-      const reunioes = parseInt(document.getElementById('edit-movement-reunioes').value);
+      console.log('💾 Salvando edições do movimento...');
       
+      // Validar ganhos
       if (editTempGanhos.length === 0) {
         alert('Registre pelo menos um ganho');
         return;
       }
       
-      // Converter data de YYYY-MM-DD para DD/MM/YYYY
+      // Coletar CLOSER
+      const closerId = parseInt(document.getElementById('edit-closer-select').value);
+      
+      // Coletar DATA
+      const dataRaw = document.getElementById('edit-movement-data').value;
       const dateObj = new Date(dataRaw + 'T00:00:00');
       const formattedDate = String(dateObj.getDate()).padStart(2, '0') + '/' + 
                            String(dateObj.getMonth() + 1).padStart(2, '0') + '/' + 
                            dateObj.getFullYear();
       
-      // Atualiza movimento
+      // Coletar AGENDAMENTOS
+      const agendamentos = [];
+      document.querySelectorAll('#edit-agendamentos-container .dynamic-field').forEach(field => {
+        const sdrId = field.querySelector('.sdr-select').value;
+        const qty = field.querySelector('.quantidade').value;
+        if (sdrId && qty) agendamentos.push({ sdr_id: parseInt(sdrId), quantidade: parseInt(qty) });
+      });
+      
+      // Coletar REUNIÕES
+      const reunioes = [];
+      document.querySelectorAll('#edit-reunioes-container .dynamic-field').forEach(field => {
+        const sdrId = field.querySelector('.sdr-select').value;
+        const qty = field.querySelector('.quantidade').value;
+        if (sdrId && qty) reunioes.push({ sdr_id: parseInt(sdrId), quantidade: parseInt(qty) });
+      });
+      
+      // Coletar REAGENDAMENTOS
+      const reagendamentos = [];
+      document.querySelectorAll('#edit-reagendamentos-container .dynamic-field').forEach(field => {
+        const sdrId = field.querySelector('.sdr-select').value;
+        const qty = field.querySelector('.quantidade').value;
+        if (sdrId && qty) reagendamentos.push({ sdr_id: parseInt(sdrId), quantidade: parseInt(qty) });
+      });
+      
+      // Coletar NO-SHOWS
+      const noshows = [];
+      document.querySelectorAll('#edit-noshows-container .dynamic-field').forEach(field => {
+        const sdrId = field.querySelector('.sdr-select').value;
+        const qty = field.querySelector('.quantidade').value;
+        if (sdrId && qty) noshows.push({ sdr_id: parseInt(sdrId), quantidade: parseInt(qty) });
+      });
+      
+      // Atualizar TODAS as propriedades
+      editingMovement.closer_id = closerId;
       editingMovement.data = formattedDate;
       editingMovement.data_raw = dataRaw;
+      editingMovement.agendamentos = agendamentos;
       editingMovement.reunioes = reunioes;
+      editingMovement.reagendamentos = reagendamentos;
+      editingMovement.noshows = noshows;
       editingMovement.ganhos = editTempGanhos;
       
+      console.log('📝 Movimento atualizado:', editingMovement);
+      
+      // Salvar IMEDIATAMENTE no localStorage (UX bom)
       localStorage.setItem('movements', JSON.stringify(movements));
+      console.log('✅ Salvo em localStorage');
       
-      // Sincronizar com Supabase
-      updateMovementInSupabase(editingMovement.id, editingMovement);
-      
-      showSuccessMsg();
-      closeEditMovementModal();
+      // Renderizar
       renderTable();
-      loadAcompanhamento(); // Sincronizar acompanhamento em tempo real
+      loadAcompanhamento();
+      console.log('🖼️ Telas atualizadas');
+      
+      // Sincronizar com Supabase em BACKGROUND
+      console.log('🔄 Sincronizando com Supabase...');
+      updateMovementInSupabase(editingMovement.id, editingMovement).then(result => {
+        if (result) {
+          console.log('✅ Sincronizado com Supabase!');
+        } else {
+          console.warn('⚠️ Falhou sincronizar, tentando novamente...');
+          updateMovementInSupabase(editingMovement.id, editingMovement);
+        }
+      });
+      
+      // Fechar modal
+      closeEditMovementModal();
+      showSuccessMsg();
+      console.log('✅✅ Edição completa!');
     }
 
     window.addEventListener('load', function() {
