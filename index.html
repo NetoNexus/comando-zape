@@ -818,8 +818,7 @@
   </div>
 
   <script>
-    // ============== USERS DATABASE ==============
-    // Em produção, isso seria um Supabase com autenticação real
+    // Global vars
     const defaultUsers = [
       { id: 1, username: 'adm', password: '123456', fullname: 'Administrador', role: 'adm' },
       { id: 2, username: 'comercial', password: '123456', fullname: 'Time Comercial', role: 'comercial' },
@@ -830,99 +829,40 @@
     let users = JSON.parse(localStorage.getItem('zape_users')) || defaultUsers;
     let leads = JSON.parse(localStorage.getItem('zape_leads')) || [];
 
-    // ============== INIT ON LOAD ==============
-    function initApp() {
-      // ============== LOGIN ==============
-      const loginForm = document.getElementById('login-form');
-      if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
-          e.preventDefault();
-          const username = document.getElementById('username').value;
-          const password = document.getElementById('password').value;
-          
-          const user = users.find(u => u.username === username && u.password === password);
-          
-          if (user) {
-            currentUser = user;
-            localStorage.setItem('zape_current_user', JSON.stringify(user));
-            loginSuccess();
-          } else {
-            showLoginError('Usuário ou senha incorretos');
-          }
-        });
-      }
-
-      // ============== LEAD FORM ==============
-      const leadForm = document.getElementById('lead-form');
-      if (leadForm) {
-        leadForm.addEventListener('submit', function(e) {
-          e.preventDefault();
-          
-          const formData = new FormData(this);
-          const lead = {
-            id: leads.length + 1,
-            ...Object.fromEntries(formData),
-            date: new Date().toLocaleDateString('pt-BR')
-          };
-          
-          leads.push(lead);
-          localStorage.setItem('zape_leads', JSON.stringify(leads));
-          
-          showSuccessMessage('success-message');
-          this.reset();
-          renderLeadsTable();
-        });
-      }
-
-      // ============== USER FORM ==============
-      const userForm = document.getElementById('user-form');
-      if (userForm) {
-        userForm.addEventListener('submit', function(e) {
-          e.preventDefault();
-          
-          const formData = new FormData(this);
-          const newUser = {
-            id: users.length + 1,
-            username: formData.get('username'),
-            password: formData.get('password'),
-            fullname: formData.get('fullname'),
-            role: formData.get('role')
-          };
-          
-          if (users.find(u => u.username === newUser.username)) {
-            alert('Este usuário já existe!');
-            return;
-          }
-          
-          users.push(newUser);
-          localStorage.setItem('zape_users', JSON.stringify(users));
-          
-          showSuccessMessage('user-success-message');
-          this.reset();
-          renderUsersTable();
-        });
-      }
-
-      // Check for existing session
-      const savedUser = localStorage.getItem('zape_current_user');
-      if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        loginSuccess();
+    // ============ LOGIN ============
+    function handleLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      
+      console.log('Tentando login:', username, password);
+      console.log('Usuários disponíveis:', users);
+      
+      const user = users.find(u => u.username === username && u.password === password);
+      
+      if (user) {
+        console.log('Login bem-sucedido:', user);
+        currentUser = user;
+        localStorage.setItem('zape_current_user', JSON.stringify(user));
+        showDashboard();
+      } else {
+        console.log('Login falhou');
+        showLoginError('Usuário ou senha incorretos');
       }
     }
 
-    function showLoginError(message) {
+    function showLoginError(msg) {
       const error = document.getElementById('login-error');
-      error.textContent = message;
+      error.textContent = msg;
       error.classList.add('show');
       setTimeout(() => error.classList.remove('show'), 5000);
     }
 
-    function loginSuccess() {
+    function showDashboard() {
+      console.log('Mostrando dashboard...');
       document.getElementById('login-page').classList.remove('active');
       document.getElementById('dashboard-container').classList.add('active');
       document.getElementById('current-user').textContent = currentUser.fullname;
-      
       filterMenuByRole();
       navigateTo('painel');
     }
@@ -930,16 +870,15 @@
     function logout() {
       currentUser = null;
       localStorage.removeItem('zape_current_user');
-      document.getElementById('login-page').classList.add('active');
       document.getElementById('dashboard-container').classList.remove('active');
+      document.getElementById('login-page').classList.add('active');
       document.getElementById('username').value = '';
       document.getElementById('password').value = '';
     }
 
-    // ============== MENU FILTERING ==============
+    // ============ MENU FILTERING ============
     function filterMenuByRole() {
-      const menuItems = document.querySelectorAll('.menu-item');
-      menuItems.forEach(item => {
+      document.querySelectorAll('.menu-item').forEach(item => {
         const role = item.getAttribute('data-role');
         if (role === 'all' || role.split(',').includes(currentUser.role)) {
           item.classList.remove('hidden');
@@ -949,54 +888,46 @@
       });
     }
 
-    // ============== NAVIGATION ==============
+    // ============ NAVIGATION ============
     function navigateTo(page) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById(page + '-page').classList.add('active');
+      const pageEl = document.getElementById(page + '-page');
+      if (pageEl) pageEl.classList.add('active');
       
       document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-      document.querySelector(`[onclick="navigateTo('${page}')"]`)?.classList.add('active');
-
-      if (page === 'lancamento') {
-        renderLeadsTable();
-      } else if (page === 'usuarios') {
-        renderUsersTable();
-      }
+      const menuItem = document.querySelector(`[onclick="navigateTo('${page}')"]`);
+      if (menuItem) menuItem.classList.add('active');
     }
 
     function renderLeadsTable() {
       const tbody = document.getElementById('leads-table');
+      if (!tbody) return;
       
       if (leads.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gray-light)">Nenhum lead registrado ainda</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gray-light)">Nenhum lead</td></tr>';
         return;
       }
       
-      tbody.innerHTML = leads.map(lead => `
-        <tr>
-          <td>${lead.name}</td>
-          <td>${lead.email}</td>
-          <td>${lead.source}</td>
-          <td>${lead.status}</td>
-          <td>${lead.value ? 'R$ ' + parseFloat(lead.value).toFixed(2) : '--'}</td>
-          <td>${lead.date}</td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = leads.map(lead => `<tr>
+        <td>${lead.name}</td>
+        <td>${lead.email}</td>
+        <td>${lead.source}</td>
+        <td>${lead.status}</td>
+        <td>${lead.value ? 'R$ ' + parseFloat(lead.value).toFixed(2) : '--'}</td>
+        <td>${lead.date}</td>
+      </tr>`).join('');
     }
 
     function renderUsersTable() {
       const tbody = document.getElementById('users-table');
+      if (!tbody) return;
       
-      tbody.innerHTML = users.map(user => `
-        <tr>
-          <td>${user.username}</td>
-          <td>${user.fullname}</td>
-          <td>${user.role}</td>
-          <td>
-            <button style="background:var(--red);color:var(--white);border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:10px;" onclick="deleteUser(${user.id})">Deletar</button>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = users.map(user => `<tr>
+        <td>${user.username}</td>
+        <td>${user.fullname}</td>
+        <td>${user.role}</td>
+        <td><button style="background:var(--red);color:var(--white);border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:10px;" onclick="deleteUser(${user.id})">Deletar</button></td>
+      </tr>`).join('');
     }
 
     function deleteUser(id) {
@@ -1007,15 +938,76 @@
       }
     }
 
-    // ============== HELPERS ==============
-    function showSuccessMessage(elementId) {
-      const msg = document.getElementById(elementId);
-      msg.classList.add('show');
-      setTimeout(() => msg.classList.remove('show'), 3000);
+    function showSuccessMessage(elId) {
+      const msg = document.getElementById(elId);
+      if (msg) {
+        msg.classList.add('show');
+        setTimeout(() => msg.classList.remove('show'), 3000);
+      }
     }
 
-    // ============== INIT ==============
-    document.addEventListener('DOMContentLoaded', initApp);
+    // ============ FORMS ============
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM carregado');
+
+      // Login form
+      const loginForm = document.getElementById('login-form');
+      if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+        console.log('Login form attached');
+      }
+
+      // Lead form
+      const leadForm = document.getElementById('lead-form');
+      if (leadForm) {
+        leadForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const formData = new FormData(this);
+          const lead = {
+            id: leads.length + 1,
+            ...Object.fromEntries(formData),
+            date: new Date().toLocaleDateString('pt-BR')
+          };
+          leads.push(lead);
+          localStorage.setItem('zape_leads', JSON.stringify(leads));
+          showSuccessMessage('success-message');
+          this.reset();
+          renderLeadsTable();
+        });
+      }
+
+      // User form
+      const userForm = document.getElementById('user-form');
+      if (userForm) {
+        userForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const username = this.username.value;
+          if (users.find(u => u.username === username)) {
+            alert('Usuário já existe!');
+            return;
+          }
+          const newUser = {
+            id: users.length + 1,
+            username: username,
+            password: this.password.value,
+            fullname: this.fullname.value,
+            role: this.role.value
+          };
+          users.push(newUser);
+          localStorage.setItem('zape_users', JSON.stringify(users));
+          showSuccessMessage('user-success-message');
+          this.reset();
+          renderUsersTable();
+        });
+      }
+
+      // Check for existing session
+      const savedUser = localStorage.getItem('zape_current_user');
+      if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        showDashboard();
+      }
+    });
   </script>
 </body>
 </html>
