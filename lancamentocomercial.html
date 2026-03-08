@@ -547,6 +547,11 @@
     let servicos = [];
     let movements = JSON.parse(localStorage.getItem('movements')) || [];
     let editingMovement = null;
+    
+    // ⚠️ RASTREIA IDs deletadas localmente (impede que Supabase re-traga)
+    let deletedMovementIds = new Set(
+      JSON.parse(localStorage.getItem('deletedMovementIds') || '[]')
+    );
     let historicoExpanded = true;
 
     // ========== SUPABASE MOVEMENTS SYNC ==========
@@ -628,6 +633,7 @@
     async function loadMovementsFromSupabase() {
       try {
         console.log('🔄 [LOAD] Iniciando loadMovementsFromSupabase...');
+        console.log('🗑️ [LOAD] IDs deletados localmente:', Array.from(deletedMovementIds));
         
         // Guardar dados locais ANTES de carregar Supabase
         const localMovements = JSON.parse(localStorage.getItem('movements') || '[]');
@@ -657,48 +663,53 @@
           
           // MESCLAR: 
           // 1. Começa com Supabase (fonte de verdade)
-          // 2. Mantém locais que não estão no Supabase (ainda sincronizando)
+          // 2. FILTRA deletedMovementIds (nunca re-traz deletados)
+          // 3. Mantém locais que não estão no Supabase (ainda sincronizando)
           const result = [];
           const processedIds = new Set();
           
-          // Adicionar dados do Supabase (sempre mais recentes)
+          // Adicionar dados do Supabase (EXCETO os que foram deletados localmente!)
           supabaseMovements.forEach(m => {
+            if (deletedMovementIds.has(m.id)) {
+              console.log('🗑️ [LOAD] Filtrando ID deletado localmente:', m.id);
+              return; // Skip este movimento (foi deletado)
+            }
             result.push(m);
             processedIds.add(m.id);
           });
           
           // Adicionar locais que ainda não foram sincronizados (IDs > 1000 = pendentes)
           localMovements.forEach(m => {
-            if (!processedIds.has(m.id) && m.id > 1000) {
+            if (!processedIds.has(m.id) && m.id > 1000 && !deletedMovementIds.has(m.id)) {
               console.log('⏳ [LOAD] Mantendo movimento local pendente de sync:', m.id);
               result.push(m);
             }
           });
           
           movements = result;
-          console.log('✅ [LOAD] Movements após merge:', movements.length, 'registros. IDs:', movements.map(m => m.id));
+          console.log('✅ [LOAD] Movements após merge + filter deletados:', movements.length, 'registros. IDs:', movements.map(m => m.id));
           localStorage.setItem('movements', JSON.stringify(movements));
           return true;
         } else {
           console.warn('⚠️ [LOAD] Supabase retornou vazio. Usando localStorage apenas.');
-          movements = localMovements;
-          console.log('📌 [LOAD] Movimentos do localStorage:', movements.length);
+          movements = localMovements.filter(m => !deletedMovementIds.has(m.id));
+          console.log('📌 [LOAD] Movimentos do localStorage (excluindo deletados):', movements.length);
           return true;
         }
       } catch (err) {
         console.error('❌ [LOAD] Erro ao carregar movements:', err);
-        // Fallback: carregar só do localStorage
-        movements = JSON.parse(localStorage.getItem('movements') || '[]');
-        console.log('⚠️ [LOAD] Fallback para localStorage:', movements.length);
+        // Fallback: carregar só do localStorage (respeitando deletados)
+        movements = JSON.parse(localStorage.getItem('movements') || '[]').filter(m => !deletedMovementIds.has(m.id));
+        console.log('⚠️ [LOAD] Fallback para localStorage (respeitando deletedMovementIds):', movements.length);
         return false;
       }
     }
 
     async function deleteMovementFromSupabase(movementId) {
       try {
-        console.log('🗑️ Tentando deletar do Supabase ID:', movementId);
+        console.log('🗑️ [DELETE-SUPA] Tentando deletar do Supabase ID:', movementId);
         const url = `${SUPABASE_URL}/rest/v1/movements?id=eq.${movementId}`;
-        console.log('📍 URL:', url);
+        console.log('📍 [DELETE-SUPA] URL:', url);
         
         const response = await fetch(url, {
           method: 'DELETE',
@@ -711,15 +722,16 @@
         
         console.log('📊 Status:', response.status, response.statusText);
         
-        if (response.ok) {
-          console.log('✅ Movement DELETE no Supabase com sucesso:', movementId);
-          return true;
-        } else if (response.status === 204) {
-          console.log('✅ Movement DELETE no Supabase (204):', movementId);
+        if (response.ok || response.status === 204) {
+          console.log('✅ [DELETE-SUPA] Movement DELETE no Supabase com sucesso:', movementId);
+          // ✅ Remover de deletedMovementIds (confirmado no Supabase)
+          deletedMovementIds.delete(movementId);
+          localStorage.setItem('deletedMovementIds', JSON.stringify(Array.from(deletedMovementIds)));
+          console.log('✅ [DELETE-SUPA] Limpo de deletedMovementIds. Lista atual:', Array.from(deletedMovementIds));
           return true;
         } else {
           const errText = await response.text();
-          console.error('❌ Erro ao deletar. Status:', response.status, 'Mensagem:', errText);
+          console.error('❌ [DELETE-SUPA] Erro ao deletar. Status:', response.status, 'Mensagem:', errText);
           return false;
         }
       } catch (err) {
@@ -1411,31 +1423,37 @@
     }
 
     function deleteMovement(id) {
-      console.log('🎯 deleteMovement() chamado com ID:', id);
+      console.log('🎯 [DELETE] deleteMovement() chamado com ID:', id);
       
       if (confirm('Tem certeza?')) {
-        console.log('✔️ Confirmou exclusão');
+        console.log('✔️ [DELETE] Confirmou exclusão');
         
-        // PASSO 1: Remover da UI IMEDIATAMENTE
-        console.log('⚡ Removendo da UI imediatamente...');
+        // PASSO 1: MARCAR como deletado em deletedMovementIds
+        console.log('📝 [DELETE] Marcando ID como deletado:', id);
+        deletedMovementIds.add(id);
+        localStorage.setItem('deletedMovementIds', JSON.stringify(Array.from(deletedMovementIds)));
+        console.log('✅ [DELETE] Marcado em localStorage:', Array.from(deletedMovementIds));
+        
+        // PASSO 2: Remover da UI IMEDIATAMENTE
+        console.log('⚡ [DELETE] Removendo da UI imediatamente...');
         movements = movements.filter(m => m.id !== id);
         localStorage.setItem('movements', JSON.stringify(movements));
-        console.log('✅ Removido de localStorage');
+        console.log('✅ [DELETE] Removido de movements localStorage');
         
-        // PASSO 2: Renderizar (some da tela na hora)
-        console.log('🖼️ Renderizando tabela...');
+        // PASSO 3: Renderizar (some da tela na hora)
+        console.log('🖼️ [DELETE] Renderizando tabela...');
         renderTable();
-        console.log('📈 Renderizando acompanhamento...');
+        console.log('📈 [DELETE] Renderizando acompanhamento...');
         loadAcompanhamento();
-        console.log('✅ UI atualizada - movimento sumiu!');
+        console.log('✅ [DELETE] UI atualizada - movimento sumiu!');
         
-        // PASSO 3: Sincronizar com Supabase em BACKGROUND com RETRY
-        console.log('🔄 Sincronizando com Supabase (com retry automático)...');
+        // PASSO 4: Sincronizar com Supabase em BACKGROUND com RETRY
+        console.log('🔄 [DELETE] Sincronizando com Supabase (com retry automático)...');
         deleteMovementWithRetry(id);
         
-        console.log('✅✅ Pronto! Deletado localmente + sincronizando...');
+        console.log('✅✅ [DELETE] Pronto! Marcado como deletado + sincronizando...');
       } else {
-        console.log('❌ Cancelou exclusão');
+        console.log('❌ [DELETE] Cancelou exclusão');
       }
     }
     
@@ -1477,22 +1495,22 @@
 
     async function deleteMovementWithRetry(id, maxRetries = 3) {
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        console.log(`🔄 Tentativa ${attempt}/${maxRetries} de deletar do Supabase...`);
+        console.log(`🔄 [DELETE-RETRY] Tentativa ${attempt}/${maxRetries} de deletar do Supabase...`);
         const result = await deleteMovementFromSupabase(id);
         
         if (result) {
-          console.log('✅ Deletado do Supabase com sucesso!');
+          console.log('✅ [DELETE-RETRY] Deletado do Supabase com sucesso!');
           return true;
         }
         
         if (attempt < maxRetries) {
-          // Esperar 1 segundo antes de tentar novamente
+          console.log(`⏳ [DELETE-RETRY] Aguardando 1s antes de tentar novamente...`);
           await new Promise(r => setTimeout(r, 1000));
         }
       }
       
-      console.error('❌ Falhou ao deletar do Supabase após 3 tentativas');
-      console.warn('⚠️ Mas foi removido localmente - tente novamente mais tarde');
+      console.error('❌ [DELETE-RETRY] Falhou ao deletar do Supabase após 3 tentativas');
+      console.warn('⚠️ [DELETE-RETRY] MAS foi marcado como deletado localmente (deletedMovementIds) - nunca será re-trazido do Supabase');
       return false;
     }
 
