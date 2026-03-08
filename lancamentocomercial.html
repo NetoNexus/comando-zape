@@ -1001,84 +1001,135 @@
         return;
       }
       
-      console.log('📝 Abrindo modal de edição:', editingMovement);
+      console.log('📝 Abrindo modal de edição com dados PRÉ-PREENCHIDOS:', editingMovement);
       
-      // Preencher CLOSER
-      document.getElementById('edit-closer-select').value = editingMovement.closer_id;
+      // Preencher CLOSER - garantir que fica selecionado
+      setTimeout(() => {
+        document.getElementById('edit-closer-select').value = editingMovement.closer_id;
+        console.log('✅ Closer selecionado:', editingMovement.closer_id);
+      }, 50);
       
       // Preencher DATA
       document.getElementById('edit-movement-data').value = editingMovement.data_raw || editingMovement.data;
       
-      // Preencher AGENDAMENTOS
+      // Preencher AGENDAMENTOS com dados salvos
       document.getElementById('edit-agendamentos-container').innerHTML = '';
-      (editingMovement.agendamentos || []).forEach(a => {
+      const agends = editingMovement.agendamentos || [];
+      if (agends.length === 0) {
+        // Se não tem agendamentos, adicionar um campo vazio
         const field = document.createElement('div');
         field.className = 'dynamic-field';
         field.innerHTML = `
-          <select class="sdr-select" value="${a.sdr_id}" required>
+          <select class="sdr-select" required>
             <option value="">Selecione SDR...</option>
-            ${sdrs.map(s => `<option value="${s.id}" ${s.id == a.sdr_id ? 'selected' : ''}>${s.name}</option>`).join('')}
+            ${sdrs.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
           </select>
-          <input type="number" class="quantidade" value="${a.quantidade}" placeholder="Quantidade" min="1" required>
+          <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
           <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
         `;
         document.getElementById('edit-agendamentos-container').appendChild(field);
-      });
+      } else {
+        agends.forEach(a => {
+          const field = document.createElement('div');
+          field.className = 'dynamic-field';
+          field.innerHTML = `
+            <select class="sdr-select" required>
+              <option value="">Selecione SDR...</option>
+              ${sdrs.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+            </select>
+            <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
+            <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+          `;
+          document.getElementById('edit-agendamentos-container').appendChild(field);
+          // PRÉ-PREENCHER DEPOIS
+          setTimeout(() => {
+            field.querySelector('.sdr-select').value = a.sdr_id;
+            field.querySelector('.quantidade').value = a.quantidade;
+          }, 10);
+        });
+      }
       
-      // Preencher REUNIÕES
+      // Preencher REUNIÕES com dados salvos
       document.getElementById('edit-reunioes-container').innerHTML = '';
-      (editingMovement.reunioes || []).forEach(r => {
+      const reuns = editingMovement.reunioes || [];
+      if (reuns.length === 0) {
         const field = document.createElement('div');
         field.className = 'dynamic-field';
         field.innerHTML = `
-          <select class="sdr-select" value="${r.sdr_id}" required>
+          <select class="sdr-select" required>
             <option value="">Selecione SDR...</option>
-            ${sdrs.map(s => `<option value="${s.id}" ${s.id == r.sdr_id ? 'selected' : ''}>${s.name}</option>`).join('')}
+            ${sdrs.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
           </select>
-          <input type="number" class="quantidade" value="${r.quantidade}" placeholder="Quantidade" min="1" required>
+          <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
           <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
         `;
         document.getElementById('edit-reunioes-container').appendChild(field);
-      });
+      } else {
+        reuns.forEach(r => {
+          const field = document.createElement('div');
+          field.className = 'dynamic-field';
+          field.innerHTML = `
+            <select class="sdr-select" required>
+              <option value="">Selecione SDR...</option>
+              ${sdrs.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+            </select>
+            <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
+            <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+          `;
+          document.getElementById('edit-reunioes-container').appendChild(field);
+          setTimeout(() => {
+            field.querySelector('.sdr-select').value = r.sdr_id;
+            field.querySelector('.quantidade').value = r.quantidade;
+          }, 10);
+        });
+      }
       
-      // Preencher REAGENDAMENTOS
+      // Preencher REAGENDAMENTOS com dados salvos
       document.getElementById('edit-reagendamentos-container').innerHTML = '';
       (editingMovement.reagendamentos || []).forEach(r => {
         const field = document.createElement('div');
         field.className = 'dynamic-field';
         field.innerHTML = `
-          <select class="sdr-select" value="${r.sdr_id}" required>
+          <select class="sdr-select" required>
             <option value="">Selecione SDR...</option>
-            ${sdrs.map(s => `<option value="${s.id}" ${s.id == r.sdr_id ? 'selected' : ''}>${s.name}</option>`).join('')}
+            ${sdrs.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
           </select>
-          <input type="number" class="quantidade" value="${r.quantidade}" placeholder="Quantidade" min="1" required>
+          <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
           <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
         `;
         document.getElementById('edit-reagendamentos-container').appendChild(field);
+        setTimeout(() => {
+          field.querySelector('.sdr-select').value = r.sdr_id;
+          field.querySelector('.quantidade').value = r.quantidade;
+        }, 10);
       });
       
-      // Preencher NO-SHOWS
+      // Preencher NO-SHOWS com dados salvos
       document.getElementById('edit-noshows-container').innerHTML = '';
       (editingMovement.noshows || []).forEach(n => {
         const field = document.createElement('div');
         field.className = 'dynamic-field';
         field.innerHTML = `
-          <select class="sdr-select" value="${n.sdr_id}" required>
+          <select class="sdr-select" required>
             <option value="">Selecione SDR...</option>
-            ${sdrs.map(s => `<option value="${s.id}" ${s.id == n.sdr_id ? 'selected' : ''}>${s.name}</option>`).join('')}
+            ${sdrs.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
           </select>
-          <input type="number" class="quantidade" value="${n.quantidade}" placeholder="Quantidade" min="1" required>
+          <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
           <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
         `;
         document.getElementById('edit-noshows-container').appendChild(field);
+        setTimeout(() => {
+          field.querySelector('.sdr-select').value = n.sdr_id;
+          field.querySelector('.quantidade').value = n.quantidade;
+        }, 10);
       });
       
-      // Preencher GANHOS
+      // Preencher GANHOS com dados salvos (TOTALMENTE EDITÁVEL)
       editTempGanhos = JSON.parse(JSON.stringify(editingMovement.ganhos || []));
       renderEditGanhos();
       
       document.getElementById('editMovementModal').classList.add('show');
-      console.log('✅ Modal aberto com TODOS os campos preenchidos');
+      console.log('✅ Modal aberto com TODOS os campos PRÉ-PREENCHIDOS e editáveis!');
     }
 
     function closeEditMovementModal() {
