@@ -144,6 +144,17 @@
         <button type="button" class="add-btn" onclick="addReagendamento()">+ Adicionar SDR (Reagendamentos)</button>
 
         <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label>No-Shows</label>
+          </div>
+          <div class="dynamic-fields" id="noshows-container" style="margin-bottom: 0;">
+            <!-- Dinâmico -->
+          </div>
+        </div>
+
+        <button type="button" class="add-btn" onclick="addNoShow()">+ Adicionar SDR (No-Shows)</button>
+
+        <div class="form-group">
           <label>Ganhos Registrados</label>
           <table id="ganhos-table-temp" style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 16px;">
             <thead>
@@ -193,13 +204,13 @@
         <table>
           <thead>
             <tr>
-              <th style="width: 30px;"></th>
               <th>Data</th>
               <th>Closer</th>
               <th>Origem</th>
               <th>Agendamentos</th>
               <th>Reuniões</th>
               <th>Reagendamentos</th>
+              <th>No-Shows</th>
               <th>Qtd. Ganho</th>
               <th>Valor Ganho</th>
               <th>Ações</th>
@@ -261,12 +272,13 @@
               <th>Agendamentos</th>
               <th>Reuniões</th>
               <th>Reagendamentos</th>
+              <th>No-Shows</th>
               <th>Qtd. Ganho</th>
               <th>Valor Ganho</th>
             </tr>
           </thead>
           <tbody id="acompanhamento-table">
-            <tr><td colspan="8" style="text-align:center;color:#999;">Carregando...</td></tr>
+            <tr><td colspan="9" style="text-align:center;color:#999;">Carregando...</td></tr>
           </tbody>
         </table>
       </div>
@@ -568,6 +580,21 @@
       container.appendChild(newField);
     }
 
+    function addNoShow() {
+      const container = document.getElementById('noshows-container');
+      const newField = document.createElement('div');
+      newField.className = 'dynamic-field';
+      newField.innerHTML = `
+        <select class="sdr-select" required>
+          <option value="">Selecione SDR...</option>
+          ${sdrs.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+        </select>
+        <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
+        <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+      `;
+      container.appendChild(newField);
+    }
+
     function removeField(button) {
       button.parentElement.remove();
     }
@@ -596,6 +623,13 @@
         if (sdrId && qty) reagendamentos.push({ sdr_id: parseInt(sdrId), quantidade: parseInt(qty) });
       });
 
+      const noshows = [];
+      document.querySelectorAll('#noshows-container .dynamic-field').forEach(field => {
+        const sdrId = field.querySelector('.sdr-select').value;
+        const qty = field.querySelector('.quantidade').value;
+        if (sdrId && qty) noshows.push({ sdr_id: parseInt(sdrId), quantidade: parseInt(qty) });
+      });
+
       // Usar tempGanhos que foi preenchido pelo modal
       const ganhos = tempGanhos.map(g => ({
         origem_id: g.origem_id,
@@ -613,6 +647,7 @@
         agendamentos: agendamentos,
         reunioes: parseInt(form.reunioes.value),
         reagendamentos: reagendamentos,
+        noshows: noshows,
         ganhos: ganhos,
         timestamp: new Date().toLocaleDateString('pt-BR'),
         expanded: false
@@ -630,6 +665,7 @@
       document.querySelector('input[type="date"]').valueAsDate = new Date();
       tempGanhos = [];
       renderizarGanhos();
+      document.getElementById('noshows-container').innerHTML = '';
       renderTable();
     }
 
@@ -787,6 +823,11 @@
           return `${sdrName}: ${r.quantidade}`;
         }).join(', ') || '--';
 
+        const noshowStr = m.noshows.map(n => {
+          const sdrName = sdrs.find(s => s.id == n.sdr_id)?.name || 'N/A';
+          return `${sdrName}: ${n.quantidade}`;
+        }).join(', ') || '--';
+
         return `<tr>
           <td>${m.data}</td>
           <td>${closerName}</td>
@@ -794,6 +835,7 @@
           <td>${agendStr}</td>
           <td>${m.reunioes}</td>
           <td>${reagendStr}</td>
+          <td>${noshowStr}</td>
           <td>${totalQtdGanho}</td>
           <td>R$ ${totalValorGanho.toFixed(2)}</td>
         </tr>`;
