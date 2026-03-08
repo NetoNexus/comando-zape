@@ -894,6 +894,7 @@
       tbody.innerHTML = filtered.map(m => {
         const closerName = closers.find(c => c.id == m.closer_id)?.name || '--';
         const origemName = origens.find(o => o.id == m.origem_id)?.name || '--';
+        const subOrigemDisplay = m.sub_origem ? ` (${m.sub_origem})` : '';
 
         const agendStr = m.agendamentos.map(a => {
           const sdrName = sdrs.find(s => s.id == a.sdr_id)?.name || 'N/A';
@@ -908,7 +909,7 @@
         return `<tr>
           <td>${m.data}</td>
           <td>${closerName}</td>
-          <td>${origemName}</td>
+          <td>${origemName}${subOrigemDisplay}</td>
           <td>${agendStr}</td>
           <td>${m.reunioes}</td>
           <td>${reagendStr}</td>
