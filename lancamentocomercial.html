@@ -558,42 +558,52 @@
     // ========== SUPABASE MOVEMENTS SYNC ==========
     async function saveMovementToSupabase(movement) {
       try {
+        console.log('📤 [SAVE] Tentando salvar movimento no Supabase:', movement.id);
+        
+        const payload = {
+          data: movement.data,
+          data_raw: movement.data_raw,
+          closer_id: movement.closer_id,
+          agendamentos: movement.agendamentos,
+          reunioes: movement.reunioes,
+          reagendamentos: movement.reagendamentos,
+          noshows: movement.noshows,
+          ganhos: movement.ganhos
+        };
+        
+        console.log('📤 [SAVE] Payload:', JSON.stringify(payload).substring(0, 100) + '...');
+        
         const response = await fetch(`${SUPABASE_URL}/rest/v1/movements`, {
           method: 'POST',
           headers: {
             'apikey': SUPABASE_KEY,
             'Content-Type': 'application/json',
-            'Prefer': 'return=representation' // Retorna o registro criado
+            'Prefer': 'return=representation'
           },
-          body: JSON.stringify({
-            data: movement.data,
-            data_raw: movement.data_raw,
-            closer_id: movement.closer_id,
-            agendamentos: movement.agendamentos,
-            reunioes: movement.reunioes,
-            reagendamentos: movement.reagendamentos,
-            noshows: movement.noshows,
-            ganhos: movement.ganhos
-          })
+          body: JSON.stringify(payload)
         });
+        
+        console.log('📤 [SAVE] Response status:', response.status);
+        
         if (response.ok) {
           const result = await response.json();
-          // result é um array com 1 elemento (o registro criado)
+          console.log('📤 [SAVE] Resposta do Supabase:', result);
+          
           if (Array.isArray(result) && result.length > 0) {
             const createdId = result[0].id;
-            console.log('✅ Movement INSERT no Supabase com ID:', createdId);
+            console.log('✅ [SAVE] Movement INSERT no Supabase com ID:', createdId);
             return createdId;
           } else {
-            console.log('✅ Movement INSERT no Supabase');
+            console.log('✅ [SAVE] Movement INSERT no Supabase (sem ID)');
             return true;
           }
         } else {
           const errText = await response.text();
-          console.error('❌ Erro ao salvar:', errText);
+          console.error('❌ [SAVE] Erro ao salvar (status', response.status + '):', errText);
           return false;
         }
       } catch (err) {
-        console.error('❌ Erro Supabase:', err);
+        console.error('❌ [SAVE] Erro Supabase:', err);
         return false;
       }
     }
@@ -1489,38 +1499,42 @@
     }
     
     async function saveMovementWithRetry(movement, maxRetries = 3) {
+      console.log('🔄 [RETRY] Iniciando saveMovementWithRetry para ID:', movement.id);
+      
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        console.log(`🔄 Tentativa ${attempt}/${maxRetries} de salvar no Supabase...`);
+        console.log(`🔄 [RETRY] Tentativa ${attempt}/${maxRetries} de salvar no Supabase...`);
         const result = await saveMovementToSupabase(movement);
+        
+        console.log(`🔄 [RETRY] Resultado da tentativa ${attempt}:`, result);
         
         if (typeof result === 'number') {
           // Supabase retornou um ID real! Atualizar o movimento local
-          console.log('✅ Salvo no Supabase com ID real:', result);
+          console.log('✅ [RETRY] Salvo no Supabase com ID real:', result);
           
           // Encontrar o movimento na array e atualizar seu ID
           const idx = movements.findIndex(m => m.id === movement.id);
           if (idx !== -1) {
             movements[idx].id = result;
             localStorage.setItem('movements', JSON.stringify(movements));
-            console.log('🆔 ID atualizado localmente:', movement.id, '→', result);
+            console.log('🆔 [RETRY] ID atualizado localmente:', movement.id, '→', result);
           }
           return true;
         }
         
         if (result === true) {
-          console.log('✅ Salvo no Supabase (sem ID retornado)');
+          console.log('✅ [RETRY] Salvo no Supabase (sem ID retornado)');
           return true;
         }
         
         if (attempt < maxRetries) {
           // Esperar 2 segundos antes de tentar novamente
-          console.log('⏳ Aguardando 2s antes de tentar novamente...');
+          console.log('⏳ [RETRY] Aguardando 2s antes de tentar novamente...');
           await new Promise(r => setTimeout(r, 2000));
         }
       }
       
-      console.error('❌ Falhou ao salvar do Supabase após 3 tentativas');
-      console.warn('⚠️ Mas foi salvo localmente - sincronizando novamente em 30 segundos');
+      console.error('❌ [RETRY] Falhou ao salvar no Supabase após 3 tentativas');
+      console.warn('⚠️ [RETRY] Mas foi salvo localmente - sincronizando novamente em 30 segundos');
       return false;
     }
 
