@@ -764,17 +764,19 @@
     }
 
     async function openEditModalServico(id, type) {
-      editingItem = servicos.find(s => s.id == id);
-      if (!editingItem) {
+      const servico = servicos.find(s => s.id == id);
+      if (!servico) {
         console.error('Serviço não encontrado. ID:', id, 'Serviços:', servicos);
         alert('Erro ao abrir serviço para edição');
         return;
       }
       
+      editingItem = id; // Salvar apenas o ID, não o objeto
       editingType = type;
       document.getElementById('edit-modal-title').textContent = `Editar ${type}`;
-      document.getElementById('edit-name').value = editingItem.name;
+      document.getElementById('edit-name').value = servico.name;
       document.getElementById('edit-modal').classList.add('show');
+      console.log('✅ Modal aberto para edição. ID:', id, 'Tipo:', type);
     }
 
     async function deleteServico(id) {

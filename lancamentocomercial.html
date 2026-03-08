@@ -164,13 +164,16 @@
 
         <div class="form-group">
           <label>Reuniões Comparecidas</label>
-          <select name="reunioes" required>
-            <option value="">Selecione...</option>
-            <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-            <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-            <option value="7">7</option><option value="8">8</option><option value="9">9</option>
-            <option value="10">10</option>
-          </select>
+          <div class="dynamic-fields" id="reunioes-container">
+            <div class="dynamic-field">
+              <select class="sdr-select" required>
+                <option value="">Carregando SDRs...</option>
+              </select>
+              <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
+              <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+            </div>
+          </div>
+          <button type="button" class="add-btn" onclick="addReuniao()">+ Adicionar Reuniões</button>
         </div>
 
         <div class="form-group">
@@ -694,6 +697,21 @@
       });
     }
 
+    function addReuniao() {
+      const container = document.getElementById('reunioes-container');
+      const newField = document.createElement('div');
+      newField.className = 'dynamic-field';
+      newField.innerHTML = `
+        <select class="sdr-select" required>
+          <option value="">Selecione SDR...</option>
+          ${sdrs.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+        </select>
+        <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
+        <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+      `;
+      container.appendChild(newField);
+    }
+
     function addReagendamento() {
       const container = document.getElementById('reagendamentos-container');
       const newField = document.createElement('div');
@@ -745,6 +763,13 @@
         if (sdrId && qty) agendamentos.push({ sdr_id: parseInt(sdrId), quantidade: parseInt(qty) });
       });
 
+      const reunioes = [];
+      document.querySelectorAll('#reunioes-container .dynamic-field').forEach(field => {
+        const sdrId = field.querySelector('.sdr-select').value;
+        const qty = field.querySelector('.quantidade').value;
+        if (sdrId && qty) reunioes.push({ sdr_id: parseInt(sdrId), quantidade: parseInt(qty) });
+      });
+
       const reagendamentos = [];
       document.querySelectorAll('#reagendamentos-container .dynamic-field').forEach(field => {
         const sdrId = field.querySelector('.sdr-select').value;
@@ -781,7 +806,7 @@
         data_raw: form.data.value, // YYYY-MM-DD para filtro
         closer_id: parseInt(form.closer.value),
         agendamentos: agendamentos,
-        reunioes: parseInt(form.reunioes.value),
+        reunioes: reunioes,
         reagendamentos: reagendamentos,
         noshows: noshows,
         ganhos: ganhos,
@@ -804,6 +829,15 @@
       document.querySelector('input[type="date"]').valueAsDate = new Date();
       tempGanhos = [];
       renderizarGanhos();
+      document.getElementById('reunioes-container').innerHTML = `
+        <div class="dynamic-field">
+          <select class="sdr-select" required>
+            <option value="">Carregando SDRs...</option>
+          </select>
+          <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
+          <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+        </div>
+      `;
       document.getElementById('reagendamentos-container').innerHTML = '';
       document.getElementById('noshows-container').innerHTML = '';
       renderTable();
@@ -982,6 +1016,11 @@
           return `${sdrName}: ${a.quantidade}`;
         }).join(', ') || '--';
 
+        const reunioesStr2 = (m.reunioes && Array.isArray(m.reunioes)) ? m.reunioes.map(r => {
+          const sdrName = sdrs.find(s => s.id == r.sdr_id)?.name || 'N/A';
+          return `${sdrName}: ${r.quantidade}`;
+        }).join(', ') : '--';
+
         const reagendStr = m.reagendamentos.map(r => {
           const sdrName = sdrs.find(s => s.id == r.sdr_id)?.name || 'N/A';
           return `${sdrName}: ${r.quantidade}`;
@@ -1005,7 +1044,7 @@
           <td>${m.data}</td>
           <td>${closerName}</td>
           <td>${agendStr}</td>
-          <td>${m.reunioes}</td>
+          <td>${reunioesStr2}</td>
           <td>${reagendStr}</td>
           <td>${noshowStr}</td>
           <td>${totalQtdGanho}</td>
@@ -1051,6 +1090,11 @@
           return `${sdrName}: ${a.quantidade}`;
         }).join(', ') || '--';
 
+        const reunioesStr = (m.reunioes && Array.isArray(m.reunioes)) ? m.reunioes.map(r => {
+          const sdrName = sdrs.find(s => s.id == r.sdr_id)?.name || 'N/A';
+          return `${sdrName}: ${r.quantidade}`;
+        }).join(', ') : '--';
+
         const reagendStr = m.reagendamentos.map(r => {
           const sdrName = sdrs.find(s => s.id == r.sdr_id)?.name || 'N/A';
           return `${sdrName}: ${r.quantidade}`;
@@ -1065,7 +1109,7 @@
           <td>${m.data}</td>
           <td>${closerName}</td>
           <td>${agendStr}</td>
-          <td>${m.reunioes}</td>
+          <td>${reunioesStr}</td>
           <td>${reagendStr}</td>
           <td>${noshowStr}</td>
           <td>${totalQtdGanho}</td>
