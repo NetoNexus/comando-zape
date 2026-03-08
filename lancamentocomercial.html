@@ -779,7 +779,10 @@
       console.log('✅ [LOAD_DATA] populateSelects() executado');
       
       renderTable();
-      console.log('✅ [LOAD_DATA] renderTable() executado. Renderizou:', document.querySelectorAll('#records-table tbody tr').length, 'linhas');
+      setTimeout(() => {
+        const rowCount = document.querySelectorAll('#records-table tbody tr').length;
+        console.log('✅ [LOAD_DATA] renderTable() executado. Renderizou:', rowCount, 'linhas');
+      }, 50);
     }
 
     function populateSelects() {
