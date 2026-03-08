@@ -830,22 +830,86 @@
     let users = JSON.parse(localStorage.getItem('zape_users')) || defaultUsers;
     let leads = JSON.parse(localStorage.getItem('zape_leads')) || [];
 
-    // ============== LOGIN ==============
-    document.getElementById('login-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      
-      const user = users.find(u => u.username === username && u.password === password);
-      
-      if (user) {
-        currentUser = user;
-        localStorage.setItem('zape_current_user', JSON.stringify(user));
-        loginSuccess();
-      } else {
-        showLoginError('Usuário ou senha incorretos');
+    // ============== INIT ON LOAD ==============
+    function initApp() {
+      // ============== LOGIN ==============
+      const loginForm = document.getElementById('login-form');
+      if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const username = document.getElementById('username').value;
+          const password = document.getElementById('password').value;
+          
+          const user = users.find(u => u.username === username && u.password === password);
+          
+          if (user) {
+            currentUser = user;
+            localStorage.setItem('zape_current_user', JSON.stringify(user));
+            loginSuccess();
+          } else {
+            showLoginError('Usuário ou senha incorretos');
+          }
+        });
       }
-    });
+
+      // ============== LEAD FORM ==============
+      const leadForm = document.getElementById('lead-form');
+      if (leadForm) {
+        leadForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const formData = new FormData(this);
+          const lead = {
+            id: leads.length + 1,
+            ...Object.fromEntries(formData),
+            date: new Date().toLocaleDateString('pt-BR')
+          };
+          
+          leads.push(lead);
+          localStorage.setItem('zape_leads', JSON.stringify(leads));
+          
+          showSuccessMessage('success-message');
+          this.reset();
+          renderLeadsTable();
+        });
+      }
+
+      // ============== USER FORM ==============
+      const userForm = document.getElementById('user-form');
+      if (userForm) {
+        userForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const formData = new FormData(this);
+          const newUser = {
+            id: users.length + 1,
+            username: formData.get('username'),
+            password: formData.get('password'),
+            fullname: formData.get('fullname'),
+            role: formData.get('role')
+          };
+          
+          if (users.find(u => u.username === newUser.username)) {
+            alert('Este usuário já existe!');
+            return;
+          }
+          
+          users.push(newUser);
+          localStorage.setItem('zape_users', JSON.stringify(users));
+          
+          showSuccessMessage('user-success-message');
+          this.reset();
+          renderUsersTable();
+        });
+      }
+
+      // Check for existing session
+      const savedUser = localStorage.getItem('zape_current_user');
+      if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        loginSuccess();
+      }
+    }
 
     function showLoginError(message) {
       const error = document.getElementById('login-error');
@@ -900,25 +964,6 @@
       }
     }
 
-    // ============== LEAD FORM ==============
-    document.getElementById('lead-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const formData = new FormData(this);
-      const lead = {
-        id: leads.length + 1,
-        ...Object.fromEntries(formData),
-        date: new Date().toLocaleDateString('pt-BR')
-      };
-      
-      leads.push(lead);
-      localStorage.setItem('zape_leads', JSON.stringify(leads));
-      
-      showSuccessMessage('success-message');
-      this.reset();
-      renderLeadsTable();
-    });
-
     function renderLeadsTable() {
       const tbody = document.getElementById('leads-table');
       
@@ -938,32 +983,6 @@
         </tr>
       `).join('');
     }
-
-    // ============== USER FORM ==============
-    document.getElementById('user-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const formData = new FormData(this);
-      const newUser = {
-        id: users.length + 1,
-        username: formData.get('username'),
-        password: formData.get('password'),
-        fullname: formData.get('fullname'),
-        role: formData.get('role')
-      };
-      
-      if (users.find(u => u.username === newUser.username)) {
-        alert('Este usuário já existe!');
-        return;
-      }
-      
-      users.push(newUser);
-      localStorage.setItem('zape_users', JSON.stringify(users));
-      
-      showSuccessMessage('user-success-message');
-      this.reset();
-      renderUsersTable();
-    });
 
     function renderUsersTable() {
       const tbody = document.getElementById('users-table');
@@ -996,13 +1015,7 @@
     }
 
     // ============== INIT ==============
-    window.addEventListener('load', function() {
-      const savedUser = localStorage.getItem('zape_current_user');
-      if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        loginSuccess();
-      }
-    });
+    document.addEventListener('DOMContentLoaded', initApp);
   </script>
 </body>
 </html>
