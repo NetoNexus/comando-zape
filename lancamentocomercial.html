@@ -995,10 +995,13 @@
           console.log('✅ Deletado do Supabase com sucesso!');
           // DEPOIS recarregar do Supabase (não usar localStorage)
           console.log('🔄 Recarregando do Supabase...');
-          await loadMovementsFromSupabase();
-          console.log('💾 Dados recarregados do Supabase');
+          const loaded = await loadMovementsFromSupabase();
+          console.log('💾 Dados recarregados do Supabase:', loaded);
           
+          console.log('📊 Total de movimentos agora:', movements.length);
+          console.log('🖼️ Renderizando tabela...');
           renderTable();
+          console.log('📈 Renderizando acompanhamento...');
           loadAcompanhamento();
           console.log('✅✅ Pronto!');
         } else {
@@ -1158,7 +1161,12 @@
       if (filterCloserId) filtered = filtered.filter(m => m.closer_id == filterCloserId);
       if (filterDate) filtered = filtered.filter(m => (m.data_raw || m.data) === filterDate);
 
-      const tbody = document.getElementById('records-table');
+      const tbody = document.querySelector('#records-table');
+      if (!tbody) {
+        console.error('❌ Element #records-table not found!');
+        return;
+      }
+      
       if (!filtered.length) {
         tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:#999;">Nenhum registro</td></tr>';
         return;
