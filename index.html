@@ -246,8 +246,14 @@
               <input type="text" id="origem-name" placeholder="ex: WhatsApp, Facebook, Instagram..." required>
             </div>
             <div class="form-group">
-              <label>Sub-origem (opcional)</label>
-              <input type="text" id="origem-sub" placeholder="ex: Instagram Neto, Formulário de Contato...">
+              <label>Sub-origens (opcional - pode adicionar várias)</label>
+              <div class="dynamic-fields" id="sub-origens-container">
+                <div class="dynamic-field">
+                  <input type="text" class="sub-origem-input" placeholder="ex: Instagram Neto" style="margin: 0;">
+                  <button type="button" class="remove-btn" onclick="removeSubOrigem(this)">Remover</button>
+                </div>
+              </div>
+              <button type="button" class="add-btn" onclick="addSubOrigemField()">+ Adicionar Sub-origem</button>
             </div>
             <button type="submit" class="btn">Cadastrar</button>
           </form>
@@ -381,8 +387,9 @@
           <input type="text" id="modal-name" required>
         </div>
         <div class="form-group" style="display: none;">
-          <label>Sub-origem (opcional)</label>
-          <input type="text" id="modal-sub-origem" placeholder="ex: Instagram Neto, Formulário de Contato...">
+          <label>Sub-origens (opcional)</label>
+          <div class="dynamic-fields" id="modal-sub-origens"></div>
+          <button type="button" class="add-btn" onclick="addModalSubOrigemField()">+ Adicionar Sub-origem</button>
         </div>
         <button type="submit" class="btn">Salvar</button>
       </form>
@@ -446,14 +453,62 @@
       document.getElementById('editModal').classList.add('show');
     }
 
-    function openEditModalOrigem(id, name, sub_origem, type) {
+    function openEditModalOrigem(id, name, sub_origem_str, type) {
       editingItem = id;
       editingType = type;
       document.getElementById('modal-title').textContent = `Editar ${type}`;
       document.getElementById('modal-name').value = name;
-      document.getElementById('modal-sub-origem').value = sub_origem || '';
-      document.getElementById('modal-sub-origem').parentElement.style.display = 'block';
+      
+      // Parse sub-origens
+      let subOrigens = [];
+      try {
+        subOrigens = JSON.parse(sub_origem_str || '[]');
+      } catch (e) {
+        subOrigens = [];
+      }
+      
+      // Popular campos dinâmicos
+      const container = document.getElementById('modal-sub-origens');
+      if (container) {
+        container.innerHTML = '';
+        if (subOrigens.length > 0) {
+          subOrigens.forEach(so => {
+            const div = document.createElement('div');
+            div.className = 'dynamic-field';
+            div.innerHTML = `
+              <input type="text" class="modal-sub-origem-input" value="${so}" style="margin: 0;">
+              <button type="button" class="remove-btn" onclick="removeModalSubOrigem(this)">Remover</button>
+            `;
+            container.appendChild(div);
+          });
+        } else {
+          const div = document.createElement('div');
+          div.className = 'dynamic-field';
+          div.innerHTML = `
+            <input type="text" class="modal-sub-origem-input" placeholder="ex: Instagram Neto" style="margin: 0;">
+            <button type="button" class="remove-btn" onclick="removeModalSubOrigem(this)">Remover</button>
+          `;
+          container.appendChild(div);
+        }
+      }
+      
+      document.getElementById('modal-sub-origens').parentElement.style.display = 'block';
       document.getElementById('editModal').classList.add('show');
+    }
+
+    function removeModalSubOrigem(button) {
+      button.parentElement.remove();
+    }
+
+    function addModalSubOrigemField() {
+      const container = document.getElementById('modal-sub-origens');
+      const div = document.createElement('div');
+      div.className = 'dynamic-field';
+      div.innerHTML = `
+        <input type="text" class="modal-sub-origem-input" placeholder="ex: Instagram Neto" style="margin: 0;">
+        <button type="button" class="remove-btn" onclick="removeModalSubOrigem(this)">Remover</button>
+      `;
+      container.appendChild(div);
     }
 
     function closeModal() {
@@ -473,8 +528,12 @@
       
       // Se for Origem, incluir sub_origem também
       if (editingType.toLowerCase() === 'origem') {
-        const sub_origem = document.getElementById('modal-sub-origem').value.trim();
-        data.sub_origem = sub_origem || null;
+        const subOrigens = [];
+        document.querySelectorAll('.modal-sub-origem-input').forEach(input => {
+          const value = input.value.trim();
+          if (value) subOrigens.push(value);
+        });
+        data.sub_origem = subOrigens.length > 0 ? JSON.stringify(subOrigens) : null;
       }
 
       await supabaseFetch(`${table}?id=eq.${editingItem}`, 'PATCH', data);
@@ -588,26 +647,52 @@
     async function addOrigem(e) {
       e.preventDefault();
       const name = document.getElementById('origem-name').value.trim();
-      const sub_origem = document.getElementById('origem-sub').value.trim();
       if (!name) return alert('Nome obrigatório');
       
-      const data = { name, sub_origem: sub_origem || null };
-      console.log('Enviando para Supabase:', data);
+      // Coletar sub-origens
+      const subOrigens = [];
+      document.querySelectorAll('#sub-origens-container .sub-origem-input').forEach(input => {
+        const value = input.value.trim();
+        if (value) subOrigens.push(value);
+      });
       
+      const data = { 
+        name, 
+        sub_origem: subOrigens.length > 0 ? JSON.stringify(subOrigens) : null 
+      };
+      
+      console.log('Enviando para Supabase:', data);
       const result = await supabaseFetch('origens', 'POST', data);
       console.log('Resposta do Supabase:', result);
       
       if (result && Array.isArray(result) && result.length > 0) {
         document.getElementById('origem-name').value = '';
-        document.getElementById('origem-sub').value = '';
+        document.getElementById('sub-origens-container').innerHTML = `
+          <div class="dynamic-field">
+            <input type="text" class="sub-origem-input" placeholder="ex: Instagram Neto" style="margin: 0;">
+            <button type="button" class="remove-btn" onclick="removeSubOrigem(this)">Remover</button>
+          </div>
+        `;
         showSuccessMsg('origem-success-msg');
         loadOrigens();
-      } else if (result && Array.isArray(result)) {
-        // Supabase retornou array vazio mas sem erro
-        alert('Erro ao cadastrar origem. Tente novamente.');
       } else {
-        alert('Erro na requisição. Verifique console.');
+        alert('Erro ao cadastrar origem.');
       }
+    }
+
+    function addSubOrigemField() {
+      const container = document.getElementById('sub-origens-container');
+      const newField = document.createElement('div');
+      newField.className = 'dynamic-field';
+      newField.innerHTML = `
+        <input type="text" class="sub-origem-input" placeholder="ex: Instagram Neto" style="margin: 0;">
+        <button type="button" class="remove-btn" onclick="removeSubOrigem(this)">Remover</button>
+      `;
+      container.appendChild(newField);
+    }
+
+    function removeSubOrigem(button) {
+      button.parentElement.remove();
     }
 
     function renderOrigensTable() {
@@ -616,16 +701,28 @@
         tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Nenhuma origem</td></tr>';
         return;
       }
-      tbody.innerHTML = origens.map(o => `<tr>
-        <td>${o.name}</td>
-        <td>${o.sub_origem || '--'}</td>
-        <td>
-          <div class="btn-group">
-            <button class="edit-btn" onclick="openEditModalOrigem(${o.id}, '${o.name}', '${o.sub_origem || ''}', 'Origem')">Editar</button>
-            <button class="remove-btn" onclick="deleteOrigem(${o.id})">Deletar</button>
-          </div>
-        </td>
-      </tr>`).join('');
+      tbody.innerHTML = origens.map(o => {
+        let subOrigemDisplay = '--';
+        try {
+          const subOrigens = JSON.parse(o.sub_origem || '[]');
+          if (Array.isArray(subOrigens) && subOrigens.length > 0) {
+            subOrigemDisplay = subOrigens.join(', ');
+          }
+        } catch (e) {
+          subOrigemDisplay = o.sub_origem || '--';
+        }
+        
+        return `<tr>
+          <td>${o.name}</td>
+          <td>${subOrigemDisplay}</td>
+          <td>
+            <div class="btn-group">
+              <button class="edit-btn" onclick="openEditModalOrigem(${o.id}, '${o.name}', '${(o.sub_origem || '').replace(/'/g, "\\'")}', 'Origem')">Editar</button>
+              <button class="remove-btn" onclick="deleteOrigem(${o.id})">Deletar</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
     }
 
     async function deleteOrigem(id) {

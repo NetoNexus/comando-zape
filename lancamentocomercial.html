@@ -325,8 +325,24 @@
 
       const origemSelect = document.getElementById('origem-select');
       origemSelect.innerHTML = '<option value="">Selecione...</option>' + origens.map(o => {
-        const label = o.sub_origem ? `${o.name} (${o.sub_origem})` : o.name;
-        return `<option value="${o.id}">${label}</option>`;
+        let label = o.name;
+        let subOrigens = [];
+        
+        try {
+          subOrigens = JSON.parse(o.sub_origem || '[]');
+        } catch (e) {
+          // Se não for JSON, tratar como string simples
+          if (o.sub_origem) subOrigens = [o.sub_origem];
+        }
+        
+        // Se houver sub-origens, criar opção para cada uma
+        if (Array.isArray(subOrigens) && subOrigens.length > 0) {
+          return subOrigens.map(sub => 
+            `<option value="${o.id}" data-sub="${sub}">${o.name} (${sub})</option>`
+          ).join('');
+        } else {
+          return `<option value="${o.id}">${label}</option>`;
+        }
       }).join('');
 
       document.querySelectorAll('.sdr-select').forEach(sel => {
