@@ -746,9 +746,22 @@
       for (const movement of movements) {
         // Se o ID é temporal (não foi sincronizado), tenta sincronizar
         if (movement.id > 1000) {
+          console.log('⏳ [Auto-Sync] Encontrado pendente com ID:', movement.id);
           const result = await saveMovementToSupabase(movement);
-          if (result) {
-            console.log('✅ [Auto-Sync] Movimento sincronizado com sucesso');
+          
+          if (typeof result === 'number') {
+            // Supabase retornou ID real! ATUALIZAR IMEDIATAMENTE
+            console.log('✅ [Auto-Sync] Movimento sincronizado! ID:', movement.id, '→', result);
+            
+            // Encontrar e atualizar na array
+            const idx = movements.findIndex(m => m.id === movement.id);
+            if (idx !== -1) {
+              movements[idx].id = result;
+              localStorage.setItem('movements', JSON.stringify(movements));
+              console.log('✅ [Auto-Sync] ID atualizado em localStorage');
+            }
+          } else if (result === true) {
+            console.log('⚠️ [Auto-Sync] Salvo mas sem ID retornado');
           }
         }
       }
@@ -791,6 +804,13 @@
 
       const filterCloser = document.getElementById('filter-closer');
       filterCloser.innerHTML = '<option value="">Todos</option>' + closers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      
+      // ✅ PREENCHER TAMBÉM O SELECT DO MODAL DE EDIÇÃO!
+      const editCloserSelect = document.getElementById('edit-closer-select');
+      if (editCloserSelect) {
+        editCloserSelect.innerHTML = '<option value="">Selecione...</option>' + closers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        console.log('✅ edit-closer-select preenchido com', closers.length, 'closers');
+      }
       
       // Preencher closers no acompanhamento
       initAcompanhamentoClosers();
@@ -2046,9 +2066,10 @@
       console.log('✅✅ Edição completa!');
     }
 
-    window.addEventListener('load', function() {
+    window.addEventListener('load', async function() {
       document.querySelector('input[type="date"]').valueAsDate = new Date();
-      loadData();
+      await loadData();  // ← AGORA COM AWAIT!
+      console.log('✅ [WINDOW_LOAD] loadData() completado. Movements:', movements.length);
       
       // Initialize acompanhamento with current month
       const today = new Date();
@@ -2056,6 +2077,7 @@
       const month = String(today.getMonth() + 1).padStart(2, '0');
       document.getElementById('filter-month-acompanhamento').value = `${year}-${month}`;
       loadAcompanhamento();
+      console.log('✅ [WINDOW_LOAD] Página carregada completamente');
     });
 
     document.addEventListener('click', function(e) {
