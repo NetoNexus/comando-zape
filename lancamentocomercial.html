@@ -956,13 +956,22 @@
       }
     }
 
-    function deleteMovement(id) {
+    async function deleteMovement(id) {
       if (confirm('Tem certeza?')) {
+        // Remover localmente primeiro
         movements = movements.filter(m => m.id !== id);
         localStorage.setItem('movements', JSON.stringify(movements));
         
-        // Deletar do Supabase
-        deleteMovementFromSupabase(id);
+        console.log('🗑️ Deletando movimento ID:', id);
+        
+        // Deletar do Supabase e aguardar
+        const result = await deleteMovementFromSupabase(id);
+        if (result) {
+          console.log('✅ Movimento deletado do Supabase com sucesso');
+        } else {
+          console.error('❌ Erro ao deletar do Supabase, mas foi removido localmente');
+          // Se falhar no Supabase, manter localmente removido
+        }
         
         renderTable();
         loadAcompanhamento(); // Sincronizar acompanhamento em tempo real
