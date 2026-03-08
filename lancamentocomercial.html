@@ -234,6 +234,66 @@
         </table>
       </div>
     </div>
+
+    <!-- ACOMPANHAMENTO -->
+    <div class="card">
+      <div class="card-title">Acompanhamento de Vendas</div>
+      <div class="form-group">
+        <label>Selecione o Mês</label>
+        <input type="month" id="filter-month-acompanhamento" onchange="loadAcompanhamento()">
+      </div>
+
+      <div class="card">
+        <div class="card-title">Resumo do Mês</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
+          <div style="background: #1A1A1A; padding: 16px; border-radius: 6px; text-align: center;">
+            <div style="font-size: 10px; color: #999; margin-bottom: 8px;">Total Reuniões</div>
+            <div id="total-reunioes" style="font-size: 24px; font-weight: 900; color: #B2FF00;">0</div>
+          </div>
+          <div style="background: #1A1A1A; padding: 16px; border-radius: 6px; text-align: center;">
+            <div style="font-size: 10px; color: #999; margin-bottom: 8px;">Total Vendas</div>
+            <div id="total-vendas" style="font-size: 24px; font-weight: 900; color: #B2FF00;">0</div>
+          </div>
+          <div style="background: #1A1A1A; padding: 16px; border-radius: 6px; text-align: center;">
+            <div style="font-size: 10px; color: #999; margin-bottom: 8px;">Total Agendamentos</div>
+            <div id="total-agendamentos" style="font-size: 24px; font-weight: 900; color: #B2FF00;">0</div>
+          </div>
+          <div style="background: #1A1A1A; padding: 16px; border-radius: 6px; text-align: center;">
+            <div style="font-size: 10px; color: #999; margin-bottom: 8px;">Total Reagendamentos</div>
+            <div id="total-reagendamentos" style="font-size: 24px; font-weight: 900; color: #B2FF00;">0</div>
+          </div>
+          <div style="background: #1A1A1A; padding: 16px; border-radius: 6px; text-align: center;">
+            <div style="font-size: 10px; color: #999; margin-bottom: 8px;">Valor Total Ganho</div>
+            <div id="total-valor" style="font-size: 24px; font-weight: 900; color: #B2FF00;">R$ 0,00</div>
+          </div>
+          <div style="background: #1A1A1A; padding: 16px; border-radius: 6px; text-align: center;">
+            <div style="font-size: 10px; color: #999; margin-bottom: 8px;">Qtd Total Ganho</div>
+            <div id="total-quantidade" style="font-size: 24px; font-weight: 900; color: #B2FF00;">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Detalhamento do Mês</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Closer</th>
+              <th>Origem</th>
+              <th>Agendamentos</th>
+              <th>Reuniões</th>
+              <th>Reagendamentos</th>
+              <th>Qtd. Ganho</th>
+              <th>Valor Ganho</th>
+            </tr>
+          </thead>
+          <tbody id="acompanhamento-table">
+            <tr><td colspan="8" style="text-align:center;color:#999;">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <!-- MODAL DE EDIÇÃO -->
@@ -518,6 +578,80 @@
       renderTable();
     }
 
+    function loadAcompanhamento() {
+      const monthInput = document.getElementById('filter-month-acompanhamento').value;
+      if (!monthInput) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        document.getElementById('filter-month-acompanhamento').value = `${year}-${month}`;
+        return;
+      }
+
+      const [year, month] = monthInput.split('-');
+      
+      const filtered = movements.filter(m => {
+        const [d, mo, y] = m.data.split('/');
+        return y === year && mo === month;
+      });
+
+      let totalReunioes = 0;
+      let totalVendas = 0;
+      let totalAgendamentos = 0;
+      let totalReagendamentos = 0;
+      let totalValor = 0;
+      let totalQuantidade = 0;
+
+      filtered.forEach(m => {
+        totalReunioes += parseInt(m.reunioes || 0);
+        totalVendas += 1;
+        totalQuantidade += parseInt(m.quantidade_ganho || 0);
+        totalValor += parseFloat(m.valor_ganho || 0);
+        totalAgendamentos += m.agendamentos.reduce((sum, a) => sum + parseInt(a.quantidade || 0), 0);
+        totalReagendamentos += m.reagendamentos.reduce((sum, r) => sum + parseInt(r.quantidade || 0), 0);
+      });
+
+      document.getElementById('total-reunioes').textContent = totalReunioes;
+      document.getElementById('total-vendas').textContent = totalVendas;
+      document.getElementById('total-agendamentos').textContent = totalAgendamentos;
+      document.getElementById('total-reagendamentos').textContent = totalReagendamentos;
+      document.getElementById('total-valor').textContent = 'R$ ' + totalValor.toFixed(2);
+      document.getElementById('total-quantidade').textContent = totalQuantidade;
+
+      const tbody = document.getElementById('acompanhamento-table');
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;">Nenhum registro neste mês</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(m => {
+        const closerName = closers.find(c => c.id == m.closer_id)?.name || '--';
+        const origemName = origens.find(o => o.id == m.origem_id)?.name || '--';
+        const subOrigemDisplay = m.sub_origem ? ` (${m.sub_origem})` : '';
+
+        const agendStr = m.agendamentos.map(a => {
+          const sdrName = sdrs.find(s => s.id == a.sdr_id)?.name || 'N/A';
+          return `${sdrName}: ${a.quantidade}`;
+        }).join(', ') || '--';
+
+        const reagendStr = m.reagendamentos.map(r => {
+          const sdrName = sdrs.find(s => s.id == r.sdr_id)?.name || 'N/A';
+          return `${sdrName}: ${r.quantidade}`;
+        }).join(', ') || '--';
+
+        return `<tr>
+          <td>${m.data}</td>
+          <td>${closerName}</td>
+          <td>${origemName}${subOrigemDisplay}</td>
+          <td>${agendStr}</td>
+          <td>${m.reunioes}</td>
+          <td>${reagendStr}</td>
+          <td>${m.quantidade_ganho}</td>
+          <td>R$ ${parseFloat(m.valor_ganho).toFixed(2)}</td>
+        </tr>`;
+      }).join('');
+    }
+
     function renderTable() {
       const filterCloserId = document.getElementById('filter-closer').value;
       const filterDate = document.getElementById('filter-date').value;
@@ -589,6 +723,13 @@
     window.addEventListener('load', function() {
       document.querySelector('input[type="date"]').valueAsDate = new Date();
       loadData();
+      
+      // Initialize acompanhamento with current month
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      document.getElementById('filter-month-acompanhamento').value = `${year}-${month}`;
+      loadAcompanhamento();
     });
 
     document.addEventListener('click', function(e) {

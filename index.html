@@ -137,7 +137,6 @@
         <div id="comercial-menu" class="submenu">
           <div class="menu-item" onclick="goToPage('dash-comercial')">Dash Comercial</div>
           <div class="menu-item" onclick="window.location.href('/comando-zape/lancamentocomercial')">Lançamento de Dados</div>
-          <div class="menu-item" onclick="goToPage('acompanhamento')">Acompanhamento</div>
           <div class="menu-item expandable" onclick="toggleSubmenu('gerenciamento-menu')" style="padding-left: 20px;">Gerenciamento</div>
           <div id="gerenciamento-menu" class="submenu">
             <div class="menu-item" onclick="goToPage('cadastro-closers')">Cadastrar Closers</div>
@@ -309,68 +308,6 @@
         </div>
       </div>
 
-      <!-- ACOMPANHAMENTO -->
-      <div id="acompanhamento" class="page">
-        <header><h1>Acompanhamento de Vendas</h1></header>
-        <div class="card">
-          <div class="card-title">Filtro por Mês</div>
-          <div class="form-group">
-            <label>Selecione o Mês</label>
-            <input type="month" id="filter-month" onchange="loadAcompanhamento()">
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Resumo do Mês</div>
-          <div class="kpi-grid">
-            <div class="kpi-card">
-              <div class="kpi-label">Total Reuniões</div>
-              <div class="kpi-value" id="total-reunioes">0</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-label">Total Vendas</div>
-              <div class="kpi-value" id="total-vendas">0</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-label">Total Agendamentos</div>
-              <div class="kpi-value" id="total-agendamentos">0</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-label">Total Reagendamentos</div>
-              <div class="kpi-value" id="total-reagendamentos">0</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-label">Valor Total Ganho</div>
-              <div class="kpi-value" id="total-valor">R$ 0,00</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-label">Qtd Total Ganho</div>
-              <div class="kpi-value" id="total-quantidade">0</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Detalhamento do Mês</div>
-          <table>
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Closer</th>
-                <th>Origem</th>
-                <th>Agendamentos</th>
-                <th>Reuniões</th>
-                <th>Reagendamentos</th>
-                <th>Qtd. Ganho</th>
-                <th>Valor Ganho</th>
-              </tr>
-            </thead>
-            <tbody id="acompanhamento-table">
-              <tr><td colspan="8" style="text-align:center;color:#999;">Carregando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
     </main>
   </div>
 
@@ -800,13 +737,6 @@
       document.getElementById('user-display').textContent = currentUser.fullname;
       loadUsersTable();
       initSupabase();
-      
-      // Initialize month filter with current month
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      document.getElementById('filter-month').value = `${year}-${month}`;
-      loadAcompanhamento();
     }
 
     function logout() {
@@ -845,78 +775,6 @@
       await loadClosers();
       await loadSDRs();
       await loadOrigens();
-    }
-
-    function loadAcompanhamento() {
-      const monthInput = document.getElementById('filter-month').value;
-      if (!monthInput) {
-        document.getElementById('filter-month').valueAsDate = new Date();
-        return;
-      }
-
-      const [year, month] = monthInput.split('-');
-      const movements = JSON.parse(localStorage.getItem('movements')) || [];
-      
-      const filtered = movements.filter(m => {
-        const [d, mo, y] = m.data.split('/');
-        return y === year && mo === month;
-      });
-
-      let totalReunioes = 0;
-      let totalVendas = 0;
-      let totalAgendamentos = 0;
-      let totalReagendamentos = 0;
-      let totalValor = 0;
-      let totalQuantidade = 0;
-
-      filtered.forEach(m => {
-        totalReunioes += parseInt(m.reunioes || 0);
-        totalVendas += 1;
-        totalQuantidade += parseInt(m.quantidade_ganho || 0);
-        totalValor += parseFloat(m.valor_ganho || 0);
-        totalAgendamentos += m.agendamentos.reduce((sum, a) => sum + parseInt(a.quantidade || 0), 0);
-        totalReagendamentos += m.reagendamentos.reduce((sum, r) => sum + parseInt(r.quantidade || 0), 0);
-      });
-
-      document.getElementById('total-reunioes').textContent = totalReunioes;
-      document.getElementById('total-vendas').textContent = totalVendas;
-      document.getElementById('total-agendamentos').textContent = totalAgendamentos;
-      document.getElementById('total-reagendamentos').textContent = totalReagendamentos;
-      document.getElementById('total-valor').textContent = 'R$ ' + totalValor.toFixed(2);
-      document.getElementById('total-quantidade').textContent = totalQuantidade;
-
-      const tbody = document.getElementById('acompanhamento-table');
-      if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;">Nenhum registro neste mês</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = filtered.map(m => {
-        const closerName = closers.find(c => c.id == m.closer_id)?.name || '--';
-        const origemName = origens.find(o => o.id == m.origem_id)?.name || '--';
-        const subOrigemDisplay = m.sub_origem ? ` (${m.sub_origem})` : '';
-
-        const agendStr = m.agendamentos.map(a => {
-          const sdrName = sdrs.find(s => s.id == a.sdr_id)?.name || 'N/A';
-          return `${sdrName}: ${a.quantidade}`;
-        }).join(', ') || '--';
-
-        const reagendStr = m.reagendamentos.map(r => {
-          const sdrName = sdrs.find(s => s.id == r.sdr_id)?.name || 'N/A';
-          return `${sdrName}: ${r.quantidade}`;
-        }).join(', ') || '--';
-
-        return `<tr>
-          <td>${m.data}</td>
-          <td>${closerName}</td>
-          <td>${origemName}${subOrigemDisplay}</td>
-          <td>${agendStr}</td>
-          <td>${m.reunioes}</td>
-          <td>${reagendStr}</td>
-          <td>${m.quantidade_ganho}</td>
-          <td>R$ ${parseFloat(m.valor_ganho).toFixed(2)}</td>
-        </tr>`;
-      }).join('');
     }
 
     window.addEventListener('load', function() {
