@@ -9,7 +9,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #1A1A1A; color: #fff; font-family: 'Albert Sans', sans-serif; }
     
-    .container { max-width: 1200px; margin: 0 auto; padding: 32px; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 32px; }
     
     header { margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid #383838; }
     header h1 { font-size: 28px; font-weight: 900; }
@@ -26,16 +26,40 @@
     .form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
     .form-row.full { grid-template-columns: 1fr; }
     
-    .btn { background: #B2FF00; color: #1A1A1A; padding: 12px 24px; border: none; border-radius: 6px; font-weight: 900; font-size: 14px; cursor: pointer; margin-top: 16px; }
+    .btn { background: #B2FF00; color: #1A1A1A; padding: 12px 24px; border: none; border-radius: 6px; font-weight: 900; font-size: 14px; cursor: pointer; margin-top: 16px; transition: all 0.3s; }
     .btn:hover { opacity: 0.9; }
     
     .success { color: #4CAF50; padding: 12px; border-radius: 6px; margin-bottom: 16px; display: none; }
     .success.show { display: block; }
     
+    .filter-section { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .filter-section .form-group { margin-bottom: 0; }
+    
     table { width: 100%; border-collapse: collapse; font-size: 12px; }
     table th { padding: 12px; text-align: left; font-weight: 700; color: #B2FF00; border-bottom: 1px solid #383838; }
     table td { padding: 12px; border-bottom: 1px solid #383838; }
     table tr:hover { background: rgba(178,255,0,0.03); }
+    
+    .expandable-row { cursor: pointer; }
+    .expandable-row td { padding: 12px; }
+    .expandable-row:hover { background: rgba(178,255,0,0.05); }
+    
+    .expand-icon { display: inline-block; transition: transform 0.3s; margin-right: 8px; }
+    .expand-icon.open { transform: rotate(180deg); }
+    
+    .detail-row { background: rgba(0,0,0,0.2); display: none; }
+    .detail-row.show { display: table-row; }
+    .detail-content { padding: 20px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .detail-item { }
+    .detail-label { font-size: 10px; color: #999; text-transform: uppercase; margin-bottom: 4px; }
+    .detail-value { font-size: 12px; color: #fff; }
+    
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .edit-btn { background: #2196F3; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 700; }
+    .edit-btn:hover { background: #1976D2; }
+    .delete-btn { background: #F44336; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 700; }
+    .delete-btn:hover { opacity: 0.8; }
     
     .dynamic-fields { background: #1A1A1A; padding: 16px; border-radius: 6px; margin-bottom: 16px; }
     .dynamic-field { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-bottom: 12px; align-items: flex-end; }
@@ -45,6 +69,14 @@
     
     .add-btn { background: #383838; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 700; margin-top: 8px; }
     .add-btn:hover { background: #B2FF00; color: #1A1A1A; }
+    
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); }
+    .modal.show { display: flex; align-items: center; justify-content: center; }
+    .modal-content { background: #2A2A2A; border: 1px solid #383838; padding: 32px; border-radius: 12px; width: 90%; max-width: 700px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .modal-header h2 { font-size: 18px; font-weight: 700; }
+    .modal-close { background: none; border: none; color: #999; font-size: 24px; cursor: pointer; }
+    .modal-close:hover { color: #fff; }
   </style>
 </head>
 <body>
@@ -53,6 +85,7 @@
       <h1>Lançamento Comercial</h1>
     </header>
 
+    <!-- Formulário de Registro -->
     <div class="card">
       <div class="card-title">Registrar Movimentação Comercial</div>
       <div class="success" id="success-msg">Registro salvo com sucesso!</div>
@@ -84,7 +117,7 @@
           <label>Agendamentos Realizados</label>
           <div class="dynamic-fields" id="agendamentos-container">
             <div class="dynamic-field">
-              <select class="sdr-select" id="sdr-select-1" required>
+              <select class="sdr-select" required>
                 <option value="">Carregando SDRs...</option>
               </select>
               <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
@@ -99,15 +132,9 @@
             <label>Reuniões Comparecidas</label>
             <select name="reunioes" required>
               <option value="">Selecione...</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9">9</option>
               <option value="10">10</option>
             </select>
           </div>
@@ -135,15 +162,9 @@
             <label>Quantidade Ganho</label>
             <select name="quantidade-ganho" required>
               <option value="">Selecione...</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9">9</option>
               <option value="10">10</option>
             </select>
           </div>
@@ -157,25 +178,92 @@
       </form>
     </div>
 
+    <!-- FILTROS -->
+    <div class="card">
+      <div class="card-title">Filtros de Pesquisa</div>
+      <div class="filter-section">
+        <div class="form-group">
+          <label>Filtrar por Closer</label>
+          <select id="filter-closer" onchange="applyFilters()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Filtrar por Data</label>
+          <input type="date" id="filter-date" onchange="applyFilters()">
+        </div>
+        <div class="form-group">
+          <label>&nbsp;</label>
+          <button class="btn" onclick="clearFilters()" style="margin: 0; width: 100%;">Limpar Filtros</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO -->
     <div class="card">
       <div class="card-title">Histórico de Movimentações</div>
       <table>
         <thead>
           <tr>
+            <th style="width: 30px;"></th>
             <th>Data</th>
             <th>Closer</th>
             <th>Origem</th>
-            <th>Agendamentos</th>
             <th>Reuniões</th>
-            <th>Reagendamentos</th>
             <th>Qtd. Ganho</th>
             <th>Valor Ganho</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody id="records-table">
           <tr><td colspan="8" style="text-align:center;color:#999;">Carregando...</td></tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- MODAL DE EDIÇÃO -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Editar Movimentação</h2>
+        <button class="modal-close" onclick="closeEditModal()">×</button>
+      </div>
+      <form onsubmit="saveEdit(event)" style="max-height: 500px; overflow-y: auto;">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Data</label>
+            <input type="date" id="edit-data" required>
+          </div>
+          <div class="form-group">
+            <label>Reuniões Comparecidas</label>
+            <select id="edit-reunioes" required>
+              <option value="">Selecione...</option>
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Quantidade Ganho</label>
+            <select id="edit-quantidade-ganho" required>
+              <option value="">Selecione...</option>
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Valor Ganho (R$)</label>
+            <input type="number" id="edit-valor-ganho" placeholder="0,00" step="0.01" required>
+          </div>
+        </div>
+        <button type="submit" class="btn" style="width: 100%;">Salvar Alterações</button>
+      </form>
     </div>
   </div>
 
@@ -209,12 +297,12 @@
     let sdrs = [];
     let origens = [];
     let movements = JSON.parse(localStorage.getItem('movements')) || [];
+    let editingMovement = null;
 
     async function loadData() {
       closers = await supabaseFetch('closers?order=name');
       sdrs = await supabaseFetch('sdrs?order=name');
       origens = await supabaseFetch('origens?order=name');
-
       populateSelects();
       renderTable();
     }
@@ -222,6 +310,9 @@
     function populateSelects() {
       const closerSelect = document.getElementById('closer-select');
       closerSelect.innerHTML = '<option value="">Selecione...</option>' + closers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+      const filterCloser = document.getElementById('filter-closer');
+      filterCloser.innerHTML = '<option value="">Todos</option>' + closers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 
       const origemSelect = document.getElementById('origem-select');
       origemSelect.innerHTML = '<option value="">Selecione...</option>' + origens.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
@@ -274,18 +365,14 @@
       document.querySelectorAll('#agendamentos-container .dynamic-field').forEach(field => {
         const sdrId = field.querySelector('.sdr-select').value;
         const qty = field.querySelector('.quantidade').value;
-        if (sdrId && qty) {
-          agendamentos.push({ sdr_id: sdrId, quantidade: qty });
-        }
+        if (sdrId && qty) agendamentos.push({ sdr_id: sdrId, quantidade: qty });
       });
 
       const reagendamentos = [];
       document.querySelectorAll('#reagendamentos-container .dynamic-field').forEach(field => {
         const sdrId = field.querySelector('.sdr-select').value;
         const qty = field.querySelector('.quantidade').value;
-        if (sdrId && qty) {
-          reagendamentos.push({ sdr_id: sdrId, quantidade: qty });
-        }
+        if (sdrId && qty) reagendamentos.push({ sdr_id: sdrId, quantidade: qty });
       });
 
       const movement = {
@@ -298,7 +385,8 @@
         reagendamentos: reagendamentos,
         quantidade_ganho: form['quantidade-ganho'].value,
         valor_ganho: form['valor-ganho'].value,
-        timestamp: new Date().toLocaleDateString('pt-BR')
+        timestamp: new Date().toLocaleDateString('pt-BR'),
+        expanded: false
       };
 
       movements.push(movement);
@@ -313,42 +401,142 @@
       renderTable();
     }
 
-    function renderTable() {
-      const tbody = document.getElementById('records-table');
+    function toggleRow(id) {
+      const movement = movements.find(m => m.id === id);
+      if (movement) {
+        movement.expanded = !movement.expanded;
+        renderTable();
+      }
+    }
 
-      if (movements.length === 0) {
+    function openEditModal(id) {
+      editingMovement = movements.find(m => m.id === id);
+      if (editingMovement) {
+        document.getElementById('edit-data').value = editingMovement.data;
+        document.getElementById('edit-reunioes').value = editingMovement.reunioes;
+        document.getElementById('edit-quantidade-ganho').value = editingMovement.quantidade_ganho;
+        document.getElementById('edit-valor-ganho').value = editingMovement.valor_ganho;
+        document.getElementById('editModal').classList.add('show');
+      }
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.remove('show');
+      editingMovement = null;
+    }
+
+    function saveEdit(e) {
+      e.preventDefault();
+      if (editingMovement) {
+        editingMovement.data = document.getElementById('edit-data').value;
+        editingMovement.reunioes = document.getElementById('edit-reunioes').value;
+        editingMovement.quantidade_ganho = document.getElementById('edit-quantidade-ganho').value;
+        editingMovement.valor_ganho = document.getElementById('edit-valor-ganho').value;
+        localStorage.setItem('movements', JSON.stringify(movements));
+        closeEditModal();
+        renderTable();
+        showSuccessMsg();
+      }
+    }
+
+    function deleteMovement(id) {
+      if (confirm('Tem certeza?')) {
+        movements = movements.filter(m => m.id !== id);
+        localStorage.setItem('movements', JSON.stringify(movements));
+        renderTable();
+      }
+    }
+
+    function applyFilters() {
+      renderTable();
+    }
+
+    function clearFilters() {
+      document.getElementById('filter-closer').value = '';
+      document.getElementById('filter-date').value = '';
+      renderTable();
+    }
+
+    function renderTable() {
+      const filterCloserId = document.getElementById('filter-closer').value;
+      const filterDate = document.getElementById('filter-date').value;
+
+      let filtered = movements;
+      if (filterCloserId) filtered = filtered.filter(m => m.closer_id == filterCloserId);
+      if (filterDate) filtered = filtered.filter(m => m.data === filterDate);
+
+      const tbody = document.getElementById('records-table');
+      if (!filtered.length) {
         tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;">Nenhum registro</td></tr>';
         return;
       }
 
-      tbody.innerHTML = movements.map(m => {
+      tbody.innerHTML = filtered.map(m => {
         const closerName = closers.find(c => c.id == m.closer_id)?.name || '--';
         const origemName = origens.find(o => o.id == m.origem_id)?.name || '--';
+
         const agendStr = m.agendamentos.map(a => {
           const sdrName = sdrs.find(s => s.id == a.sdr_id)?.name || 'N/A';
           return `${sdrName}: ${a.quantidade}`;
         }).join(', ') || '--';
+
         const reagendStr = m.reagendamentos.map(r => {
           const sdrName = sdrs.find(s => s.id == r.sdr_id)?.name || 'N/A';
           return `${sdrName}: ${r.quantidade}`;
         }).join(', ') || '--';
 
-        return `<tr>
-          <td>${m.timestamp}</td>
+        return `<tr class="expandable-row" onclick="toggleRow(${m.id})">
+          <td><span class="expand-icon ${m.expanded ? 'open' : ''}">▼</span></td>
+          <td>${m.data}</td>
           <td>${closerName}</td>
           <td>${origemName}</td>
-          <td>${agendStr}</td>
           <td>${m.reunioes}</td>
-          <td>${reagendStr}</td>
           <td>${m.quantidade_ganho}</td>
           <td>R$ ${parseFloat(m.valor_ganho).toFixed(2)}</td>
+          <td onclick="event.stopPropagation();">
+            <div class="btn-group">
+              <button class="edit-btn" onclick="openEditModal(${m.id})">Editar</button>
+              <button class="delete-btn" onclick="deleteMovement(${m.id})">Deletar</button>
+            </div>
+          </td>
+        </tr>
+        <tr class="detail-row ${m.expanded ? 'show' : ''}" onclick="event.stopPropagation();">
+          <td colspan="8">
+            <div class="detail-content">
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <div class="detail-label">Agendamentos</div>
+                  <div class="detail-value">${agendStr}</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Reagendamentos</div>
+                  <div class="detail-value">${reagendStr}</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Closer</div>
+                  <div class="detail-value">${closerName}</div>
+                </div>
+              </div>
+            </div>
+          </td>
         </tr>`;
       }).join('');
+    }
+
+    function showSuccessMsg() {
+      const msg = document.getElementById('success-msg');
+      msg.classList.add('show');
+      setTimeout(() => msg.classList.remove('show'), 3000);
     }
 
     window.addEventListener('load', function() {
       document.querySelector('input[type="date"]').valueAsDate = new Date();
       loadData();
+    });
+
+    document.addEventListener('click', function(e) {
+      const modal = document.getElementById('editModal');
+      if (e.target === modal) closeEditModal();
     });
   </script>
 </body>
