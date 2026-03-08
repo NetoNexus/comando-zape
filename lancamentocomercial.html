@@ -1712,7 +1712,7 @@
       const sdr = sdrs.find(s => s.id == sdrId);
       const subOrigem = subOrigemGroup.style.display !== 'none' ? subOrigemSelect.value : null;
       
-      tempGanhos.push({
+      const novoGanho = {
         origem_id: parseInt(origemId),
         origem_name: origem.name,
         sub_origem: subOrigem,
@@ -1721,9 +1721,20 @@
         sdr_id: parseInt(sdrId),
         sdr_name: sdr.name,
         valor: valor
-      });
+      };
       
-      renderizarGanhos();
+      // Se estamos EDITANDO um movimento, adicionar a editTempGanhos
+      if (editingMovement) {
+        editTempGanhos.push(novoGanho);
+        renderEditGanhos();
+        console.log('✅ Ganho adicionado ao movimento em edição');
+      } else {
+        // Senão, adicionar a tempGanhos (criação normal)
+        tempGanhos.push(novoGanho);
+        renderizarGanhos();
+        console.log('✅ Ganho adicionado');
+      }
+      
       closeGanhoModal();
     }
 
