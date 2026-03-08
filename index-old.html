@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comando Zape — Dashboard de Monitoramento WhatsApp</title>
+  <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --dark: #1A1A1A;
+      --surface-1: #242424;
+      --surface-2: #2A2A2A;
+      --gray-dark: #383838;
+      --gray-light: #999;
+      --white: #FFF;
+      --primary: #B2FF00;
+      --green: #4CAF50;
+      --yellow: #FFC107;
+      --red: #F44336;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+      background: var(--dark);
+      color: var(--white);
+      font-family: 'Albert Sans', sans-serif;
+      font-weight: 600;
+      line-height: 1.6;
+    }
+
+    #container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    aside {
+      width: 240px;
+      background: linear-gradient(180deg, var(--surface-1) 0%, #1F1F1F 100%);
+      border-right: 1px solid var(--gray-dark);
+      padding: 24px 0;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar-logo {
+      padding: 0 20px;
+      margin-bottom: 30px;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--primary);
+    }
+
+    .sidebar-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 0 12px;
+    }
+
+    .menu-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--gray-light);
+      border-radius: 6px;
+      transition: var(--transition);
+      border-left: 3px solid transparent;
+    }
+
+    .menu-item:hover {
+      background: rgba(178,255,0,0.05);
+      color: var(--primary);
+    }
+
+    .menu-item.active {
+      background: rgba(178,255,0,0.1);
+      color: var(--primary);
+      border-left-color: var(--primary);
+      font-weight: 700;
+    }
+
+    main {
+      margin-left: 240px;
+      flex: 1;
+      padding: 24px 32px;
+      overflow-y: auto;
+      background: linear-gradient(135deg, #1A1A1A 0%, #1F1F1F 100%);
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--gray-dark);
+    }
+
+    header h1 {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .status-time {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--gray-light);
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+      box-shadow: 0 0 8px var(--primary);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .kpi-card {
+      background: linear-gradient(135deg, var(--surface-2) 0%, rgba(45,45,45,0.5) 100%);
+      border: 1px solid var(--gray-dark);
+      padding: 20px;
+      text-align: center;
+      border-radius: 8px;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), transparent);
+    }
+
+    .kpi-card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 0 12px rgba(178,255,0,0.1);
+      transform: translateY(-2px);
+    }
+
+    .kpi-label {
+      font-size: 10px;
+      color: var(--gray-light);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--primary);
+    }
+
+    .card {
+      background: var(--surface-2);
+      border: 1px solid var(--gray-dark);
+      padding: 20px;
+      margin-bottom: 24px;
+      border-radius: 8px;
+      transition: var(--transition);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    .card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 8px 12px rgba(178,255,0,0.1);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--white);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th {
+      background: rgba(178,255,0,0.05);
+      padding: 12px 8px;
+      text-align: left;
+      font-weight: 700;
+      color: var(--primary);
+      border-bottom: 1px solid var(--gray-dark);
+    }
+
+    td {
+      padding: 12px 8px;
+      border-bottom: 1px solid rgba(178,255,0,0.05);
+    }
+
+    tr:hover {
+      background: rgba(178,255,0,0.03);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .status-active {
+      background: rgba(76,175,80,0.2);
+      color: var(--green);
+    }
+
+    .status-inactive {
+      background: rgba(244,67,54,0.2);
+      color: var(--red);
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+    }
+
+    @media (max-width: 768px) {
+      aside {
+        width: 0;
+      }
+
+      main {
+        margin-left: 0;
+        padding: 16px;
+      }
+
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <aside>
+      <div class="sidebar-logo">ZAPE</div>
+      <div class="sidebar-menu">
+        <div class="menu-item active" onclick="navigateTo('painel')">Painel</div>
+        <div class="menu-item" onclick="navigateTo('grupos')">Grupos WhatsApp</div>
+        <div class="menu-item" onclick="navigateTo('comercial')">Comercial</div>
+      </div>
+    </aside>
+
+    <main>
+      <!-- PAINEL -->
+      <div id="painel-page" class="page active">
+        <header>
+          <h1>Painel de Controle</h1>
+          <div class="status-time">
+            <span class="pulse"></span>
+            Atualizado: <span id="last-update">--:--</span>
+          </div>
+        </header>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Tempo de Resposta</div>
+            <div class="kpi-value" id="kpi-response-time">--</div>
+            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">minutos</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Taxa de Resposta</div>
+            <div class="kpi-value" id="kpi-response-rate">--</div>
+            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Engagement</div>
+            <div class="kpi-value" id="kpi-engagement">--</div>
+            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">msgs/membro/dia</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Tempo de Duração</div>
+            <div class="kpi-value" id="kpi-duration">--</div>
+            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">horas</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Tópicos Principais</div>
+            <div id="kpi-topics" style="font-size:11px;color:var(--primary);margin-top:8px;line-height:1.6">--</div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+          <div class="card">
+            <div class="card-title">Atividade por Grupo</div>
+            <div class="chart-container">
+              <canvas id="activity-chart"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Status dos Grupos</div>
+            <div class="chart-container">
+              <canvas id="status-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRUPOS -->
+      <div id="grupos-page" class="page">
+        <header>
+          <h1>Grupos WhatsApp</h1>
+          <div class="status-time">
+            <span class="pulse"></span>
+            Atualizado: <span id="last-update-grupos">--:--</span>
+          </div>
+        </header>
+
+        <div class="card">
+          <div class="card-title">Monitoramento de Grupos</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Nome do Grupo</th>
+                <th>Membros</th>
+                <th>Mensagens</th>
+                <th>Engagement</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="grupos-table">
+              <tr>
+                <td colspan="5" style="text-align:center;color:var(--gray-light)">Carregando grupos...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MENU COMERCIAL -->
+      <div id="comercial-page" class="page">
+        <header>
+          <h1>Menu Comercial</h1>
+          <div class="status-time">
+            <span class="pulse"></span>
+            Atualizado: <span id="last-update-comercial">--:--</span>
+          </div>
+        </header>
+
+        <!-- KPIs Comerciais -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Leads Recebidos</div>
+            <div class="kpi-value" id="kpi-leads">--</div>
+            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">total/período</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Leads Qualificados</div>
+            <div class="kpi-value" id="kpi-qualified">--</div>
+            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Taxa de Conversão</div>
+            <div class="kpi-value" id="kpi-conversion">--</div>
+            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Ticket Médio</div>
+            <div class="kpi-value" id="kpi-ticket">--</div>
+            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">R$</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Receita Total</div>
+            <div class="kpi-value" id="kpi-revenue">--</div>
+            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">R$</div>
+          </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+          <div class="card">
+            <div class="card-title">Funil de Vendas</div>
+            <div class="chart-container">
+              <canvas id="funnel-chart"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Evolução de Receita</div>
+            <div class="chart-container">
+              <canvas id="revenue-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabela de Leads -->
+        <div class="card">
+          <div class="card-title">Leads Recentes</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Origem</th>
+                <th>Status</th>
+                <th>Valor Estimado</th>
+                <th>Data</th>
+              </tr>
+            </thead>
+            <tbody id="leads-table">
+              <tr>
+                <td colspan="5" style="text-align:center;color:var(--gray-light)">Carregando leads...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // Supabase Config (novo banco)
+    const SUPABASE_URL = 'https://mrchphqqgbssndijichd.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_M39ow0LzWhEjk4D5Y18vhg_a_mH2g-o';
+
+    // Navigation
+    function navigateTo(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(page + '-page').classList.add('active');
+      
+      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+      event.target.classList.add('active');
+
+      loadPageData(page);
+    }
+
+    // Fetch Data
+    async function fetchTable(table) {
+      try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}?limit=500`, {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          }
+        });
+        return response.json();
+      } catch (error) {
+        console.error('Fetch error:', error);
+        return [];
+      }
+    }
+
+    // Load Page Data
+    async function loadPageData(page) {
+      if (page === 'painel') {
+        await loadPainel();
+      } else if (page === 'grupos') {
+        await loadGrupos();
+      } else if (page === 'comercial') {
+        await loadComercialData();
+      }
+    }
+
+    // PAINEL
+    async function loadPainel() {
+      const grupos = await fetchTable('whatsapp_groups');
+      const mensagens = await fetchTable('whatsapp_messages');
+      const membros = await fetchTable('whatsapp_members');
+
+      // 1. Tempo de Resposta (minutos entre mensagem e resposta)
+      let totalResponseTime = 0;
+      let responseCount = 0;
+      // Simulação: assumir ~5 min de resposta média (em produção, Vigília tracked)
+      const responseTime = 5; // minutos
+      document.getElementById('kpi-response-time').textContent = responseTime;
+
+      // 2. Taxa de Resposta (% de mensagens respondidas)
+      const responseRate = membros.length > 0 ? Math.round((mensagens.length / (membros.length * 10)) * 100) : 0;
+      document.getElementById('kpi-response-rate').textContent = Math.min(100, responseRate);
+
+      // 3. Engagement (mensagens por membro por dia)
+      const totalMembers = membros.length || 1;
+      const engagement = (mensagens.length / totalMembers).toFixed(1);
+      document.getElementById('kpi-engagement').textContent = engagement;
+
+      // 4. Tempo de Duração (tempo médio entre primeira e última mensagem em horas)
+      let duration = 0;
+      if (mensagens.length > 1) {
+        const timestamps = mensagens.map(m => new Date(m.timestamp).getTime());
+        const earliest = Math.min(...timestamps);
+        const latest = Math.max(...timestamps);
+        duration = ((latest - earliest) / (1000 * 60 * 60)).toFixed(1); // em horas
+      }
+      document.getElementById('kpi-duration').textContent = duration || '0';
+
+      // 5. Tópicos Principais (palavras-chave mais frequentes)
+      const topicKeywords = ['dúvida', 'erro', 'problema', 'produto', 'preço', 'entrega', 'qualidade'];
+      const topicCounts = {};
+      topicKeywords.forEach(keyword => {
+        topicCounts[keyword] = mensagens.filter(m => 
+          m.message_text && m.message_text.toLowerCase().includes(keyword)
+        ).length;
+      });
+      const sortedTopics = Object.entries(topicCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([topic, count]) => `${topic} (${count})`)
+        .join(' • ');
+      document.getElementById('kpi-topics').textContent = sortedTopics || 'Sem tópicos';
+      
+      updateTime('last-update');
+
+      // Charts
+      renderActivityChart(grupos, mensagens);
+      renderStatusChart(grupos);
+    }
+
+    // GRUPOS
+    async function loadGrupos() {
+      const grupos = await fetchTable('whatsapp_groups');
+      const mensagens = await fetchTable('whatsapp_messages');
+      const membros = await fetchTable('whatsapp_members');
+
+      let html = '';
+      grupos.forEach(g => {
+        const msgCount = mensagens.filter(m => m.group_id === g.id).length;
+        const groupMembers = membros.filter(m => m.group_id === g.id).length;
+        const engagement = groupMembers > 0 ? (msgCount / groupMembers).toFixed(1) : 0;
+        
+        html += `
+          <tr>
+            <td><strong>${g.name}</strong></td>
+            <td>${groupMembers}</td>
+            <td>${msgCount}</td>
+            <td>${engagement}</td>
+            <td><span class="status-badge ${g.status === 'active' ? 'status-active' : 'status-inactive'}">${g.status}</span></td>
+          </tr>
+        `;
+      });
+      document.getElementById('grupos-table').innerHTML = html || '<tr><td colspan="5" style="text-align:center;color:var(--gray-light)">Nenhum grupo ainda</td></tr>';
+      
+      updateTime('last-update-grupos');
+    }
+
+
+
+    // Charts
+    function renderActivityChart(grupos, mensagens) {
+      const ctx = document.getElementById('activity-chart').getContext('2d');
+      const labels = grupos.map(g => g.name);
+      const data = labels.map(name => {
+        const grupo = grupos.find(g => g.name === name);
+        return mensagens.filter(m => m.group_id === grupo.id).length;
+      });
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Mensagens',
+            data,
+            backgroundColor: 'rgba(178,255,0,0.3)',
+            borderColor: '#B2FF00',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { ticks: { color: 'var(--gray-light)' } },
+            x: { ticks: { color: 'var(--gray-light)' } }
+          }
+        }
+      });
+    }
+
+    function renderStatusChart(grupos) {
+      const ctx = document.getElementById('status-chart').getContext('2d');
+      const active = grupos.filter(g => g.status === 'active').length;
+      const inactive = grupos.filter(g => g.status !== 'active').length;
+
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Ativos', 'Inativos'],
+          datasets: [{
+            data: [active, inactive],
+            backgroundColor: ['rgba(76,175,80,0.6)', 'rgba(244,67,54,0.6)'],
+            borderColor: ['#4CAF50', '#F44336'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: 'var(--white)' } } }
+        }
+      });
+    }
+
+    function updateTime(elementId) {
+      const now = new Date();
+      document.getElementById(elementId).textContent = now.toLocaleTimeString();
+    }
+
+    // Comercial Data
+    async function loadComercialData() {
+      // Mock data - substituir por Supabase quando tiver API
+      const mockLeads = [
+        { name: 'João Silva', source: 'WhatsApp', status: 'Qualificado', value: 'R$ 5.000', date: '2026-03-08' },
+        { name: 'Maria Santos', source: 'Facebook', status: 'Em negociação', value: 'R$ 8.500', date: '2026-03-08' },
+        { name: 'Pedro Costa', source: 'Instagram', status: 'Convertido', value: 'R$ 12.000', date: '2026-03-07' }
+      ];
+
+      // Update KPIs
+      document.getElementById('kpi-leads').textContent = '156';
+      document.getElementById('kpi-qualified').textContent = '68%';
+      document.getElementById('kpi-conversion').textContent = '24%';
+      document.getElementById('kpi-ticket').textContent = 'R$ 2.850';
+      document.getElementById('kpi-revenue').textContent = 'R$ 445.800';
+
+      // Render charts
+      renderFunnelChart();
+      renderRevenueChart();
+
+      // Render table
+      renderLeadsTable(mockLeads);
+    }
+
+    function renderFunnelChart() {
+      const ctx = document.getElementById('funnel-chart');
+      if (!ctx) return;
+      
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Leads', 'Qualificados', 'Negociação', 'Convertidos'],
+          datasets: [{
+            label: 'Quantidade',
+            data: [156, 106, 32, 8],
+            backgroundColor: ['#B2FF00', '#4CAF50', '#FFC107', '#00BCD4'],
+            borderRadius: 6,
+            borderWidth: 0
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: 'var(--gray-light)' } },
+            y: { ticks: { color: 'var(--gray-light)' } }
+          }
+        }
+      });
+    }
+
+    function renderRevenueChart() {
+      const ctx = document.getElementById('revenue-chart');
+      if (!ctx) return;
+      
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Fev', 'Mar'],
+          datasets: [{
+            label: 'Receita (R$)',
+            data: [120000, 280500, 445800],
+            borderColor: '#B2FF00',
+            backgroundColor: 'rgba(178,255,0,0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#B2FF00',
+            pointRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: 'var(--white)' } } },
+          scales: {
+            y: { ticks: { color: 'var(--gray-light)' } },
+            x: { ticks: { color: 'var(--gray-light)' } }
+          }
+        }
+      });
+    }
+
+    function renderLeadsTable(leads) {
+      const tbody = document.getElementById('leads-table');
+      tbody.innerHTML = leads.map(lead => `
+        <tr>
+          <td>${lead.name}</td>
+          <td>${lead.source}</td>
+          <td><span style="color: var(--primary);">${lead.status}</span></td>
+          <td>${lead.value}</td>
+          <td>${lead.date}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Auto-refresh
+    setInterval(async () => {
+      const activePage = document.querySelector('.page.active').id.split('-')[0];
+      await loadPageData(activePage);
+    }, 30000);
+
+    // Init
+    loadPageData('painel');
+  </script>
+</body>
+</html>

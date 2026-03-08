@@ -35,9 +35,141 @@
       line-height: 1.6;
     }
 
-    #container {
+    /* LOGIN PAGE */
+    #login-page {
       display: flex;
+      align-items: center;
+      justify-content: center;
       min-height: 100vh;
+      background: linear-gradient(135deg, #1A1A1A 0%, #1F1F1F 100%);
+    }
+
+    .login-container {
+      background: var(--surface-2);
+      border: 1px solid var(--gray-dark);
+      padding: 48px 40px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+
+    .login-logo {
+      font-size: 32px;
+      font-weight: 900;
+      text-align: center;
+      color: var(--primary);
+      margin-bottom: 32px;
+      letter-spacing: 2px;
+    }
+
+    .login-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      text-align: center;
+      color: var(--white);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--gray-light);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--dark);
+      border: 1px solid var(--gray-dark);
+      color: var(--white);
+      border-radius: 6px;
+      font-family: inherit;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 8px rgba(178,255,0,0.2);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 12px 20px;
+      background: var(--primary);
+      color: var(--dark);
+      border: none;
+      border-radius: 6px;
+      font-weight: 900;
+      font-size: 14px;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-top: 16px;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(178,255,0,0.3);
+    }
+
+    .login-btn:active {
+      transform: translateY(0);
+    }
+
+    .login-error {
+      background: rgba(244,67,54,0.1);
+      border: 1px solid var(--red);
+      color: var(--red);
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .login-error.show {
+      display: block;
+    }
+
+    .demo-users {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--gray-dark);
+      font-size: 11px;
+      color: var(--gray-light);
+      text-align: center;
+    }
+
+    .demo-users-list {
+      margin-top: 12px;
+      text-align: left;
+      background: rgba(0,0,0,0.3);
+      padding: 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 10px;
+      line-height: 1.8;
+    }
+
+    /* DASHBOARD */
+    #dashboard-container {
+      display: none;
+      flex-direction: row;
+      min-height: 100vh;
+    }
+
+    #dashboard-container.active {
+      display: flex;
     }
 
     aside {
@@ -89,6 +221,46 @@
       font-weight: 700;
     }
 
+    .menu-item.hidden {
+      display: none;
+    }
+
+    .sidebar-footer {
+      padding: 12px 20px;
+      margin-top: auto;
+      border-top: 1px solid var(--gray-dark);
+      font-size: 10px;
+      color: var(--gray-light);
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .user-name {
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    .logout-btn {
+      background: var(--red);
+      color: var(--white);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .logout-btn:hover {
+      opacity: 0.8;
+    }
+
     main {
       margin-left: 240px;
       flex: 1;
@@ -110,28 +282,6 @@
       font-size: 28px;
       font-weight: 900;
       letter-spacing: 1px;
-    }
-
-    .status-time {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      color: var(--gray-light);
-    }
-
-    .pulse {
-      width: 8px;
-      height: 8px;
-      background: var(--primary);
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-      box-shadow: 0 0 8px var(--primary);
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
     }
 
     .page {
@@ -218,14 +368,22 @@
       color: var(--white);
     }
 
+    .chart-container {
+      position: relative;
+      height: 300px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 12px;
     }
 
-    th {
+    table thead {
       background: rgba(178,255,0,0.05);
+    }
+
+    table th {
       padding: 12px 8px;
       text-align: left;
       font-weight: 700;
@@ -233,31 +391,92 @@
       border-bottom: 1px solid var(--gray-dark);
     }
 
-    td {
+    table td {
       padding: 12px 8px;
       border-bottom: 1px solid rgba(178,255,0,0.05);
     }
 
-    tr:hover {
+    table tr:hover {
       background: rgba(178,255,0,0.03);
     }
 
-    .status-badge {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 10px;
+    /* FORM STYLES */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-row.full {
+      grid-template-columns: 1fr;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-size: 11px;
       font-weight: 700;
+      color: var(--gray-light);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    .status-active {
-      background: rgba(76,175,80,0.2);
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 10px 12px;
+      background: var(--dark);
+      border: 1px solid var(--gray-dark);
+      color: var(--white);
+      border-radius: 6px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 12px;
+      transition: var(--transition);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 8px rgba(178,255,0,0.2);
+    }
+
+    .submit-btn {
+      background: var(--primary);
+      color: var(--dark);
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-top: 16px;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(178,255,0,0.3);
+    }
+
+    .success-message {
+      background: rgba(76,175,80,0.1);
+      border: 1px solid var(--green);
       color: var(--green);
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      display: none;
     }
 
-    .status-inactive {
-      background: rgba(244,67,54,0.2);
-      color: var(--red);
+    .success-message.show {
+      display: block;
     }
 
     .charts-grid {
@@ -267,14 +486,10 @@
       margin-bottom: 24px;
     }
 
-    .chart-container {
-      position: relative;
-      height: 300px;
-    }
-
     @media (max-width: 768px) {
       aside {
         width: 0;
+        margin-left: 0;
       }
 
       main {
@@ -286,20 +501,63 @@
         grid-template-columns: 1fr;
       }
 
-      .kpi-grid {
+      .form-row {
         grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
-  <div id="container">
+  <!-- LOGIN PAGE -->
+  <div id="login-page" class="active">
+    <div class="login-container">
+      <div class="login-logo">ZAPE</div>
+      <div class="login-title">Acesso ao Sistema</div>
+      
+      <div class="login-error" id="login-error"></div>
+      
+      <form id="login-form">
+        <div class="form-group">
+          <label>Usuário</label>
+          <input type="text" id="username" placeholder="Digite seu usuário" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="password" placeholder="Digite sua senha" required>
+        </div>
+        
+        <button type="submit" class="login-btn">Entrar</button>
+      </form>
+
+      <div class="demo-users">
+        <strong>Usuários de Teste:</strong>
+        <div class="demo-users-list">
+          adm / 123456<br>
+          comercial / 123456<br>
+          analista / 123456
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard-container">
     <aside>
       <div class="sidebar-logo">ZAPE</div>
       <div class="sidebar-menu">
-        <div class="menu-item active" onclick="navigateTo('painel')">Painel</div>
-        <div class="menu-item" onclick="navigateTo('grupos')">Grupos WhatsApp</div>
-        <div class="menu-item" onclick="navigateTo('comercial')">Comercial</div>
+        <div class="menu-item active" onclick="navigateTo('painel')" data-role="all">Painel</div>
+        <div class="menu-item" onclick="navigateTo('grupos')" data-role="all">Grupos WhatsApp</div>
+        <div class="menu-item" onclick="navigateTo('comercial')" data-role="adm,comercial">Comercial</div>
+        <div class="menu-item" onclick="navigateTo('lancamento')" data-role="adm,comercial">Lançamento de Dados</div>
+        <div class="menu-item" onclick="navigateTo('usuarios')" data-role="adm">Gerenciar Usuários</div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <span class="user-name" id="current-user">--</span>
+          <button class="logout-btn" onclick="logout()">Sair</button>
+        </div>
       </div>
     </aside>
 
@@ -308,10 +566,6 @@
       <div id="painel-page" class="page active">
         <header>
           <h1>Painel de Controle</h1>
-          <div class="status-time">
-            <span class="pulse"></span>
-            Atualizado: <span id="last-update">--:--</span>
-          </div>
         </header>
 
         <div class="kpi-grid">
@@ -328,31 +582,7 @@
           <div class="kpi-card">
             <div class="kpi-label">Engagement</div>
             <div class="kpi-value" id="kpi-engagement">--</div>
-            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">msgs/membro/dia</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Tempo de Duração</div>
-            <div class="kpi-value" id="kpi-duration">--</div>
-            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">horas</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Tópicos Principais</div>
-            <div id="kpi-topics" style="font-size:11px;color:var(--primary);margin-top:8px;line-height:1.6">--</div>
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-          <div class="card">
-            <div class="card-title">Atividade por Grupo</div>
-            <div class="chart-container">
-              <canvas id="activity-chart"></canvas>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-title">Status dos Grupos</div>
-            <div class="chart-container">
-              <canvas id="status-chart"></canvas>
-            </div>
+            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">msgs/dia</div>
           </div>
         </div>
       </div>
@@ -361,10 +591,6 @@
       <div id="grupos-page" class="page">
         <header>
           <h1>Grupos WhatsApp</h1>
-          <div class="status-time">
-            <span class="pulse"></span>
-            Atualizado: <span id="last-update-grupos">--:--</span>
-          </div>
         </header>
 
         <div class="card">
@@ -375,60 +601,48 @@
                 <th>Nome do Grupo</th>
                 <th>Membros</th>
                 <th>Mensagens</th>
-                <th>Engagement</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody id="grupos-table">
               <tr>
-                <td colspan="5" style="text-align:center;color:var(--gray-light)">Carregando grupos...</td>
+                <td colspan="4" style="text-align:center;color:var(--gray-light)">Sem dados</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- MENU COMERCIAL -->
+      <!-- COMERCIAL -->
       <div id="comercial-page" class="page">
         <header>
           <h1>Menu Comercial</h1>
-          <div class="status-time">
-            <span class="pulse"></span>
-            Atualizado: <span id="last-update-comercial">--:--</span>
-          </div>
         </header>
 
-        <!-- KPIs Comerciais -->
         <div class="kpi-grid">
           <div class="kpi-card">
             <div class="kpi-label">Leads Recebidos</div>
-            <div class="kpi-value" id="kpi-leads">--</div>
-            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">total/período</div>
+            <div class="kpi-value" id="kpi-leads">156</div>
+            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">total</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">Leads Qualificados</div>
-            <div class="kpi-value" id="kpi-qualified">--</div>
+            <div class="kpi-value" id="kpi-qualified">68%</div>
             <div style="font-size:9px;color:var(--gray-light);margin-top:8px">%</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">Taxa de Conversão</div>
-            <div class="kpi-value" id="kpi-conversion">--</div>
+            <div class="kpi-value" id="kpi-conversion">24%</div>
             <div style="font-size:9px;color:var(--gray-light);margin-top:8px">%</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">Ticket Médio</div>
-            <div class="kpi-value" id="kpi-ticket">--</div>
-            <div style="font-size:9px;color:var(--gray-light);margin-top:8px">R$</div>
-          </div>
-          <div class="kpi-card">
             <div class="kpi-label">Receita Total</div>
-            <div class="kpi-value" id="kpi-revenue">--</div>
+            <div class="kpi-value" id="kpi-revenue">445.8K</div>
             <div style="font-size:9px;color:var(--gray-light);margin-top:8px">R$</div>
           </div>
         </div>
 
-        <!-- Gráficos -->
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+        <div class="charts-grid">
           <div class="card">
             <div class="card-title">Funil de Vendas</div>
             <div class="chart-container">
@@ -442,326 +656,353 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Tabela de Leads -->
+      <!-- LANÇAMENTO DE DADOS -->
+      <div id="lancamento-page" class="page">
+        <header>
+          <h1>Lançamento de Dados</h1>
+        </header>
+
         <div class="card">
-          <div class="card-title">Leads Recentes</div>
+          <div class="card-title">Registrar Novo Lead</div>
+          
+          <div class="success-message" id="success-message">Lead registrado com sucesso!</div>
+
+          <form id="lead-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nome</label>
+                <input type="text" name="name" placeholder="Nome completo" required>
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" placeholder="email@exemplo.com" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Telefone</label>
+                <input type="tel" name="phone" placeholder="(11) 9999-9999">
+              </div>
+              <div class="form-group">
+                <label>Origem</label>
+                <select name="source" required>
+                  <option value="">Selecione...</option>
+                  <option value="WhatsApp">WhatsApp</option>
+                  <option value="Facebook">Facebook</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="Google">Google</option>
+                  <option value="Outro">Outro</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Status</label>
+                <select name="status" required>
+                  <option value="">Selecione...</option>
+                  <option value="Novo">Novo</option>
+                  <option value="Qualificado">Qualificado</option>
+                  <option value="Em negociação">Em negociação</option>
+                  <option value="Convertido">Convertido</option>
+                  <option value="Perdido">Perdido</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Valor Estimado (R$)</label>
+                <input type="number" name="value" placeholder="0,00" step="0.01">
+              </div>
+            </div>
+
+            <div class="form-row full">
+              <div class="form-group">
+                <label>Observações</label>
+                <textarea name="notes" placeholder="Adicione detalhes..." rows="4"></textarea>
+              </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Registrar Lead</button>
+          </form>
+        </div>
+
+        <!-- Tabela de Leads Recentes -->
+        <div class="card">
+          <div class="card-title">Leads Registrados</div>
           <table>
             <thead>
               <tr>
                 <th>Nome</th>
+                <th>Email</th>
                 <th>Origem</th>
                 <th>Status</th>
-                <th>Valor Estimado</th>
+                <th>Valor</th>
                 <th>Data</th>
               </tr>
             </thead>
             <tbody id="leads-table">
               <tr>
-                <td colspan="5" style="text-align:center;color:var(--gray-light)">Carregando leads...</td>
+                <td colspan="6" style="text-align:center;color:var(--gray-light)">Nenhum lead registrado ainda</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
+      <!-- GERENCIAR USUÁRIOS -->
+      <div id="usuarios-page" class="page">
+        <header>
+          <h1>Gerenciar Usuários</h1>
+        </header>
+
+        <div class="card">
+          <div class="card-title">Criar Novo Usuário</div>
+
+          <div class="success-message" id="user-success-message">Usuário criado com sucesso!</div>
+
+          <form id="user-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Usuário</label>
+                <input type="text" name="username" placeholder="nome_usuario" required>
+              </div>
+              <div class="form-group">
+                <label>Senha</label>
+                <input type="password" name="password" placeholder="Senha" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nome Completo</label>
+                <input type="text" name="fullname" placeholder="Nome completo" required>
+              </div>
+              <div class="form-group">
+                <label>Função</label>
+                <select name="role" required>
+                  <option value="">Selecione...</option>
+                  <option value="adm">Administrador</option>
+                  <option value="comercial">Comercial</option>
+                  <option value="analista">Analista</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Criar Usuário</button>
+          </form>
+        </div>
+
+        <!-- Tabela de Usuários -->
+        <div class="card">
+          <div class="card-title">Usuários do Sistema</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Usuário</th>
+                <th>Nome</th>
+                <th>Função</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="users-table">
+              <tr>
+                <td colspan="4" style="text-align:center;color:var(--gray-light)">Carregando usuários...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </main>
   </div>
 
   <script>
-    // Supabase Config (novo banco)
-    const SUPABASE_URL = 'https://mrchphqqgbssndijichd.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_M39ow0LzWhEjk4D5Y18vhg_a_mH2g-o';
+    // ============== USERS DATABASE ==============
+    // Em produção, isso seria um Supabase com autenticação real
+    const defaultUsers = [
+      { id: 1, username: 'adm', password: '123456', fullname: 'Administrador', role: 'adm' },
+      { id: 2, username: 'comercial', password: '123456', fullname: 'Time Comercial', role: 'comercial' },
+      { id: 3, username: 'analista', password: '123456', fullname: 'Analista', role: 'analista' }
+    ];
 
-    // Navigation
+    let currentUser = null;
+    let users = JSON.parse(localStorage.getItem('zape_users')) || defaultUsers;
+    let leads = JSON.parse(localStorage.getItem('zape_leads')) || [];
+
+    // ============== LOGIN ==============
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      const user = users.find(u => u.username === username && u.password === password);
+      
+      if (user) {
+        currentUser = user;
+        localStorage.setItem('zape_current_user', JSON.stringify(user));
+        loginSuccess();
+      } else {
+        showLoginError('Usuário ou senha incorretos');
+      }
+    });
+
+    function showLoginError(message) {
+      const error = document.getElementById('login-error');
+      error.textContent = message;
+      error.classList.add('show');
+      setTimeout(() => error.classList.remove('show'), 5000);
+    }
+
+    function loginSuccess() {
+      document.getElementById('login-page').classList.remove('active');
+      document.getElementById('dashboard-container').classList.add('active');
+      document.getElementById('current-user').textContent = currentUser.fullname;
+      
+      filterMenuByRole();
+      navigateTo('painel');
+    }
+
+    function logout() {
+      currentUser = null;
+      localStorage.removeItem('zape_current_user');
+      document.getElementById('login-page').classList.add('active');
+      document.getElementById('dashboard-container').classList.remove('active');
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+    }
+
+    // ============== MENU FILTERING ==============
+    function filterMenuByRole() {
+      const menuItems = document.querySelectorAll('.menu-item');
+      menuItems.forEach(item => {
+        const role = item.getAttribute('data-role');
+        if (role === 'all' || role.split(',').includes(currentUser.role)) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+    }
+
+    // ============== NAVIGATION ==============
     function navigateTo(page) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.getElementById(page + '-page').classList.add('active');
       
       document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-      event.target.classList.add('active');
+      document.querySelector(`[onclick="navigateTo('${page}')"]`)?.classList.add('active');
 
-      loadPageData(page);
-    }
-
-    // Fetch Data
-    async function fetchTable(table) {
-      try {
-        const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}?limit=500`, {
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`
-          }
-        });
-        return response.json();
-      } catch (error) {
-        console.error('Fetch error:', error);
-        return [];
+      if (page === 'lancamento') {
+        renderLeadsTable();
+      } else if (page === 'usuarios') {
+        renderUsersTable();
       }
     }
 
-    // Load Page Data
-    async function loadPageData(page) {
-      if (page === 'painel') {
-        await loadPainel();
-      } else if (page === 'grupos') {
-        await loadGrupos();
-      } else if (page === 'comercial') {
-        await loadComercialData();
-      }
-    }
-
-    // PAINEL
-    async function loadPainel() {
-      const grupos = await fetchTable('whatsapp_groups');
-      const mensagens = await fetchTable('whatsapp_messages');
-      const membros = await fetchTable('whatsapp_members');
-
-      // 1. Tempo de Resposta (minutos entre mensagem e resposta)
-      let totalResponseTime = 0;
-      let responseCount = 0;
-      // Simulação: assumir ~5 min de resposta média (em produção, Vigília tracked)
-      const responseTime = 5; // minutos
-      document.getElementById('kpi-response-time').textContent = responseTime;
-
-      // 2. Taxa de Resposta (% de mensagens respondidas)
-      const responseRate = membros.length > 0 ? Math.round((mensagens.length / (membros.length * 10)) * 100) : 0;
-      document.getElementById('kpi-response-rate').textContent = Math.min(100, responseRate);
-
-      // 3. Engagement (mensagens por membro por dia)
-      const totalMembers = membros.length || 1;
-      const engagement = (mensagens.length / totalMembers).toFixed(1);
-      document.getElementById('kpi-engagement').textContent = engagement;
-
-      // 4. Tempo de Duração (tempo médio entre primeira e última mensagem em horas)
-      let duration = 0;
-      if (mensagens.length > 1) {
-        const timestamps = mensagens.map(m => new Date(m.timestamp).getTime());
-        const earliest = Math.min(...timestamps);
-        const latest = Math.max(...timestamps);
-        duration = ((latest - earliest) / (1000 * 60 * 60)).toFixed(1); // em horas
-      }
-      document.getElementById('kpi-duration').textContent = duration || '0';
-
-      // 5. Tópicos Principais (palavras-chave mais frequentes)
-      const topicKeywords = ['dúvida', 'erro', 'problema', 'produto', 'preço', 'entrega', 'qualidade'];
-      const topicCounts = {};
-      topicKeywords.forEach(keyword => {
-        topicCounts[keyword] = mensagens.filter(m => 
-          m.message_text && m.message_text.toLowerCase().includes(keyword)
-        ).length;
-      });
-      const sortedTopics = Object.entries(topicCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([topic, count]) => `${topic} (${count})`)
-        .join(' • ');
-      document.getElementById('kpi-topics').textContent = sortedTopics || 'Sem tópicos';
+    // ============== LEAD FORM ==============
+    document.getElementById('lead-form').addEventListener('submit', function(e) {
+      e.preventDefault();
       
-      updateTime('last-update');
-
-      // Charts
-      renderActivityChart(grupos, mensagens);
-      renderStatusChart(grupos);
-    }
-
-    // GRUPOS
-    async function loadGrupos() {
-      const grupos = await fetchTable('whatsapp_groups');
-      const mensagens = await fetchTable('whatsapp_messages');
-      const membros = await fetchTable('whatsapp_members');
-
-      let html = '';
-      grupos.forEach(g => {
-        const msgCount = mensagens.filter(m => m.group_id === g.id).length;
-        const groupMembers = membros.filter(m => m.group_id === g.id).length;
-        const engagement = groupMembers > 0 ? (msgCount / groupMembers).toFixed(1) : 0;
-        
-        html += `
-          <tr>
-            <td><strong>${g.name}</strong></td>
-            <td>${groupMembers}</td>
-            <td>${msgCount}</td>
-            <td>${engagement}</td>
-            <td><span class="status-badge ${g.status === 'active' ? 'status-active' : 'status-inactive'}">${g.status}</span></td>
-          </tr>
-        `;
-      });
-      document.getElementById('grupos-table').innerHTML = html || '<tr><td colspan="5" style="text-align:center;color:var(--gray-light)">Nenhum grupo ainda</td></tr>';
+      const formData = new FormData(this);
+      const lead = {
+        id: leads.length + 1,
+        ...Object.fromEntries(formData),
+        date: new Date().toLocaleDateString('pt-BR')
+      };
       
-      updateTime('last-update-grupos');
-    }
-
-
-
-    // Charts
-    function renderActivityChart(grupos, mensagens) {
-      const ctx = document.getElementById('activity-chart').getContext('2d');
-      const labels = grupos.map(g => g.name);
-      const data = labels.map(name => {
-        const grupo = grupos.find(g => g.name === name);
-        return mensagens.filter(m => m.group_id === grupo.id).length;
-      });
-
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{
-            label: 'Mensagens',
-            data,
-            backgroundColor: 'rgba(178,255,0,0.3)',
-            borderColor: '#B2FF00',
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { ticks: { color: 'var(--gray-light)' } },
-            x: { ticks: { color: 'var(--gray-light)' } }
-          }
-        }
-      });
-    }
-
-    function renderStatusChart(grupos) {
-      const ctx = document.getElementById('status-chart').getContext('2d');
-      const active = grupos.filter(g => g.status === 'active').length;
-      const inactive = grupos.filter(g => g.status !== 'active').length;
-
-      new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Ativos', 'Inativos'],
-          datasets: [{
-            data: [active, inactive],
-            backgroundColor: ['rgba(76,175,80,0.6)', 'rgba(244,67,54,0.6)'],
-            borderColor: ['#4CAF50', '#F44336'],
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: 'var(--white)' } } }
-        }
-      });
-    }
-
-    function updateTime(elementId) {
-      const now = new Date();
-      document.getElementById(elementId).textContent = now.toLocaleTimeString();
-    }
-
-    // Comercial Data
-    async function loadComercialData() {
-      // Mock data - substituir por Supabase quando tiver API
-      const mockLeads = [
-        { name: 'João Silva', source: 'WhatsApp', status: 'Qualificado', value: 'R$ 5.000', date: '2026-03-08' },
-        { name: 'Maria Santos', source: 'Facebook', status: 'Em negociação', value: 'R$ 8.500', date: '2026-03-08' },
-        { name: 'Pedro Costa', source: 'Instagram', status: 'Convertido', value: 'R$ 12.000', date: '2026-03-07' }
-      ];
-
-      // Update KPIs
-      document.getElementById('kpi-leads').textContent = '156';
-      document.getElementById('kpi-qualified').textContent = '68%';
-      document.getElementById('kpi-conversion').textContent = '24%';
-      document.getElementById('kpi-ticket').textContent = 'R$ 2.850';
-      document.getElementById('kpi-revenue').textContent = 'R$ 445.800';
-
-      // Render charts
-      renderFunnelChart();
-      renderRevenueChart();
-
-      // Render table
-      renderLeadsTable(mockLeads);
-    }
-
-    function renderFunnelChart() {
-      const ctx = document.getElementById('funnel-chart');
-      if (!ctx) return;
+      leads.push(lead);
+      localStorage.setItem('zape_leads', JSON.stringify(leads));
       
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['Leads', 'Qualificados', 'Negociação', 'Convertidos'],
-          datasets: [{
-            label: 'Quantidade',
-            data: [156, 106, 32, 8],
-            backgroundColor: ['#B2FF00', '#4CAF50', '#FFC107', '#00BCD4'],
-            borderRadius: 6,
-            borderWidth: 0
-          }]
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { ticks: { color: 'var(--gray-light)' } },
-            y: { ticks: { color: 'var(--gray-light)' } }
-          }
-        }
-      });
-    }
+      showSuccessMessage('success-message');
+      this.reset();
+      renderLeadsTable();
+    });
 
-    function renderRevenueChart() {
-      const ctx = document.getElementById('revenue-chart');
-      if (!ctx) return;
-      
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ['Jan', 'Fev', 'Mar'],
-          datasets: [{
-            label: 'Receita (R$)',
-            data: [120000, 280500, 445800],
-            borderColor: '#B2FF00',
-            backgroundColor: 'rgba(178,255,0,0.1)',
-            borderWidth: 3,
-            fill: true,
-            tension: 0.4,
-            pointBackgroundColor: '#B2FF00',
-            pointRadius: 5
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: 'var(--white)' } } },
-          scales: {
-            y: { ticks: { color: 'var(--gray-light)' } },
-            x: { ticks: { color: 'var(--gray-light)' } }
-          }
-        }
-      });
-    }
-
-    function renderLeadsTable(leads) {
+    function renderLeadsTable() {
       const tbody = document.getElementById('leads-table');
+      
+      if (leads.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gray-light)">Nenhum lead registrado ainda</td></tr>';
+        return;
+      }
+      
       tbody.innerHTML = leads.map(lead => `
         <tr>
           <td>${lead.name}</td>
+          <td>${lead.email}</td>
           <td>${lead.source}</td>
-          <td><span style="color: var(--primary);">${lead.status}</span></td>
-          <td>${lead.value}</td>
+          <td>${lead.status}</td>
+          <td>${lead.value ? 'R$ ' + parseFloat(lead.value).toFixed(2) : '--'}</td>
           <td>${lead.date}</td>
         </tr>
       `).join('');
     }
 
-    // Auto-refresh
-    setInterval(async () => {
-      const activePage = document.querySelector('.page.active').id.split('-')[0];
-      await loadPageData(activePage);
-    }, 30000);
+    // ============== USER FORM ==============
+    document.getElementById('user-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const newUser = {
+        id: users.length + 1,
+        username: formData.get('username'),
+        password: formData.get('password'),
+        fullname: formData.get('fullname'),
+        role: formData.get('role')
+      };
+      
+      if (users.find(u => u.username === newUser.username)) {
+        alert('Este usuário já existe!');
+        return;
+      }
+      
+      users.push(newUser);
+      localStorage.setItem('zape_users', JSON.stringify(users));
+      
+      showSuccessMessage('user-success-message');
+      this.reset();
+      renderUsersTable();
+    });
 
-    // Init
-    loadPageData('painel');
+    function renderUsersTable() {
+      const tbody = document.getElementById('users-table');
+      
+      tbody.innerHTML = users.map(user => `
+        <tr>
+          <td>${user.username}</td>
+          <td>${user.fullname}</td>
+          <td>${user.role}</td>
+          <td>
+            <button style="background:var(--red);color:var(--white);border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:10px;" onclick="deleteUser(${user.id})">Deletar</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function deleteUser(id) {
+      if (confirm('Tem certeza?')) {
+        users = users.filter(u => u.id !== id);
+        localStorage.setItem('zape_users', JSON.stringify(users));
+        renderUsersTable();
+      }
+    }
+
+    // ============== HELPERS ==============
+    function showSuccessMessage(elementId) {
+      const msg = document.getElementById(elementId);
+      msg.classList.add('show');
+      setTimeout(() => msg.classList.remove('show'), 3000);
+    }
+
+    // ============== INIT ==============
+    window.addEventListener('load', function() {
+      const savedUser = localStorage.getItem('zape_current_user');
+      if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        loginSuccess();
+      }
+    });
   </script>
 </body>
 </html>
