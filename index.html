@@ -243,7 +243,11 @@
           <form onsubmit="addOrigem(event)">
             <div class="form-group">
               <label>Nome da Origem</label>
-              <input type="text" id="origem-name" placeholder="ex: WhatsApp, Facebook..." required>
+              <input type="text" id="origem-name" placeholder="ex: WhatsApp, Facebook, Instagram..." required>
+            </div>
+            <div class="form-group">
+              <label>Sub-origem (opcional)</label>
+              <input type="text" id="origem-sub" placeholder="ex: Instagram Neto, Formulário de Contato...">
             </div>
             <button type="submit" class="btn">Cadastrar</button>
           </form>
@@ -251,7 +255,7 @@
         <div class="card">
           <div class="card-title">Origens Cadastradas</div>
           <table>
-            <thead><tr><th>Nome</th><th>Ação</th></tr></thead>
+            <thead><tr><th>Nome</th><th>Sub-origem</th><th>Ação</th></tr></thead>
             <tbody id="origens-table">
               <tr><td colspan="2" style="text-align:center;color:#999;">Carregando...</td></tr>
             </tbody>
@@ -376,6 +380,10 @@
           <label>Nome</label>
           <input type="text" id="modal-name" required>
         </div>
+        <div class="form-group" style="display: none;">
+          <label>Sub-origem (opcional)</label>
+          <input type="text" id="modal-sub-origem" placeholder="ex: Instagram Neto, Formulário de Contato...">
+        </div>
         <button type="submit" class="btn">Salvar</button>
       </form>
     </div>
@@ -430,8 +438,19 @@
       document.getElementById('editModal').classList.add('show');
     }
 
+    function openEditModalOrigem(id, name, sub_origem, type) {
+      editingItem = id;
+      editingType = type;
+      document.getElementById('modal-title').textContent = `Editar ${type}`;
+      document.getElementById('modal-name').value = name;
+      document.getElementById('modal-sub-origem').value = sub_origem || '';
+      document.getElementById('modal-sub-origem').parentElement.style.display = 'block';
+      document.getElementById('editModal').classList.add('show');
+    }
+
     function closeModal() {
       document.getElementById('editModal').classList.remove('show');
+      document.getElementById('modal-sub-origem').parentElement.style.display = 'none';
       editingItem = null;
       editingType = null;
     }
@@ -442,7 +461,15 @@
       if (!newName) return alert('Nome obrigatório');
 
       const table = editingType.toLowerCase() === 'closer' ? 'closers' : editingType.toLowerCase();
-      await supabaseFetch(`${table}?id=eq.${editingItem}`, 'PATCH', { name: newName });
+      const data = { name: newName };
+      
+      // Se for Origem, incluir sub_origem também
+      if (editingType.toLowerCase() === 'origem') {
+        const sub_origem = document.getElementById('modal-sub-origem').value.trim();
+        data.sub_origem = sub_origem || null;
+      }
+
+      await supabaseFetch(`${table}?id=eq.${editingItem}`, 'PATCH', data);
 
       closeModal();
       if (editingType.toLowerCase() === 'closer') loadClosers();
@@ -543,10 +570,13 @@
     async function addOrigem(e) {
       e.preventDefault();
       const name = document.getElementById('origem-name').value.trim();
+      const sub_origem = document.getElementById('origem-sub').value.trim();
       if (!name) return alert('Nome obrigatório');
-      const result = await supabaseFetch('origens', 'POST', { name });
+      const data = { name, sub_origem: sub_origem || null };
+      const result = await supabaseFetch('origens', 'POST', data);
       if (result && result.length) {
         document.getElementById('origem-name').value = '';
+        document.getElementById('origem-sub').value = '';
         showSuccessMsg('origem-success-msg');
         loadOrigens();
       }
@@ -555,14 +585,15 @@
     function renderOrigensTable() {
       const tbody = document.getElementById('origens-table');
       if (!origens.length) {
-        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center">Nenhuma origem</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Nenhuma origem</td></tr>';
         return;
       }
       tbody.innerHTML = origens.map(o => `<tr>
         <td>${o.name}</td>
+        <td>${o.sub_origem || '--'}</td>
         <td>
           <div class="btn-group">
-            <button class="edit-btn" onclick="openEditModal(${o.id}, '${o.name}', 'Origem')">Editar</button>
+            <button class="edit-btn" onclick="openEditModalOrigem(${o.id}, '${o.name}', '${o.sub_origem || ''}', 'Origem')">Editar</button>
             <button class="remove-btn" onclick="deleteOrigem(${o.id})">Deletar</button>
           </div>
         </td>
