@@ -14,24 +14,20 @@
     header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid #383838; }
     header h1 { font-size: 28px; font-weight: 900; }
     
-    .breadcrumb { font-size: 11px; color: #999; }
-    .breadcrumb a { color: #B2FF00; text-decoration: none; cursor: pointer; }
-    .breadcrumb a:hover { text-decoration: underline; }
-    
     .card { background: #2A2A2A; padding: 20px; margin-bottom: 24px; border-radius: 8px; border: 1px solid #383838; }
     .card-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; color: #fff; }
     
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; font-size: 11px; font-weight: 700; color: #999; margin-bottom: 8px; text-transform: uppercase; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; background: #1A1A1A; border: 1px solid #383838; color: #fff; border-radius: 6px; font-family: inherit; }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #B2FF00; box-shadow: 0 0 8px rgba(178,255,0,0.2); }
+    .form-group input, .form-group select { width: 100%; padding: 10px; background: #1A1A1A; border: 1px solid #383838; color: #fff; border-radius: 6px; font-family: inherit; }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: #B2FF00; box-shadow: 0 0 8px rgba(178,255,0,0.2); }
     
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
     .form-row.full { grid-template-columns: 1fr; }
     
     .btn { background: #B2FF00; color: #1A1A1A; padding: 12px 24px; border: none; border-radius: 6px; font-weight: 900; font-size: 14px; cursor: pointer; margin-top: 16px; }
     .btn:hover { opacity: 0.9; }
-    .btn-secondary { background: #383838; color: #fff; }
     
     .success { color: #4CAF50; padding: 12px; border-radius: 6px; margin-bottom: 16px; display: none; }
     .success.show { display: block; }
@@ -41,156 +37,269 @@
     table td { padding: 12px; border-bottom: 1px solid #383838; }
     table tr:hover { background: rgba(178,255,0,0.03); }
     
-    .back-link { display: inline-block; margin-bottom: 24px; padding: 8px 16px; background: #383838; color: #fff; text-decoration: none; border-radius: 4px; font-size: 12px; }
-    .back-link:hover { background: #B2FF00; color: #1A1A1A; }
+    .dynamic-fields { background: #1A1A1A; padding: 16px; border-radius: 6px; margin-bottom: 16px; }
+    .dynamic-field { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-bottom: 12px; align-items: flex-end; }
+    .dynamic-field select, .dynamic-field input { margin: 0; }
+    .remove-btn { background: #F44336; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 700; }
+    .remove-btn:hover { opacity: 0.8; }
+    
+    .add-btn { background: #383838; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 700; margin-top: 8px; }
+    .add-btn:hover { background: #B2FF00; color: #1A1A1A; }
   </style>
 </head>
 <body>
   <div class="container">
-    <a href="/" class="back-link">← Voltar ao Dashboard</a>
-
     <header>
-      <h1>Lançamento de Dados Comercial</h1>
+      <h1>Lançamento Comercial</h1>
     </header>
 
-    <!-- Registrar Lead -->
+    <!-- Formulário -->
     <div class="card">
-      <div class="card-title">Registrar Novo Lead</div>
-      <div class="success" id="success-msg">Lead registrado com sucesso!</div>
+      <div class="card-title">Registrar Movimentação Comercial</div>
+      <div class="success" id="success-msg">Registro salvo com sucesso!</div>
       
-      <form onsubmit="registerLead(event)">
+      <form onsubmit="registerMovement(event)">
+        <!-- Nome Closer e Data -->
         <div class="form-row">
           <div class="form-group">
-            <label>Nome</label>
-            <input type="text" name="name" placeholder="Nome completo" required>
-          </div>
-          <div class="form-group">
-            <label>Email</label>
-            <input type="email" name="email" placeholder="email@exemplo.com" required>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Telefone</label>
-            <input type="tel" name="phone" placeholder="(11) 9999-9999">
-          </div>
-          <div class="form-group">
-            <label>Origem</label>
-            <select name="source" required>
+            <label>Nome Closer</label>
+            <select name="closer" required>
               <option value="">Selecione...</option>
-              <option value="WhatsApp">WhatsApp</option>
-              <option value="Facebook">Facebook</option>
-              <option value="Instagram">Instagram</option>
-              <option value="Google">Google</option>
-              <option value="Outro">Outro</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Status</label>
-            <select name="status" required>
-              <option value="">Selecione...</option>
-              <option value="Novo">Novo</option>
-              <option value="Qualificado">Qualificado</option>
-              <option value="Em negociação">Em negociação</option>
-              <option value="Convertido">Convertido</option>
-              <option value="Perdido">Perdido</option>
+              <option value="João Silva">João Silva</option>
+              <option value="Maria Santos">Maria Santos</option>
+              <option value="Pedro Costa">Pedro Costa</option>
+              <option value="Ana Oliveira">Ana Oliveira</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Valor Estimado (R$)</label>
-            <input type="number" name="value" placeholder="0,00" step="0.01">
+            <label>Data</label>
+            <input type="date" name="data" required>
           </div>
         </div>
 
-        <div class="form-row full">
+        <!-- Agendamentos (Dinâmico) -->
+        <div class="form-group">
+          <label>Agendamentos Realizados</label>
+          <div class="dynamic-fields" id="agendamentos-container">
+            <div class="dynamic-field">
+              <select class="sdr-select" required>
+                <option value="">Selecione SDR...</option>
+                <option value="SDR 1">SDR 1</option>
+                <option value="SDR 2">SDR 2</option>
+                <option value="SDR 3">SDR 3</option>
+                <option value="SDR 4">SDR 4</option>
+              </select>
+              <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
+              <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+            </div>
+          </div>
+          <button type="button" class="add-btn" onclick="addAgendamento()">+ Adicionar SDR</button>
+        </div>
+
+        <!-- Reuniões Comparecidas -->
+        <div class="form-row">
           <div class="form-group">
-            <label>Observações</label>
-            <textarea name="notes" placeholder="Adicione detalhes sobre o lead..." rows="4"></textarea>
+            <label>Reuniões Comparecidas</label>
+            <select name="reunioes" required>
+              <option value="">Selecione...</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+
+          <!-- Reagendamentos (Dinâmico) -->
+          <div style="grid-column: span 1;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Reagendamentos</label>
+            </div>
+            <div class="dynamic-fields" id="reagendamentos-container" style="margin-bottom: 0;">
+              <div class="dynamic-field">
+                <select class="sdr-select" required>
+                  <option value="">Selecione SDR...</option>
+                  <option value="SDR 1">SDR 1</option>
+                  <option value="SDR 2">SDR 2</option>
+                  <option value="SDR 3">SDR 3</option>
+                  <option value="SDR 4">SDR 4</option>
+                </select>
+                <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
+                <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <button type="submit" class="btn">Registrar Lead</button>
+        <button type="button" class="add-btn" onclick="addReagendamento()">+ Adicionar SDR (Reagendamentos)</button>
+
+        <!-- Quantidade Ganho e Valor Ganho -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Quantidade Ganho</label>
+            <select name="quantidade-ganho" required>
+              <option value="">Selecione...</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Valor Ganho (R$)</label>
+            <input type="number" name="valor-ganho" placeholder="0,00" step="0.01" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn">Registrar Movimentação</button>
       </form>
     </div>
 
-    <!-- Tabela de Leads -->
+    <!-- Tabela de Registros -->
     <div class="card">
-      <div class="card-title">Leads Registrados</div>
+      <div class="card-title">Histórico de Movimentações</div>
       <table>
         <thead>
           <tr>
-            <th>Nome</th>
-            <th>Email</th>
-            <th>Telefone</th>
-            <th>Origem</th>
-            <th>Status</th>
-            <th>Valor</th>
             <th>Data</th>
+            <th>Closer</th>
+            <th>Agendamentos</th>
+            <th>Reuniões</th>
+            <th>Reagendamentos</th>
+            <th>Qtd. Ganho</th>
+            <th>Valor Ganho</th>
           </tr>
         </thead>
-        <tbody id="leads-table">
-          <tr><td colspan="7" style="text-align:center;color:#999;">Nenhum lead registrado</td></tr>
+        <tbody id="records-table">
+          <tr><td colspan="7" style="text-align:center;color:#999;">Nenhum registro</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
   <script>
-    let leads = JSON.parse(localStorage.getItem('leads')) || [];
+    let movements = JSON.parse(localStorage.getItem('movements')) || [];
 
-    function registerLead(e) {
+    function addAgendamento() {
+      const container = document.getElementById('agendamentos-container');
+      const newField = document.createElement('div');
+      newField.className = 'dynamic-field';
+      newField.innerHTML = `
+        <select class="sdr-select" required>
+          <option value="">Selecione SDR...</option>
+          <option value="SDR 1">SDR 1</option>
+          <option value="SDR 2">SDR 2</option>
+          <option value="SDR 3">SDR 3</option>
+          <option value="SDR 4">SDR 4</option>
+        </select>
+        <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
+        <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+      `;
+      container.appendChild(newField);
+    }
+
+    function addReagendamento() {
+      const container = document.getElementById('reagendamentos-container');
+      const newField = document.createElement('div');
+      newField.className = 'dynamic-field';
+      newField.innerHTML = `
+        <select class="sdr-select" required>
+          <option value="">Selecione SDR...</option>
+          <option value="SDR 1">SDR 1</option>
+          <option value="SDR 2">SDR 2</option>
+          <option value="SDR 3">SDR 3</option>
+          <option value="SDR 4">SDR 4</option>
+        </select>
+        <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
+        <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+      `;
+      container.appendChild(newField);
+    }
+
+    function removeField(button) {
+      button.parentElement.remove();
+    }
+
+    function registerMovement(e) {
       e.preventDefault();
       const form = e.target;
-      
-      const lead = {
-        id: leads.length + 1,
-        name: form.name.value,
-        email: form.email.value,
-        phone: form.phone.value,
-        source: form.source.value,
-        status: form.status.value,
-        value: form.value.value,
-        notes: form.notes.value,
-        date: new Date().toLocaleDateString('pt-BR')
+
+      // Coletar agendamentos
+      const agendamentos = [];
+      document.querySelectorAll('#agendamentos-container .dynamic-field').forEach(field => {
+        const sdr = field.querySelector('.sdr-select').value;
+        const qty = field.querySelector('.quantidade').value;
+        if (sdr && qty) {
+          agendamentos.push({ sdr, quantidade: qty });
+        }
+      });
+
+      // Coletar reagendamentos
+      const reagendamentos = [];
+      document.querySelectorAll('#reagendamentos-container .dynamic-field').forEach(field => {
+        const sdr = field.querySelector('.sdr-select').value;
+        const qty = field.querySelector('.quantidade').value;
+        if (sdr && qty) {
+          reagendamentos.push({ sdr, quantidade: qty });
+        }
+      });
+
+      const movement = {
+        id: movements.length + 1,
+        data: form.dataset.value,
+        closer: form.closer.value,
+        agendamentos: agendamentos,
+        reunioes: form.reunioes.value,
+        reagendamentos: reagendamentos,
+        quantidade_ganho: form['quantidade-ganho'].value,
+        valor_ganho: form['valor-ganho'].value,
+        timestamp: new Date().toLocaleDateString('pt-BR')
       };
-      
-      leads.push(lead);
-      localStorage.setItem('leads', JSON.stringify(leads));
-      
+
+      movements.push(movement);
+      localStorage.setItem('movements', JSON.stringify(movements));
+
       const msg = document.getElementById('success-msg');
       msg.classList.add('show');
       setTimeout(() => msg.classList.remove('show'), 3000);
-      
+
       form.reset();
-      renderLeadsTable();
+      renderTable();
     }
 
-    function renderLeadsTable() {
-      const tbody = document.getElementById('leads-table');
-      
-      if (leads.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;">Nenhum lead registrado</td></tr>';
+    function renderTable() {
+      const tbody = document.getElementById('records-table');
+
+      if (movements.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;">Nenhum registro</td></tr>';
         return;
       }
-      
-      tbody.innerHTML = leads.map(lead => `<tr>
-        <td>${lead.name}</td>
-        <td>${lead.email}</td>
-        <td>${lead.phone || '--'}</td>
-        <td>${lead.source}</td>
-        <td>${lead.status}</td>
-        <td>${lead.value ? 'R$ ' + parseFloat(lead.value).toFixed(2) : '--'}</td>
-        <td>${lead.date}</td>
+
+      tbody.innerHTML = movements.map(m => `<tr>
+        <td>${m.timestamp}</td>
+        <td>${m.closer}</td>
+        <td>${m.agendamentos.map(a => a.sdr + ': ' + a.quantidade).join(', ') || '--'}</td>
+        <td>${m.reunioes}</td>
+        <td>${m.reagendamentos.map(r => r.sdr + ': ' + r.quantidade).join(', ') || '--'}</td>
+        <td>${m.quantidade_ganho}</td>
+        <td>R$ ${parseFloat(m.valor_ganho).toFixed(2)}</td>
       </tr>`).join('');
     }
 
-    // Render table on load
     window.addEventListener('load', function() {
-      renderLeadsTable();
+      document.querySelector('input[type="date"]').valueAsDate = new Date();
+      renderTable();
     });
   </script>
 </body>
