@@ -39,16 +39,7 @@
     table td { padding: 12px; border-bottom: 1px solid #383838; }
     table tr:hover { background: rgba(178,255,0,0.03); }
     
-    .expandable-row { cursor: pointer; }
-    .expandable-row:hover { background: rgba(178,255,0,0.05); }
-    
-    .expand-cell { width: 30px; }
-    .expand-cell-icon { display: inline-block; transition: transform 0.3s; }
-    .expand-cell-icon.open { transform: rotate(180deg); }
-    
-    .detail-row { background: rgba(0,0,0,0.2); display: none; }
-    .detail-row.show { display: table-row; }
-    .detail-content { padding: 20px; }
+
     .detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
     .detail-label { font-size: 10px; color: #999; text-transform: uppercase; margin-bottom: 4px; }
     .detail-value { font-size: 12px; color: #fff; }
@@ -362,6 +353,53 @@
     </div>
   </div>
 
+  <!-- MODAL EDITAR MOVIMENTAÇÃO -->
+  <div id="editMovementModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Editar Movimentação</h2>
+        <button class="modal-close" onclick="closeEditMovementModal()">×</button>
+      </div>
+      <form onsubmit="saveEditMovement(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Data</label>
+            <input type="date" id="edit-movement-data" required>
+          </div>
+          <div class="form-group">
+            <label>Reuniões Comparecidas</label>
+            <select id="edit-movement-reunioes" required>
+              <option value="">Selecione...</option>
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Ganhos Registrados</label>
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 16px;">
+            <thead>
+              <tr style="border-bottom: 1px solid #383838;">
+                <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">Origem</th>
+                <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">SDR</th>
+                <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">Valor</th>
+                <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="edit-ganhos-tbody" style="border-bottom: 1px solid #383838;">
+              <tr><td colspan="4" style="padding: 8px; text-align: center; color: #999;">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%;">Salvar Alterações</button>
+      </form>
+    </div>
+  </div>
+
   <script>
     const SUPABASE_URL = 'https://mrchphqqgbssndijichd.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yY2hwaHFxZ2Jzc25kaWppY2hkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTM3NzQsImV4cCI6MjA4ODQ4OTc3NH0.27BBzargnQ1jLuZNdlrohOxl8VqNtZLiwZqJcT4xpoA';
@@ -595,12 +633,25 @@
       renderTable();
     }
 
-    function toggleRow(id) {
-      const movement = movements.find(m => m.id === id);
-      if (movement) {
-        movement.expanded = !movement.expanded;
-        renderTable();
-      }
+    function openEditMovementModal(id) {
+      editingMovement = movements.find(m => m.id === id);
+      if (!editingMovement) return;
+      
+      // Preenche campos do modal
+      document.getElementById('edit-movement-data').value = editingMovement.data;
+      document.getElementById('edit-movement-reunioes').value = editingMovement.reunioes;
+      
+      // Popula ganhos dinâmicos
+      editTempGanhos = JSON.parse(JSON.stringify(editingMovement.ganhos || []));
+      renderEditGanhos();
+      
+      document.getElementById('editMovementModal').classList.add('show');
+    }
+
+    function closeEditMovementModal() {
+      document.getElementById('editMovementModal').classList.remove('show');
+      editingMovement = null;
+      editTempGanhos = [];
     }
 
     function openEditModal(id) {
@@ -792,8 +843,7 @@
           return `${sdrName}: ${r.quantidade}`;
         }).join(', ') || '--';
 
-        return `<tr class="expandable-row" onclick="toggleRow(${m.id})">
-          <td class="expand-cell"><span class="expand-cell-icon ${m.expanded ? 'open' : ''}">▼</span></td>
+        return `<tr>
           <td>${m.data}</td>
           <td>${closerName}</td>
           <td>${ganhosDisplay}</td>
@@ -802,22 +852,10 @@
           <td>${reagendStr}</td>
           <td>${totalQtdGanho}</td>
           <td>R$ ${totalValorGanho.toFixed(2)}</td>
-          <td onclick="event.stopPropagation();">
+          <td>
             <div class="btn-group">
+              <button class="edit-btn" onclick="openEditMovementModal(${m.id})">Editar</button>
               <button class="delete-btn" onclick="deleteMovement(${m.id})">Deletar</button>
-            </div>
-          </td>
-        </tr>
-        <tr class="detail-row ${m.expanded ? 'show' : ''}" onclick="event.stopPropagation();">
-          <td colspan="10">
-            <div class="detail-content">
-              <p><strong>Detalhes completos:</strong></p>
-              <p>Closer: ${closerName}</p>
-              <p>Ganhos: ${ganhosDetalhes}</p>
-              <p>Agendamentos: ${agendStr}</p>
-              <p>Reuniões: ${m.reunioes}</p>
-              <p>Reagendamentos: ${reagendStr}</p>
-              <p>Total Ganho: ${totalQtdGanho} unidades - R$ ${totalValorGanho.toFixed(2)}</p>
             </div>
           </td>
         </tr>`;
@@ -832,6 +870,7 @@
 
     // ========== MODAL GANHO FUNCTIONS ==========
     let tempGanhos = [];
+    let editTempGanhos = [];
 
     function openGanhoModal() {
       document.getElementById('ganhoModal').classList.add('show');
@@ -951,6 +990,58 @@
       }).join('');
     }
 
+    // ========== EDIT MOVEMENT MODAL FUNCTIONS ==========
+    function renderEditGanhos() {
+      const tbody = document.getElementById('edit-ganhos-tbody');
+      
+      if (editTempGanhos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="padding: 8px; text-align: center; color: #999;">Nenhum ganho registrado</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = editTempGanhos.map((g, index) => {
+        const origemName = g.origem_name || origens.find(o => o.id == g.origem_id)?.name || 'N/A';
+        const origemDisplay = g.sub_origem ? `${origemName} (${g.sub_origem})` : origemName;
+        const sdrName = g.sdr_name || sdrs.find(s => s.id == g.sdr_id)?.name || 'N/A';
+        return `<tr>
+          <td style="padding: 8px;">${origemDisplay}</td>
+          <td style="padding: 8px;">${sdrName}</td>
+          <td style="padding: 8px;">R$ ${g.valor.toFixed(2)}</td>
+          <td style="padding: 8px;"><button type="button" class="remove-btn" onclick="removerEditGanho(${index})" style="padding: 4px 8px;">Remover</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function removerEditGanho(index) {
+      editTempGanhos.splice(index, 1);
+      renderEditGanhos();
+    }
+
+    function saveEditMovement(e) {
+      e.preventDefault();
+      
+      if (!editingMovement) return;
+      
+      const data = document.getElementById('edit-movement-data').value;
+      const reunioes = parseInt(document.getElementById('edit-movement-reunioes').value);
+      
+      if (editTempGanhos.length === 0) {
+        alert('Registre pelo menos um ganho');
+        return;
+      }
+      
+      // Atualiza movimento
+      editingMovement.data = data;
+      editingMovement.reunioes = reunioes;
+      editingMovement.ganhos = editTempGanhos;
+      
+      localStorage.setItem('movements', JSON.stringify(movements));
+      
+      showSuccessMsg();
+      closeEditMovementModal();
+      renderTable();
+    }
+
     window.addEventListener('load', function() {
       document.querySelector('input[type="date"]').valueAsDate = new Date();
       loadData();
@@ -969,6 +1060,9 @@
       
       const ganhoModal = document.getElementById('ganhoModal');
       if (e.target === ganhoModal) closeGanhoModal();
+      
+      const editMovementModal = document.getElementById('editMovementModal');
+      if (e.target === editMovementModal) closeEditMovementModal();
     });
   </script>
 </body>
