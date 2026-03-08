@@ -497,11 +497,16 @@
       e.preventDefault();
       const name = document.getElementById('closer-name').value.trim();
       if (!name) return alert('Nome obrigatório');
+      
       const result = await supabaseFetch('closers', 'POST', { name });
-      if (result && result.length) {
+      console.log('Resultado Closers:', result);
+      
+      if (result && Array.isArray(result) && result.length > 0) {
         document.getElementById('closer-name').value = '';
         showSuccessMsg('closer-success-msg');
         loadClosers();
+      } else {
+        console.warn('Resposta inesperada:', result);
       }
     }
 
@@ -538,11 +543,16 @@
       e.preventDefault();
       const name = document.getElementById('sdr-name').value.trim();
       if (!name) return alert('Nome obrigatório');
+      
       const result = await supabaseFetch('sdrs', 'POST', { name });
-      if (result && result.length) {
+      console.log('Resultado SDRs:', result);
+      
+      if (result && Array.isArray(result) && result.length > 0) {
         document.getElementById('sdr-name').value = '';
         showSuccessMsg('sdr-success-msg');
         loadSDRs();
+      } else {
+        console.warn('Resposta inesperada:', result);
       }
     }
 
