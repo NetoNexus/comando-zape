@@ -984,11 +984,7 @@
       e.preventDefault();
       const form = e.target;
 
-      // Validar que há ganhos registrados
-      if (tempGanhos.length === 0) {
-        alert('Registre pelo menos um ganho antes de finalizar a movimentação');
-        return;
-      }
+      // ✅ Ganhos é OPCIONAL - pode registrar sem ganhos (aparecerá R$ 0,00)
 
       const agendamentos = [];
       document.querySelectorAll('#agendamentos-container .dynamic-field').forEach(field => {
@@ -1978,11 +1974,7 @@
       
       console.log('💾 Salvando edições do movimento...');
       
-      // Validar ganhos
-      if (editTempGanhos.length === 0) {
-        alert('Registre pelo menos um ganho');
-        return;
-      }
+      // ✅ Ganhos é OPCIONAL - pode salvar sem ganhos (aparecerá R$ 0,00)
       
       // Coletar CLOSER
       const closerId = parseInt(document.getElementById('edit-closer-select').value);
