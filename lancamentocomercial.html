@@ -1941,31 +1941,7 @@
     }
 
     // ========== EDIT MOVEMENT MODAL FUNCTIONS ==========
-    function renderEditGanhos() {
-      const tbody = document.getElementById('edit-ganhos-tbody');
-      
-      if (editTempGanhos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="padding: 8px; text-align: center; color: #999;">Nenhum ganho registrado</td></tr>';
-        return;
-      }
-      
-      tbody.innerHTML = editTempGanhos.map((g, index) => {
-        const origemName = g.origem_name || origens.find(o => o.id == g.origem_id)?.name || 'N/A';
-        const origemDisplay = g.sub_origem ? `${origemName} (${g.sub_origem})` : origemName;
-        const sdrName = g.sdr_name || sdrs.find(s => s.id == g.sdr_id)?.name || 'N/A';
-        return `<tr>
-          <td style="padding: 8px;">${origemDisplay}</td>
-          <td style="padding: 8px;">${sdrName}</td>
-          <td style="padding: 8px;">R$ ${g.valor.toFixed(2)}</td>
-          <td style="padding: 8px;"><button type="button" class="remove-btn" onclick="removerEditGanho(${index})" style="padding: 4px 8px;">Remover</button></td>
-        </tr>`;
-      }).join('');
-    }
 
-    function removerEditGanho(index) {
-      editTempGanhos.splice(index, 1);
-      renderEditGanhos();
-    }
 
     function saveEditMovement(e) {
       e.preventDefault();
