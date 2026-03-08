@@ -523,7 +523,12 @@
       const newName = document.getElementById('modal-name').value.trim();
       if (!newName) return alert('Nome obrigatório');
 
-      const table = editingType.toLowerCase() === 'closer' ? 'closers' : editingType.toLowerCase();
+      const typeLC = editingType.toLowerCase();
+      let table = typeLC;
+      if (typeLC === 'closer') table = 'closers';
+      else if (typeLC === 'origem') table = 'origens';
+      else if (typeLC === 'sdr') table = 'sdrs';
+      
       const data = { name: newName };
       
       // Se for Origem, incluir sub_origem também
