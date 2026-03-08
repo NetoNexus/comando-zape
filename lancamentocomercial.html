@@ -981,33 +981,36 @@
       }
     }
 
-    async function deleteMovement(id) {
+    function deleteMovement(id) {
       console.log('🎯 deleteMovement() chamado com ID:', id);
       
       if (confirm('Tem certeza?')) {
         console.log('✔️ Confirmou exclusão');
         
-        // Deletar do Supabase PRIMEIRO
-        console.log('⏳ Deletando do Supabase...');
-        const result = await deleteMovementFromSupabase(id);
+        // PASSO 1: Remover da UI IMEDIATAMENTE
+        console.log('⚡ Removendo da UI imediatamente...');
+        movements = movements.filter(m => m.id !== id);
+        localStorage.setItem('movements', JSON.stringify(movements));
+        console.log('✅ Removido de localStorage');
         
-        if (result) {
-          console.log('✅ Deletado do Supabase com sucesso!');
-          // DEPOIS recarregar do Supabase (não usar localStorage)
-          console.log('🔄 Recarregando do Supabase...');
-          const loaded = await loadMovementsFromSupabase();
-          console.log('💾 Dados recarregados do Supabase:', loaded);
-          
-          console.log('📊 Total de movimentos agora:', movements.length);
-          console.log('🖼️ Renderizando tabela...');
-          renderTable();
-          console.log('📈 Renderizando acompanhamento...');
-          loadAcompanhamento();
-          console.log('✅✅ Pronto!');
-        } else {
-          console.error('❌❌ Falhou ao deletar do Supabase!');
-          alert('Erro ao deletar. Tente novamente.');
-        }
+        // PASSO 2: Renderizar (some da tela na hora)
+        console.log('🖼️ Renderizando tabela...');
+        renderTable();
+        console.log('📈 Renderizando acompanhamento...');
+        loadAcompanhamento();
+        console.log('✅ UI atualizada - movimento sumiu!');
+        
+        // PASSO 3: Sincronizar com Supabase em BACKGROUND (sem await, sem bloquear)
+        console.log('🔄 Sincronizando com Supabase em background...');
+        deleteMovementFromSupabase(id).then(result => {
+          if (result) {
+            console.log('✅ Deletado do Supabase com sucesso!');
+          } else {
+            console.warn('⚠️ Falhou ao deletar do Supabase, mas foi removido localmente');
+          }
+        });
+        
+        console.log('✅✅ Pronto! Deletado localmente + sincronizando...');
       } else {
         console.log('❌ Cancelou exclusão');
       }
