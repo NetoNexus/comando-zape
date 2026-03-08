@@ -486,10 +486,93 @@
     let editingMovement = null;
     let historicoExpanded = true;
 
+    // ========== SUPABASE MOVEMENTS SYNC ==========
+    async function saveMovementToSupabase(movement) {
+      try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/movements`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            data: movement.data,
+            data_raw: movement.data_raw,
+            closer_id: movement.closer_id,
+            agendamentos: movement.agendamentos,
+            reunioes: movement.reunioes,
+            reagendamentos: movement.reagendamentos,
+            noshows: movement.noshows,
+            ganhos: movement.ganhos
+          })
+        });
+        if (response.ok) {
+          console.log('✅ Movement salvo no Supabase:', movement);
+          return true;
+        } else {
+          console.error('❌ Erro ao salvar:', await response.text());
+          return false;
+        }
+      } catch (err) {
+        console.error('❌ Erro Supabase:', err);
+        return false;
+      }
+    }
+
+    async function loadMovementsFromSupabase() {
+      try {
+        const data = await supabaseFetch('movements?order=created_at.desc');
+        if (data && Array.isArray(data)) {
+          movements = data.map((m, idx) => ({
+            id: m.id || idx + 1,
+            data: m.data,
+            data_raw: m.data_raw,
+            closer_id: m.closer_id,
+            agendamentos: m.agendamentos || [],
+            reunioes: m.reunioes || 0,
+            reagendamentos: m.reagendamentos || [],
+            noshows: m.noshows || [],
+            ganhos: m.ganhos || [],
+            timestamp: m.created_at,
+            expanded: false
+          }));
+          localStorage.setItem('movements', JSON.stringify(movements));
+          console.log('✅ Movements carregados do Supabase:', movements.length);
+          return true;
+        }
+      } catch (err) {
+        console.error('❌ Erro ao carregar movements:', err);
+      }
+      return false;
+    }
+
+    async function deleteMovementFromSupabase(movementId) {
+      try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/movements?id=eq.${movementId}`, {
+          method: 'DELETE',
+          headers: {
+            'apikey': SUPABASE_KEY
+          }
+        });
+        if (response.ok) {
+          console.log('✅ Movement deletado do Supabase:', movementId);
+          return true;
+        } else {
+          console.error('❌ Erro ao deletar:', await response.text());
+          return false;
+        }
+      } catch (err) {
+        console.error('❌ Erro Supabase:', err);
+        return false;
+      }
+    }
+
     async function loadData() {
       closers = await supabaseFetch('closers?order=name');
       sdrs = await supabaseFetch('sdrs?order=name');
       origens = await supabaseFetch('origens?order=name');
+      await loadMovementsFromSupabase(); // Carregar movements do Supabase
       populateSelects();
       renderTable();
     }
@@ -703,6 +786,9 @@
 
       movements.push(movement);
       localStorage.setItem('movements', JSON.stringify(movements));
+      
+      // Salvar no Supabase
+      saveMovementToSupabase(movement);
 
       const msg = document.getElementById('success-msg');
       msg.classList.add('show');
@@ -774,6 +860,10 @@
       if (confirm('Tem certeza?')) {
         movements = movements.filter(m => m.id !== id);
         localStorage.setItem('movements', JSON.stringify(movements));
+        
+        // Deletar do Supabase
+        deleteMovementFromSupabase(id);
+        
         renderTable();
         loadAcompanhamento(); // Sincronizar acompanhamento em tempo real
       }
