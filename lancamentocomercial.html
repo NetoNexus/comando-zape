@@ -420,46 +420,94 @@
     </div>
   </div>
 
-  <!-- MODAL EDITAR MOVIMENTAÇÃO -->
+  <!-- MODAL EDITAR MOVIMENTAÇÃO - COMPLETO -->
   <div id="editMovementModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 900px;">
       <div class="modal-header">
-        <h2>Editar Movimentação</h2>
+        <h2>Editar Movimentação Comercial</h2>
         <button class="modal-close" onclick="closeEditMovementModal()">×</button>
       </div>
       <form onsubmit="saveEditMovement(event)">
+        <!-- CLOSER E DATA -->
         <div class="form-row">
+          <div class="form-group">
+            <label>Closer</label>
+            <select id="edit-closer-select" required>
+              <option value="">Carregando...</option>
+            </select>
+          </div>
           <div class="form-group">
             <label>Data</label>
             <input type="date" id="edit-movement-data" required>
           </div>
-          <div class="form-group">
-            <label>Reuniões Comparecidas</label>
-            <select id="edit-movement-reunioes" required>
-              <option value="">Selecione...</option>
-              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-              <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-              <option value="7">7</option><option value="8">8</option><option value="9">9</option>
-              <option value="10">10</option>
-            </select>
-          </div>
         </div>
 
+        <!-- AGENDAMENTOS -->
+        <div class="form-group">
+          <label>Agendamentos Realizados</label>
+          <div class="dynamic-fields" id="edit-agendamentos-container">
+            <div class="dynamic-field">
+              <select class="sdr-select" required>
+                <option value="">Carregando SDRs...</option>
+              </select>
+              <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
+              <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+            </div>
+          </div>
+          <button type="button" class="add-btn" onclick="addEditAgendamento()">+ Adicionar Agendamentos</button>
+        </div>
+
+        <!-- REUNIÕES -->
+        <div class="form-group">
+          <label>Reuniões Comparecidas</label>
+          <div class="dynamic-fields" id="edit-reunioes-container">
+            <div class="dynamic-field">
+              <select class="sdr-select" required>
+                <option value="">Carregando SDRs...</option>
+              </select>
+              <input type="number" class="quantidade" placeholder="Quantidade" min="1" required>
+              <button type="button" class="remove-btn" onclick="removeField(this)">Remover</button>
+            </div>
+          </div>
+          <button type="button" class="add-btn" onclick="addEditReuniao()">+ Adicionar Reuniões</button>
+        </div>
+
+        <!-- REAGENDAMENTOS -->
+        <div class="form-group">
+          <label>Reagendamentos</label>
+          <div class="dynamic-fields" id="edit-reagendamentos-container">
+            <!-- Dinâmico -->
+          </div>
+          <button type="button" class="add-btn" onclick="addEditReagendamento()">+ Adicionar Reagendamentos</button>
+        </div>
+
+        <!-- NO-SHOWS -->
+        <div class="form-group">
+          <label>No-Shows</label>
+          <div class="dynamic-fields" id="edit-noshows-container">
+            <!-- Dinâmico -->
+          </div>
+          <button type="button" class="add-btn" onclick="addEditNoShow()">+ Adicionar No-Shows</button>
+        </div>
+
+        <!-- GANHOS -->
         <div class="form-group">
           <label>Ganhos Registrados</label>
           <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 16px;">
             <thead>
               <tr style="border-bottom: 1px solid #383838;">
                 <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">Origem</th>
+                <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">Serviço</th>
                 <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">SDR</th>
                 <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">Valor</th>
                 <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">Ação</th>
               </tr>
             </thead>
             <tbody id="edit-ganhos-tbody" style="border-bottom: 1px solid #383838;">
-              <tr><td colspan="4" style="padding: 8px; text-align: center; color: #999;">Carregando...</td></tr>
+              <tr><td colspan="5" style="padding: 8px; text-align: center; color: #999;">Nenhum ganho registrado</td></tr>
             </tbody>
           </table>
+          <button type="button" class="add-btn" onclick="openEditGanhoModal()">+ Registrar Ganho</button>
         </div>
 
         <button type="submit" class="btn" style="width: 100%;">Salvar Alterações</button>
