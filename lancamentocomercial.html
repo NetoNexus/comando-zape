@@ -824,6 +824,118 @@
       setTimeout(() => msg.classList.remove('show'), 3000);
     }
 
+    // ========== MODAL GANHO FUNCTIONS ==========
+    let tempGanhos = [];
+
+    function openGanhoModal() {
+      document.getElementById('ganhoModal').classList.add('show');
+      populateGanhoSelects();
+    }
+
+    function closeGanhoModal() {
+      document.getElementById('ganhoModal').classList.remove('show');
+      document.getElementById('ganho-origem-select').value = '';
+      document.getElementById('ganho-sub-origem-select').value = '';
+      document.getElementById('ganho-sdr-select').value = '';
+      document.getElementById('ganho-valor-input').value = '';
+      document.getElementById('ganho-sub-origem-group').style.display = 'none';
+    }
+
+    function populateGanhoSelects() {
+      document.getElementById('ganho-origem-select').innerHTML = '<option value="">Selecione origem...</option>' + origens.map(o => 
+        `<option value="${o.id}">${o.name}</option>`
+      ).join('');
+      
+      document.getElementById('ganho-sdr-select').innerHTML = '<option value="">Selecione SDR...</option>' + sdrs.map(s =>
+        `<option value="${s.id}">${s.name}</option>`
+      ).join('');
+    }
+
+    function onGanhoOrigemChange() {
+      const origemId = document.getElementById('ganho-origem-select').value;
+      const subOrigemGroup = document.getElementById('ganho-sub-origem-group');
+      const subOrigemSelect = document.getElementById('ganho-sub-origem-select');
+      
+      if (!origemId) {
+        subOrigemGroup.style.display = 'none';
+        return;
+      }
+      
+      const origem = origens.find(o => o.id == origemId);
+      if (!origem) {
+        subOrigemGroup.style.display = 'none';
+        return;
+      }
+      
+      let subOrigens = [];
+      try {
+        subOrigens = JSON.parse(origem.sub_origem || '[]');
+      } catch (e) {
+        subOrigens = [];
+      }
+      
+      if (Array.isArray(subOrigens) && subOrigens.length > 0) {
+        subOrigemSelect.innerHTML = '<option value="">Selecione sub-origem...</option>' + 
+          subOrigens.map(sub => `<option value="${sub}">${sub}</option>`).join('');
+        subOrigemGroup.style.display = 'block';
+      } else {
+        subOrigemGroup.style.display = 'none';
+      }
+    }
+
+    function adicionarGanho(e) {
+      e.preventDefault();
+      
+      const origemId = document.getElementById('ganho-origem-select').value;
+      const subOrigem = document.getElementById('ganho-sub-origem-select').value || null;
+      const sdrId = document.getElementById('ganho-sdr-select').value;
+      const valor = parseFloat(document.getElementById('ganho-valor-input').value);
+      
+      if (!origemId || !sdrId || !valor) {
+        alert('Preencha todos os campos obrigatórios');
+        return;
+      }
+      
+      const origem = origens.find(o => o.id == origemId);
+      const sdr = sdrs.find(s => s.id == sdrId);
+      
+      tempGanhos.push({
+        origem_id: parseInt(origemId),
+        origem_name: origem.name,
+        sub_origem: subOrigem,
+        sdr_id: parseInt(sdrId),
+        sdr_name: sdr.name,
+        valor: valor
+      });
+      
+      renderizarGanhos();
+      closeGanhoModal();
+    }
+
+    function removerGanho(index) {
+      tempGanhos.splice(index, 1);
+      renderizarGanhos();
+    }
+
+    function renderizarGanhos() {
+      const tbody = document.getElementById('ganhos-tbody');
+      
+      if (tempGanhos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="padding: 8px; text-align: center; color: #999;">Nenhum ganho registrado</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = tempGanhos.map((g, index) => {
+        const origemDisplay = g.sub_origem ? `${g.origem_name} (${g.sub_origem})` : g.origem_name;
+        return `<tr>
+          <td style="padding: 8px;">${origemDisplay}</td>
+          <td style="padding: 8px;">${g.sdr_name}</td>
+          <td style="padding: 8px;">R$ ${g.valor.toFixed(2)}</td>
+          <td style="padding: 8px;"><button type="button" class="remove-btn" onclick="removerGanho(${index})" style="padding: 4px 8px;">Remover</button></td>
+        </tr>`;
+      }).join('');
+    }
+
     window.addEventListener('load', function() {
       document.querySelector('input[type="date"]').valueAsDate = new Date();
       loadData();
@@ -837,8 +949,11 @@
     });
 
     document.addEventListener('click', function(e) {
-      const modal = document.getElementById('editModal');
-      if (e.target === modal) closeEditModal();
+      const editModal = document.getElementById('editModal');
+      if (e.target === editModal) closeEditModal();
+      
+      const ganhoModal = document.getElementById('ganhoModal');
+      if (e.target === ganhoModal) closeGanhoModal();
     });
   </script>
 </body>
