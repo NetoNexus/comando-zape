@@ -77,12 +77,22 @@
     table td { padding: 12px; border-bottom: 1px solid #383838; }
     table tr:hover { background: rgba(178,255,0,0.03); }
     
+    .btn-group { display: flex; gap: 8px; }
+    .edit-btn { background: #2196F3; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 700; }
+    .edit-btn:hover { background: #1976D2; }
     .remove-btn { background: #F44336; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 700; }
     .remove-btn:hover { opacity: 0.8; }
 
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); }
+    .modal.show { display: flex; align-items: center; justify-content: center; }
+    .modal-content { background: #2A2A2A; border: 1px solid #383838; padding: 32px; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .modal-header h2 { font-size: 18px; font-weight: 700; }
+    .modal-close { background: none; border: none; color: #999; font-size: 24px; cursor: pointer; }
+    .modal-close:hover { color: #fff; }
+
     .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
     .kpi-card { background: linear-gradient(135deg, #2A2A2A 0%, rgba(45,45,45,0.5) 100%); border: 1px solid #383838; padding: 20px; text-align: center; border-radius: 8px; transition: all 0.3s; }
-    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #B2FF00, transparent); }
     .kpi-card:hover { border-color: #B2FF00; box-shadow: 0 0 12px rgba(178,255,0,0.1); transform: translateY(-2px); }
     .kpi-label { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
     .kpi-value { font-size: 32px; font-weight: 900; color: #B2FF00; }
@@ -171,17 +181,6 @@
             <div class="kpi-value">445.8K</div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-title">Resumo Comercial</div>
-          <table>
-            <thead><tr><th>Métrica</th><th>Valor</th></tr></thead>
-            <tbody>
-              <tr><td>Leads Qualificados</td><td>68%</td></tr>
-              <tr><td>Em Negociação</td><td>32</td></tr>
-              <tr><td>Ticket Médio</td><td>R$ 2.850</td></tr>
-            </tbody>
-          </table>
-        </div>
       </div>
 
       <!-- CADASTRO CLOSERS -->
@@ -189,7 +188,7 @@
         <header><h1>Cadastrar Closers</h1></header>
         <div class="card">
           <div class="card-title">Adicionar Novo Closer</div>
-          <div class="success" id="closer-success-msg">Closer adicionado!</div>
+          <div class="success" id="closer-success-msg">Closer atualizado!</div>
           <form onsubmit="addCloser(event)">
             <div class="form-group">
               <label>Nome do Closer</label>
@@ -214,7 +213,7 @@
         <header><h1>Cadastrar SDRs</h1></header>
         <div class="card">
           <div class="card-title">Adicionar Novo SDR</div>
-          <div class="success" id="sdr-success-msg">SDR adicionado!</div>
+          <div class="success" id="sdr-success-msg">SDR atualizado!</div>
           <form onsubmit="addSDR(event)">
             <div class="form-group">
               <label>Nome do SDR</label>
@@ -239,7 +238,7 @@
         <header><h1>Cadastrar Origens</h1></header>
         <div class="card">
           <div class="card-title">Adicionar Nova Origem</div>
-          <div class="success" id="origem-success-msg">Origem adicionada!</div>
+          <div class="success" id="origem-success-msg">Origem atualizada!</div>
           <form onsubmit="addOrigem(event)">
             <div class="form-group">
               <label>Nome da Origem</label>
@@ -301,12 +300,27 @@
     </main>
   </div>
 
+  <!-- MODALS DE EDIÇÃO -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">Editar</h2>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <form onsubmit="saveEdit(event)">
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text" id="modal-name" required>
+        </div>
+        <button type="submit" class="btn">Salvar</button>
+      </form>
+    </div>
+  </div>
+
   <script>
-    // ========== SUPABASE CONFIG ==========
     const SUPABASE_URL = 'https://mrchphqqgbssndijichd.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yY2hwaHFxZ2Jzc25kaWppY2hkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTM3NzQsImV4cCI6MjA4ODQ4OTc3NH0.27BBzargnQ1jLuZNdlrohOxl8VqNtZLiwZqJcT4xpoA';
 
-    // ========== SUPABASE FETCH ==========
     async function supabaseFetch(table, method = 'GET', data = null) {
       const url = `${SUPABASE_URL}/rest/v1/${table}`;
       const options = {
@@ -324,12 +338,11 @@
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return await response.json();
       } catch (err) {
-        console.error(`Supabase error (${table}):`, err);
+        console.error(`Supabase error:`, err);
         return [];
       }
     }
 
-    // ========== USERS ==========
     const defaultUsers = [
       { id: 1, username: 'adm', password: '123456', fullname: 'Administrador', role: 'adm' },
       { id: 2, username: 'comercial', password: '123456', fullname: 'Time Comercial', role: 'comercial' },
@@ -341,6 +354,193 @@
     let closers = [];
     let sdrs = [];
     let origens = [];
+    let editingItem = null;
+    let editingType = null;
+
+    // ========== MODAL FUNCTIONS ==========
+    function openEditModal(id, name, type) {
+      editingItem = id;
+      editingType = type;
+      document.getElementById('modal-title').textContent = `Editar ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+      document.getElementById('modal-name').value = name;
+      document.getElementById('editModal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('editModal').classList.remove('show');
+      editingItem = null;
+      editingType = null;
+    }
+
+    async function saveEdit(e) {
+      e.preventDefault();
+      const newName = document.getElementById('modal-name').value.trim();
+      if (!newName) return alert('Nome obrigatório');
+
+      const table = editingType.toLowerCase() === 'closer' ? 'closers' : editingType.toLowerCase();
+      await supabaseFetch(`${table}?id=eq.${editingItem}`, 'PATCH', { name: newName });
+
+      closeModal();
+      if (editingType.toLowerCase() === 'closer') loadClosers();
+      else if (editingType.toLowerCase() === 'sdr') loadSDRs();
+      else if (editingType.toLowerCase() === 'origem') loadOrigens();
+
+      showSuccessMsg(editingType.toLowerCase() + '-success-msg');
+    }
+
+    // ========== CLOSERS ==========
+    async function loadClosers() {
+      closers = await supabaseFetch('closers?order=name');
+      renderClosersTable();
+    }
+
+    async function addCloser(e) {
+      e.preventDefault();
+      const name = document.getElementById('closer-name').value.trim();
+      if (!name) return alert('Nome obrigatório');
+      const result = await supabaseFetch('closers', 'POST', { name });
+      if (result && result.length) {
+        document.getElementById('closer-name').value = '';
+        showSuccessMsg('closer-success-msg');
+        loadClosers();
+      }
+    }
+
+    function renderClosersTable() {
+      const tbody = document.getElementById('closers-table');
+      if (!closers.length) {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center">Nenhum closer</td></tr>';
+        return;
+      }
+      tbody.innerHTML = closers.map(c => `<tr>
+        <td>${c.name}</td>
+        <td>
+          <div class="btn-group">
+            <button class="edit-btn" onclick="openEditModal(${c.id}, '${c.name}', 'Closer')">Editar</button>
+            <button class="remove-btn" onclick="deleteCloser(${c.id})">Deletar</button>
+          </div>
+        </td>
+      </tr>`).join('');
+    }
+
+    async function deleteCloser(id) {
+      if (!confirm('Tem certeza?')) return;
+      await supabaseFetch(`closers?id=eq.${id}`, 'DELETE');
+      loadClosers();
+    }
+
+    // ========== SDRs ==========
+    async function loadSDRs() {
+      sdrs = await supabaseFetch('sdrs?order=name');
+      renderSDRsTable();
+    }
+
+    async function addSDR(e) {
+      e.preventDefault();
+      const name = document.getElementById('sdr-name').value.trim();
+      if (!name) return alert('Nome obrigatório');
+      const result = await supabaseFetch('sdrs', 'POST', { name });
+      if (result && result.length) {
+        document.getElementById('sdr-name').value = '';
+        showSuccessMsg('sdr-success-msg');
+        loadSDRs();
+      }
+    }
+
+    function renderSDRsTable() {
+      const tbody = document.getElementById('sdrs-table');
+      if (!sdrs.length) {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center">Nenhum SDR</td></tr>';
+        return;
+      }
+      tbody.innerHTML = sdrs.map(s => `<tr>
+        <td>${s.name}</td>
+        <td>
+          <div class="btn-group">
+            <button class="edit-btn" onclick="openEditModal(${s.id}, '${s.name}', 'SDR')">Editar</button>
+            <button class="remove-btn" onclick="deleteSDR(${s.id})">Deletar</button>
+          </div>
+        </td>
+      </tr>`).join('');
+    }
+
+    async function deleteSDR(id) {
+      if (!confirm('Tem certeza?')) return;
+      await supabaseFetch(`sdrs?id=eq.${id}`, 'DELETE');
+      loadSDRs();
+    }
+
+    // ========== ORIGENS ==========
+    async function loadOrigens() {
+      origens = await supabaseFetch('origens?order=name');
+      renderOrigensTable();
+    }
+
+    async function addOrigem(e) {
+      e.preventDefault();
+      const name = document.getElementById('origem-name').value.trim();
+      if (!name) return alert('Nome obrigatório');
+      const result = await supabaseFetch('origens', 'POST', { name });
+      if (result && result.length) {
+        document.getElementById('origem-name').value = '';
+        showSuccessMsg('origem-success-msg');
+        loadOrigens();
+      }
+    }
+
+    function renderOrigensTable() {
+      const tbody = document.getElementById('origens-table');
+      if (!origens.length) {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center">Nenhuma origem</td></tr>';
+        return;
+      }
+      tbody.innerHTML = origens.map(o => `<tr>
+        <td>${o.name}</td>
+        <td>
+          <div class="btn-group">
+            <button class="edit-btn" onclick="openEditModal(${o.id}, '${o.name}', 'Origem')">Editar</button>
+            <button class="remove-btn" onclick="deleteOrigem(${o.id})">Deletar</button>
+          </div>
+        </td>
+      </tr>`).join('');
+    }
+
+    async function deleteOrigem(id) {
+      if (!confirm('Tem certeza?')) return;
+      await supabaseFetch(`origens?id=eq.${id}`, 'DELETE');
+      loadOrigens();
+    }
+
+    // ========== USUÁRIOS ==========
+    function createUser(e) {
+      e.preventDefault();
+      const form = e.target;
+      const newUser = {
+        id: users.length + 1,
+        username: form.username.value,
+        password: form.password.value,
+        fullname: form.fullname.value,
+        role: form.role.value
+      };
+      if (users.find(u => u.username === newUser.username)) {
+        alert('Usuário já existe!');
+        return;
+      }
+      users.push(newUser);
+      localStorage.setItem('users', JSON.stringify(users));
+      showSuccessMsg('user-success-msg');
+      form.reset();
+      loadUsersTable();
+    }
+
+    function loadUsersTable() {
+      const tbody = document.getElementById('users-table');
+      tbody.innerHTML = users.map(user => `<tr>
+        <td>${user.username}</td>
+        <td>${user.fullname}</td>
+        <td>${user.role}</td>
+      </tr>`).join('');
+    }
 
     // ========== LOGIN ==========
     function handleLogin(e) {
@@ -393,146 +593,6 @@
       button.classList.toggle('expanded');
     }
 
-    // ========== CLOSERS ==========
-    async function loadClosers() {
-      closers = await supabaseFetch('closers?order=name');
-      renderClosersTable();
-    }
-
-    async function addCloser(e) {
-      e.preventDefault();
-      const name = document.getElementById('closer-name').value.trim();
-      if (!name) return alert('Nome obrigatório');
-      const result = await supabaseFetch('closers', 'POST', { name });
-      if (result && result.length) {
-        document.getElementById('closer-name').value = '';
-        showSuccessMsg('closer-success-msg');
-        loadClosers();
-      }
-    }
-
-    function renderClosersTable() {
-      const tbody = document.getElementById('closers-table');
-      if (!closers.length) {
-        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center">Nenhum closer</td></tr>';
-        return;
-      }
-      tbody.innerHTML = closers.map(c => `<tr>
-        <td>${c.name}</td>
-        <td><button class="remove-btn" onclick="deleteCloser(${c.id})">Deletar</button></td>
-      </tr>`).join('');
-    }
-
-    async function deleteCloser(id) {
-      if (!confirm('Tem certeza?')) return;
-      await supabaseFetch(`closers?id=eq.${id}`, 'DELETE');
-      loadClosers();
-    }
-
-    // ========== SDRs ==========
-    async function loadSDRs() {
-      sdrs = await supabaseFetch('sdrs?order=name');
-      renderSDRsTable();
-    }
-
-    async function addSDR(e) {
-      e.preventDefault();
-      const name = document.getElementById('sdr-name').value.trim();
-      if (!name) return alert('Nome obrigatório');
-      const result = await supabaseFetch('sdrs', 'POST', { name });
-      if (result && result.length) {
-        document.getElementById('sdr-name').value = '';
-        showSuccessMsg('sdr-success-msg');
-        loadSDRs();
-      }
-    }
-
-    function renderSDRsTable() {
-      const tbody = document.getElementById('sdrs-table');
-      if (!sdrs.length) {
-        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center">Nenhum SDR</td></tr>';
-        return;
-      }
-      tbody.innerHTML = sdrs.map(s => `<tr>
-        <td>${s.name}</td>
-        <td><button class="remove-btn" onclick="deleteSDR(${s.id})">Deletar</button></td>
-      </tr>`).join('');
-    }
-
-    async function deleteSDR(id) {
-      if (!confirm('Tem certeza?')) return;
-      await supabaseFetch(`sdrs?id=eq.${id}`, 'DELETE');
-      loadSDRs();
-    }
-
-    // ========== ORIGENS ==========
-    async function loadOrigens() {
-      origens = await supabaseFetch('origens?order=name');
-      renderOrigensTable();
-    }
-
-    async function addOrigem(e) {
-      e.preventDefault();
-      const name = document.getElementById('origem-name').value.trim();
-      if (!name) return alert('Nome obrigatório');
-      const result = await supabaseFetch('origens', 'POST', { name });
-      if (result && result.length) {
-        document.getElementById('origem-name').value = '';
-        showSuccessMsg('origem-success-msg');
-        loadOrigens();
-      }
-    }
-
-    function renderOrigensTable() {
-      const tbody = document.getElementById('origens-table');
-      if (!origens.length) {
-        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center">Nenhuma origem</td></tr>';
-        return;
-      }
-      tbody.innerHTML = origens.map(o => `<tr>
-        <td>${o.name}</td>
-        <td><button class="remove-btn" onclick="deleteOrigem(${o.id})">Deletar</button></td>
-      </tr>`).join('');
-    }
-
-    async function deleteOrigem(id) {
-      if (!confirm('Tem certeza?')) return;
-      await supabaseFetch(`origens?id=eq.${id}`, 'DELETE');
-      loadOrigens();
-    }
-
-    // ========== USUÁRIOS ==========
-    function createUser(e) {
-      e.preventDefault();
-      const form = e.target;
-      const newUser = {
-        id: users.length + 1,
-        username: form.username.value,
-        password: form.password.value,
-        fullname: form.fullname.value,
-        role: form.role.value
-      };
-      if (users.find(u => u.username === newUser.username)) {
-        alert('Usuário já existe!');
-        return;
-      }
-      users.push(newUser);
-      localStorage.setItem('users', JSON.stringify(users));
-      showSuccessMsg('user-success-msg');
-      form.reset();
-      loadUsersTable();
-    }
-
-    function loadUsersTable() {
-      const tbody = document.getElementById('users-table');
-      tbody.innerHTML = users.map(user => `<tr>
-        <td>${user.username}</td>
-        <td>${user.fullname}</td>
-        <td>${user.role}</td>
-      </tr>`).join('');
-    }
-
-    // ========== HELPER ==========
     function showSuccessMsg(elementId) {
       const el = document.getElementById(elementId);
       if (el) {
@@ -547,13 +607,18 @@
       await loadOrigens();
     }
 
-    // ========== INIT ==========
     window.addEventListener('load', function() {
       const saved = localStorage.getItem('current_user');
       if (saved) {
         currentUser = JSON.parse(saved);
         showDashboard();
       }
+    });
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(e) {
+      const modal = document.getElementById('editModal');
+      if (e.target === modal) closeModal();
     });
   </script>
 </body>
