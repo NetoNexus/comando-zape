@@ -499,6 +499,7 @@
       if (typeLC === 'closer') table = 'closers';
       else if (typeLC === 'origem') table = 'origens';
       else if (typeLC === 'sdr') table = 'sdrs';
+      else if (typeLC === 'serviço') table = 'servicos';
       
       const data = { name: newName };
       
@@ -518,6 +519,7 @@
       if (editingType.toLowerCase() === 'closer') loadClosers();
       else if (editingType.toLowerCase() === 'sdr') loadSDRs();
       else if (editingType.toLowerCase() === 'origem') loadOrigens();
+      else if (editingType.toLowerCase() === 'serviço') loadServicos();
 
       showSuccessMsg(editingType.toLowerCase() + '-success-msg');
     }
@@ -762,8 +764,12 @@
     }
 
     async function openEditModalServico(id, type) {
-      editingItem = servicos.find(s => s.id === id);
-      if (!editingItem) return;
+      editingItem = servicos.find(s => s.id == id);
+      if (!editingItem) {
+        console.error('Serviço não encontrado. ID:', id, 'Serviços:', servicos);
+        alert('Erro ao abrir serviço para edição');
+        return;
+      }
       
       editingType = type;
       document.getElementById('edit-modal-title').textContent = `Editar ${type}`;
