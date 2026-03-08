@@ -142,6 +142,7 @@
             <div class="menu-item" onclick="goToPage('cadastro-closers')">Cadastrar Closers</div>
             <div class="menu-item" onclick="goToPage('cadastro-sdrs')">Cadastrar SDRs</div>
             <div class="menu-item" onclick="goToPage('cadastro-origens')">Cadastrar Origens</div>
+            <div class="menu-item" onclick="goToPage('cadastro-servicos')">Cadastrar Serviços</div>
           </div>
         </div>
         <div class="menu-item" onclick="goToPage('usuarios')">Gerenciar Usuários</div>
@@ -262,6 +263,31 @@
           <table>
             <thead><tr><th>Nome</th><th>Sub-origem</th><th>Ação</th></tr></thead>
             <tbody id="origens-table">
+              <tr><td colspan="2" style="text-align:center;color:#999;">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CADASTRO SERVIÇOS -->
+      <div id="cadastro-servicos" class="page">
+        <header><h1>Cadastrar Serviços</h1></header>
+        <div class="card">
+          <div class="card-title">Adicionar Novo Serviço</div>
+          <div class="success" id="servico-success-msg">Serviço atualizado!</div>
+          <form onsubmit="addServico(event)">
+            <div class="form-group">
+              <label>Nome do Serviço</label>
+              <input type="text" id="servico-name" placeholder="ex: Consultoria, Mentoria, Assessoria..." required>
+            </div>
+            <button type="submit" class="btn">Cadastrar</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-title">Serviços Cadastrados</div>
+          <table>
+            <thead><tr><th>Nome</th><th>Ação</th></tr></thead>
+            <tbody id="servicos-table">
               <tr><td colspan="2" style="text-align:center;color:#999;">Carregando...</td></tr>
             </tbody>
           </table>
@@ -679,6 +705,65 @@
       if (!confirm('Tem certeza?')) return;
       await supabaseFetch(`origens?id=eq.${id}`, 'DELETE');
       loadOrigens();
+    }
+
+    // ========== SERVIÇOS ==========
+    let servicos = [];
+
+    async function loadServicos() {
+      servicos = await supabaseFetch('servicos?order=name');
+      renderServicosTable();
+    }
+
+    async function addServico(e) {
+      e.preventDefault();
+      const name = document.getElementById('servico-name').value.trim();
+      if (!name) return alert('Nome obrigatório');
+      
+      const data = { name };
+      
+      const result = await supabaseFetch('servicos', 'POST', data);
+      
+      if (result && Array.isArray(result) && result.length > 0) {
+        document.getElementById('servico-name').value = '';
+        showSuccessMsg('servico-success-msg');
+        loadServicos();
+      } else {
+        alert('Erro ao cadastrar serviço.');
+      }
+    }
+
+    function renderServicosTable() {
+      const tbody = document.getElementById('servicos-table');
+      if (!servicos.length) {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center">Nenhum serviço cadastrado</td></tr>';
+        return;
+      }
+      tbody.innerHTML = servicos.map(s => `<tr>
+        <td>${s.name}</td>
+        <td>
+          <div class="btn-group">
+            <button class="edit-btn" onclick="openEditModalServico(${s.id}, 'Serviço')">Editar</button>
+            <button class="remove-btn" onclick="deleteServico(${s.id})">Deletar</button>
+          </div>
+        </td>
+      </tr>`).join('');
+    }
+
+    async function openEditModalServico(id, type) {
+      editingItem = servicos.find(s => s.id === id);
+      if (!editingItem) return;
+      
+      editingType = type;
+      document.getElementById('edit-modal-title').textContent = `Editar ${type}`;
+      document.getElementById('edit-name').value = editingItem.name;
+      document.getElementById('edit-modal').classList.add('show');
+    }
+
+    async function deleteServico(id) {
+      if (!confirm('Tem certeza?')) return;
+      await supabaseFetch(`servicos?id=eq.${id}`, 'DELETE');
+      loadServicos();
     }
 
     // ========== USUÁRIOS ==========

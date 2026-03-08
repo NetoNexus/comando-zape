@@ -197,13 +197,14 @@
             <thead>
               <tr style="border-bottom: 1px solid #383838;">
                 <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">Origem</th>
+                <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">Serviço</th>
                 <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">SDR</th>
                 <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">Valor</th>
                 <th style="padding: 8px; text-align: left; font-weight: 700; color: #B2FF00;">Ação</th>
               </tr>
             </thead>
             <tbody id="ganhos-tbody" style="border-bottom: 1px solid #383838;">
-              <tr><td colspan="4" style="padding: 8px; text-align: center; color: #999;">Nenhum ganho registrado</td></tr>
+              <tr><td colspan="5" style="padding: 8px; text-align: center; color: #999;">Nenhum ganho registrado</td></tr>
             </tbody>
           </table>
           <button type="button" class="add-btn" onclick="openGanhoModal()">+ Registrar Ganho</button>
@@ -343,6 +344,12 @@
           </select>
         </div>
         <div class="form-group">
+          <label>Serviço Vendido</label>
+          <select id="ganho-servico-select" required>
+            <option value="">Carregando serviços...</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label>SDR (Qual SDR gerou este ganho)</label>
           <select id="ganho-sdr-select" required>
             <option value="">Carregando SDRs...</option>
@@ -478,6 +485,7 @@
     let closers = [];
     let sdrs = [];
     let origens = [];
+    let servicos = [];
     let movements = JSON.parse(localStorage.getItem('movements')) || [];
     let editingMovement = null;
     let historicoExpanded = true;
@@ -568,6 +576,7 @@
       closers = await supabaseFetch('closers?order=name');
       sdrs = await supabaseFetch('sdrs?order=name');
       origens = await supabaseFetch('origens?order=name');
+      servicos = await supabaseFetch('servicos?order=name');
       await loadMovementsFromSupabase(); // Carregar movements do Supabase
       populateSelects();
       renderTable();
@@ -1096,6 +1105,10 @@
         `<option value="${o.id}">${o.name}</option>`
       ).join('');
       
+      document.getElementById('ganho-servico-select').innerHTML = '<option value="">Selecione serviço...</option>' + servicos.map(s =>
+        `<option value="${s.id}">${s.name}</option>`
+      ).join('');
+      
       document.getElementById('ganho-sdr-select').innerHTML = '<option value="">Selecione SDR...</option>' + sdrs.map(s =>
         `<option value="${s.id}">${s.name}</option>`
       ).join('');
@@ -1139,13 +1152,14 @@
       const origemId = document.getElementById('ganho-origem-select').value;
       const subOrigemGroup = document.getElementById('ganho-sub-origem-group');
       const subOrigemSelect = document.getElementById('ganho-sub-origem-select');
+      const servicoId = document.getElementById('ganho-servico-select').value;
       const sdrId = document.getElementById('ganho-sdr-select').value;
       const valorInput = document.getElementById('ganho-valor-input').value;
       const valor = valorInput ? parseFloat(valorInput) : null;
       
-      // Validar origem e SDR (obrigatórios)
-      if (!origemId || !sdrId || valor === null || isNaN(valor)) {
-        alert('Preencha todos os campos obrigatórios (Origem, SDR e Valor)');
+      // Validar origem, serviço e SDR (obrigatórios)
+      if (!origemId || !servicoId || !sdrId || valor === null || isNaN(valor)) {
+        alert('Preencha todos os campos obrigatórios (Origem, Serviço, SDR e Valor)');
         return;
       }
       
@@ -1156,6 +1170,7 @@
       }
       
       const origem = origens.find(o => o.id == origemId);
+      const servico = servicos.find(s => s.id == servicoId);
       const sdr = sdrs.find(s => s.id == sdrId);
       const subOrigem = subOrigemGroup.style.display !== 'none' ? subOrigemSelect.value : null;
       
@@ -1163,6 +1178,8 @@
         origem_id: parseInt(origemId),
         origem_name: origem.name,
         sub_origem: subOrigem,
+        servico_id: parseInt(servicoId),
+        servico_name: servico.name,
         sdr_id: parseInt(sdrId),
         sdr_name: sdr.name,
         valor: valor
@@ -1181,7 +1198,7 @@
       const tbody = document.getElementById('ganhos-tbody');
       
       if (tempGanhos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="padding: 8px; text-align: center; color: #999;">Nenhum ganho registrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="padding: 8px; text-align: center; color: #999;">Nenhum ganho registrado</td></tr>';
         return;
       }
       
@@ -1189,6 +1206,7 @@
         const origemDisplay = g.sub_origem ? `${g.origem_name} (${g.sub_origem})` : g.origem_name;
         return `<tr>
           <td style="padding: 8px;">${origemDisplay}</td>
+          <td style="padding: 8px;">${g.servico_name}</td>
           <td style="padding: 8px;">${g.sdr_name}</td>
           <td style="padding: 8px;">R$ ${g.valor.toFixed(2)}</td>
           <td style="padding: 8px;"><button type="button" class="remove-btn" onclick="removerGanho(${index})" style="padding: 4px 8px;">Remover</button></td>
