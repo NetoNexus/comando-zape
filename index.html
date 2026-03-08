@@ -711,7 +711,9 @@
     let servicos = [];
 
     async function loadServicos() {
-      servicos = await supabaseFetch('servicos?order=name');
+      const result = await supabaseFetch('servicos?order=name');
+      servicos = Array.isArray(result) ? result : [];
+      console.log('✅ Serviços carregados:', servicos);
       renderServicosTable();
     }
 
@@ -722,14 +724,23 @@
       
       const data = { name };
       
-      const result = await supabaseFetch('servicos', 'POST', data);
-      
-      if (result && Array.isArray(result) && result.length > 0) {
-        document.getElementById('servico-name').value = '';
-        showSuccessMsg('servico-success-msg');
-        loadServicos();
-      } else {
-        alert('Erro ao cadastrar serviço.');
+      try {
+        const result = await supabaseFetch('servicos', 'POST', data);
+        console.log('Resposta Supabase:', result);
+        
+        // Supabase POST retorna null com Prefer: return=minimal, então verifica se não é erro
+        if (result !== null && typeof result === 'object' && result.message && result.code) {
+          // É um erro do Supabase
+          alert(`Erro ao cadastrar: ${result.message}`);
+        } else {
+          // Sucesso (pode retornar null, dados, ou array)
+          document.getElementById('servico-name').value = '';
+          showSuccessMsg('servico-success-msg');
+          loadServicos();
+        }
+      } catch (err) {
+        console.error('Erro:', err);
+        alert('Erro ao cadastrar serviço: ' + err.message);
       }
     }
 
@@ -839,6 +850,12 @@
       document.getElementById(page).classList.add('active');
       document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
       if (event.target) event.target.classList.add('active');
+      
+      // Carrega dados específicos da página
+      if (page === 'cadastro-closers') loadClosers();
+      if (page === 'cadastro-sdrs') loadSDRs();
+      if (page === 'cadastro-origens') loadOrigens();
+      if (page === 'cadastro-servicos') loadServicos();
     }
 
     function toggleSubmenu(submenuId) {
