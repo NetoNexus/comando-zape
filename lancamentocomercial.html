@@ -237,6 +237,10 @@
             <input type="date" id="filter-date" onchange="applyFilters()">
           </div>
           <div class="form-group">
+            <label>Filtrar por Mês</label>
+            <input type="month" id="filter-month" onchange="applyFilters()">
+          </div>
+          <div class="form-group">
             <label>&nbsp;</label>
             <button class="btn" onclick="clearFilters()" style="margin: 0; width: 100%;">Limpar Filtros</button>
           </div>
@@ -267,9 +271,17 @@
     <!-- ACOMPANHAMENTO -->
     <div class="card">
       <div class="card-title">Acompanhamento de Vendas</div>
-      <div class="form-group">
-        <label>Selecione o Mês</label>
-        <input type="month" id="filter-month-acompanhamento" onchange="loadAcompanhamento()">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+          <label>Selecione o Mês</label>
+          <input type="month" id="filter-month-acompanhamento" onchange="loadAcompanhamento()">
+        </div>
+        <div class="form-group">
+          <label>Filtrar por Closer</label>
+          <select id="filter-closer-acompanhamento" onchange="loadAcompanhamento()">
+            <option value="">Todos</option>
+          </select>
+        </div>
       </div>
 
       <div class="card">
@@ -1057,10 +1069,22 @@
     function clearFilters() {
       document.getElementById('filter-closer').value = '';
       document.getElementById('filter-date').value = '';
+      document.getElementById('filter-month').value = '';
       renderTable();
     }
 
     function loadAcompanhamento() {
+      // Preencher select de closers
+      const closerSelect = document.getElementById('filter-closer-acompanhamento');
+      if (closerSelect && closerSelect.options.length === 1) {
+        closers.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = c.name;
+          closerSelect.appendChild(opt);
+        });
+      }
+
       let monthInput = document.getElementById('filter-month-acompanhamento').value;
       if (!monthInput) {
         const today = new Date();
@@ -1071,9 +1095,10 @@
       }
 
       const [year, month] = monthInput.split('-');
+      const closerFilter = document.getElementById('filter-closer-acompanhamento').value;
       
       const filtered = movements.filter(m => {
-        // Usar data_raw (YYYY-MM-DD) para comparação se disponível, senão fazer parse da data formatada
+        // Filtrar por mês
         let dataYear, dataMonth;
         if (m.data_raw) {
           const [y, mo, d] = m.data_raw.split('-');
@@ -1084,7 +1109,11 @@
           dataYear = y;
           dataMonth = mo;
         }
-        return dataYear === year && dataMonth === month;
+        
+        const monthMatch = dataYear === year && dataMonth === month;
+        const closerMatch = !closerFilter || m.closer_id == closerFilter;
+        
+        return monthMatch && closerMatch;
       });
 
       let totalReunioes = 0;
@@ -1096,7 +1125,8 @@
       let totalQuantidade = 0;
 
       filtered.forEach(m => {
-        totalReunioes += parseInt(m.reunioes || 0);
+        // Reuniões é array agora, não número!
+        totalReunioes += (m.reunioes && Array.isArray(m.reunioes)) ? m.reunioes.reduce((sum, r) => sum + parseInt(r.quantidade || 0), 0) : 0;
         totalVendas += 1;
         totalAgendamentos += m.agendamentos.reduce((sum, a) => sum + parseInt(a.quantidade || 0), 0);
         totalReagendamentos += m.reagendamentos.reduce((sum, r) => sum + parseInt(r.quantidade || 0), 0);
@@ -1194,15 +1224,66 @@
           <td>${origemsDisplay}</td>
         </tr>`;
       }).join('');
+      
+      // Adicionar linha de TOTAIS no final
+      let totalAgendAcomp = 0;
+      let totalReunioesAcomp = 0;
+      let totalReagendAcomp = 0;
+      let totalNoShowAcomp = 0;
+      let totalQtdAcomp = 0;
+      let totalValorAcomp = 0;
+      
+      filtered.forEach(m => {
+        totalAgendAcomp += m.agendamentos.reduce((sum, a) => sum + parseInt(a.quantidade || 0), 0);
+        totalReunioesAcomp += (m.reunioes && Array.isArray(m.reunioes)) ? m.reunioes.reduce((sum, r) => sum + parseInt(r.quantidade || 0), 0) : 0;
+        totalReagendAcomp += m.reagendamentos.reduce((sum, r) => sum + parseInt(r.quantidade || 0), 0);
+        totalNoShowAcomp += (m.noshows && Array.isArray(m.noshows)) ? m.noshows.reduce((sum, n) => sum + parseInt(n.quantidade || 0), 0) : 0;
+        
+        if (m.ganhos && Array.isArray(m.ganhos)) {
+          totalQtdAcomp += m.ganhos.length;
+          m.ganhos.forEach(g => {
+            totalValorAcomp += g.valor || 0;
+          });
+        }
+      });
+      
+      tbody.innerHTML += `<tr style="background: #1A1A1A; font-weight: 700; border-top: 2px solid #B2FF00;">
+        <td style="color: #B2FF00;">TOTAIS</td>
+        <td></td>
+        <td style="color: #B2FF00;">${totalAgendAcomp}</td>
+        <td style="color: #B2FF00;">${totalReunioesAcomp}</td>
+        <td style="color: #B2FF00;">${totalReagendAcomp}</td>
+        <td style="color: #B2FF00;">${totalNoShowAcomp}</td>
+        <td style="color: #B2FF00;">${totalQtdAcomp}</td>
+        <td style="color: #B2FF00;">R$ ${totalValorAcomp.toFixed(2)}</td>
+        <td></td>
+      </tr>`;
     }
 
     function renderTable() {
       const filterCloserId = document.getElementById('filter-closer').value;
       const filterDate = document.getElementById('filter-date').value;
+      const filterMonth = document.getElementById('filter-month').value;
 
       let filtered = movements;
       if (filterCloserId) filtered = filtered.filter(m => m.closer_id == filterCloserId);
       if (filterDate) filtered = filtered.filter(m => (m.data_raw || m.data) === filterDate);
+      
+      // Filtro por mês (YYYY-MM)
+      if (filterMonth) {
+        filtered = filtered.filter(m => {
+          const dateStr = m.data_raw || m.data;
+          if (dateStr.includes('-') && dateStr.length === 10) {
+            // Formato YYYY-MM-DD
+            return dateStr.substring(0, 7) === filterMonth;
+          } else if (dateStr.includes('/')) {
+            // Formato DD/MM/YYYY
+            const [d, mo, y] = dateStr.split('/');
+            return `${y}-${mo}` === filterMonth;
+          }
+          return false;
+        });
+      }
 
       const tbody = document.querySelector('#records-table');
       if (!tbody) {
