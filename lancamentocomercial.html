@@ -298,7 +298,7 @@
         </div>
         <div class="form-group" id="ganho-sub-origem-group" style="display: none;">
           <label>Sub-origem</label>
-          <select id="ganho-sub-origem-select" required>
+          <select id="ganho-sub-origem-select">
             <option value="">Selecione sub-origem...</option>
           </select>
         </div>
@@ -538,31 +538,35 @@
       e.preventDefault();
       const form = e.target;
 
+      // Validar que há ganhos registrados
+      if (tempGanhos.length === 0) {
+        alert('Registre pelo menos um ganho antes de finalizar a movimentação');
+        return;
+      }
+
       const agendamentos = [];
       document.querySelectorAll('#agendamentos-container .dynamic-field').forEach(field => {
         const sdrId = field.querySelector('.sdr-select').value;
         const qty = field.querySelector('.quantidade').value;
-        if (sdrId && qty) agendamentos.push({ sdr_id: sdrId, quantidade: parseInt(qty) });
+        if (sdrId && qty) agendamentos.push({ sdr_id: parseInt(sdrId), quantidade: parseInt(qty) });
       });
 
       const reagendamentos = [];
       document.querySelectorAll('#reagendamentos-container .dynamic-field').forEach(field => {
         const sdrId = field.querySelector('.sdr-select').value;
         const qty = field.querySelector('.quantidade').value;
-        if (sdrId && qty) reagendamentos.push({ sdr_id: sdrId, quantidade: parseInt(qty) });
+        if (sdrId && qty) reagendamentos.push({ sdr_id: parseInt(sdrId), quantidade: parseInt(qty) });
       });
 
-      // Coletar ganhos dinâmicos
-      const ganhos = [];
-      document.querySelectorAll('.ganho-origem-select').forEach(sel => {
-        const ganhoNum = sel.getAttribute('data-ganho');
-        const origemId = sel.value;
-        const valorInput = document.querySelector(`.ganho-valor-input[data-ganho="${ganhoNum}"]`);
-        const valor = parseFloat(valorInput.value || 0);
-        if (origemId && valor > 0) {
-          ganhos.push({ origem_id: parseInt(origemId), valor: valor });
-        }
-      });
+      // Usar tempGanhos que foi preenchido pelo modal
+      const ganhos = tempGanhos.map(g => ({
+        origem_id: g.origem_id,
+        origem_name: g.origem_name,
+        sub_origem: g.sub_origem,
+        sdr_id: g.sdr_id,
+        sdr_name: g.sdr_name,
+        valor: g.valor
+      }));
 
       const movement = {
         id: movements.length + 1,
@@ -571,7 +575,7 @@
         agendamentos: agendamentos,
         reunioes: parseInt(form.reunioes.value),
         reagendamentos: reagendamentos,
-        ganhos: ganhos, // Array de {origem_id, valor}
+        ganhos: ganhos,
         timestamp: new Date().toLocaleDateString('pt-BR'),
         expanded: false
       };
@@ -583,9 +587,11 @@
       msg.classList.add('show');
       setTimeout(() => msg.classList.remove('show'), 3000);
 
+      // Limpar tudo para novo lançamento
       form.reset();
       document.querySelector('input[type="date"]').valueAsDate = new Date();
-      document.getElementById('ganhos-container').style.display = 'none';
+      tempGanhos = [];
+      renderizarGanhos();
       renderTable();
     }
 
@@ -887,17 +893,26 @@
       e.preventDefault();
       
       const origemId = document.getElementById('ganho-origem-select').value;
-      const subOrigem = document.getElementById('ganho-sub-origem-select').value || null;
+      const subOrigemGroup = document.getElementById('ganho-sub-origem-group');
+      const subOrigemSelect = document.getElementById('ganho-sub-origem-select');
       const sdrId = document.getElementById('ganho-sdr-select').value;
       const valor = parseFloat(document.getElementById('ganho-valor-input').value);
       
+      // Validar origem e SDR (obrigatórios)
       if (!origemId || !sdrId || !valor) {
         alert('Preencha todos os campos obrigatórios');
         return;
       }
       
+      // Validar sub-origem APENAS se o campo está visível
+      if (subOrigemGroup.style.display !== 'none' && !subOrigemSelect.value) {
+        alert('Selecione a sub-origem');
+        return;
+      }
+      
       const origem = origens.find(o => o.id == origemId);
       const sdr = sdrs.find(s => s.id == sdrId);
+      const subOrigem = subOrigemGroup.style.display !== 'none' ? subOrigemSelect.value : null;
       
       tempGanhos.push({
         origem_id: parseInt(origemId),
