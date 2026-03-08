@@ -1054,11 +1054,12 @@
       const subOrigemGroup = document.getElementById('ganho-sub-origem-group');
       const subOrigemSelect = document.getElementById('ganho-sub-origem-select');
       const sdrId = document.getElementById('ganho-sdr-select').value;
-      const valor = parseFloat(document.getElementById('ganho-valor-input').value);
+      const valorInput = document.getElementById('ganho-valor-input').value;
+      const valor = valorInput ? parseFloat(valorInput) : null;
       
       // Validar origem e SDR (obrigatórios)
-      if (!origemId || !sdrId || !valor) {
-        alert('Preencha todos os campos obrigatórios');
+      if (!origemId || !sdrId || valor === null || isNaN(valor)) {
+        alert('Preencha todos os campos obrigatórios (Origem, SDR e Valor)');
         return;
       }
       
