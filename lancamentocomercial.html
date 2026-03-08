@@ -324,7 +324,10 @@
       filterCloser.innerHTML = '<option value="">Todos</option>' + closers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 
       const origemSelect = document.getElementById('origem-select');
-      origemSelect.innerHTML = '<option value="">Selecione...</option>' + origens.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
+      origemSelect.innerHTML = '<option value="">Selecione...</option>' + origens.map(o => {
+        const label = o.sub_origem ? `${o.name} (${o.sub_origem})` : o.name;
+        return `<option value="${o.id}">${label}</option>`;
+      }).join('');
 
       document.querySelectorAll('.sdr-select').forEach(sel => {
         const current = sel.value;
