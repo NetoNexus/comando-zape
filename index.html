@@ -406,11 +406,19 @@
       };
       if (data) options.body = JSON.stringify(data);
       try {
+        console.log(`${method} ${url}`, data || '');
         const response = await fetch(url, options);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return await response.json();
+        if (!response.ok) {
+          const error = await response.text();
+          console.error(`HTTP ${response.status}:`, error);
+          throw new Error(`HTTP ${response.status}: ${error}`);
+        }
+        const result = await response.json();
+        console.log(`Response:`, result);
+        return result;
       } catch (err) {
         console.error(`Supabase error:`, err);
+        alert(`Erro ao conectar com Supabase: ${err.message}`);
         return [];
       }
     }
@@ -572,13 +580,23 @@
       const name = document.getElementById('origem-name').value.trim();
       const sub_origem = document.getElementById('origem-sub').value.trim();
       if (!name) return alert('Nome obrigatório');
+      
       const data = { name, sub_origem: sub_origem || null };
+      console.log('Enviando para Supabase:', data);
+      
       const result = await supabaseFetch('origens', 'POST', data);
-      if (result && result.length) {
+      console.log('Resposta do Supabase:', result);
+      
+      if (result && Array.isArray(result) && result.length > 0) {
         document.getElementById('origem-name').value = '';
         document.getElementById('origem-sub').value = '';
         showSuccessMsg('origem-success-msg');
         loadOrigens();
+      } else if (result && Array.isArray(result)) {
+        // Supabase retornou array vazio mas sem erro
+        alert('Erro ao cadastrar origem. Tente novamente.');
+      } else {
+        alert('Erro na requisição. Verifique console.');
       }
     }
 
