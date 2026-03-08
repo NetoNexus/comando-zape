@@ -341,7 +341,7 @@
         <h2>Registrar Ganho</h2>
         <button class="modal-close" onclick="closeGanhoModal()">×</button>
       </div>
-      <form onsubmit="adicionarGanho(event)">
+      <form onsubmit="adicionarOuEditarGanho(event)">
         <div class="form-group">
           <label>Origem</label>
           <select id="ganho-origem-select" onchange="onGanhoOrigemChange()" required>
@@ -1227,7 +1227,7 @@
     function renderEditGanhos() {
       const tbody = document.getElementById('edit-ganhos-tbody');
       if (!editTempGanhos || editTempGanhos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="padding: 8px; text-align: center; color: #999;">Nenhum ganho registrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="padding: 8px; text-align: center; color: #999;">Nenhum ganho registrado</td></tr>';
         return;
       }
       
@@ -1238,6 +1238,7 @@
           <td style="padding: 8px;">${g.sdr_name || 'N/A'}</td>
           <td style="padding: 8px;">R$ ${g.valor.toFixed(2)}</td>
           <td style="padding: 8px;">
+            <button type="button" class="edit-btn" onclick="openEditGanhoWindow(${idx})" style="padding: 4px 8px; font-size: 11px; background: #B2FF00; color: #2A2A2A; border: none; border-radius: 4px; cursor: pointer; margin-right: 4px;">Editar</button>
             <button type="button" class="delete-btn" onclick="removeEditGanho(${idx})" style="padding: 4px 8px; font-size: 11px;">Remover</button>
           </td>
         </tr>
@@ -1247,6 +1248,109 @@
     function removeEditGanho(idx) {
       editTempGanhos.splice(idx, 1);
       renderEditGanhos();
+    }
+    
+    let editingGanhoIndex = -1; // Controla qual ganho está sendo editado
+    
+    function openEditGanhoWindow(idx) {
+      editingGanhoIndex = idx;
+      const ganho = editTempGanhos[idx];
+      
+      console.log('✏️ Abrindo ganho para edição:', ganho);
+      
+      // PRÉ-PREENCHER os campos do modal com dados do ganho
+      populateGanhoSelects();
+      
+      // Preencher origem
+      document.getElementById('ganho-origem-select').value = ganho.origem_id;
+      
+      // Disparar onChange para carregar sub-origens se houver
+      onGanhoOrigemChange();
+      setTimeout(() => {
+        if (ganho.sub_origem) {
+          document.getElementById('ganho-sub-origem-select').value = ganho.sub_origem;
+        }
+      }, 50);
+      
+      // Preencher serviço
+      document.getElementById('ganho-servico-select').value = ganho.servico_id;
+      
+      // Preencher SDR
+      document.getElementById('ganho-sdr-select').value = ganho.sdr_id;
+      
+      // Preencher valor
+      document.getElementById('ganho-valor-input').value = ganho.valor;
+      
+      // Mudar título do modal
+      document.querySelector('#ganhoModal .modal-header h2').textContent = 'Editar Ganho';
+      
+      // Mudar botão para "Salvar Alterações"
+      document.querySelector('#ganhoModal form button[type="submit"]').textContent = 'Salvar Alterações';
+      
+      // Abrir modal
+      document.getElementById('ganhoModal').classList.add('show');
+    }
+    
+    function adicionarOuEditarGanho(e) {
+      // Esta função funciona tanto para ADD quanto para EDIT
+      e.preventDefault();
+      
+      const origemId = document.getElementById('ganho-origem-select').value;
+      const subOrigemGroup = document.getElementById('ganho-sub-origem-group');
+      const subOrigemSelect = document.getElementById('ganho-sub-origem-select');
+      const servicoId = document.getElementById('ganho-servico-select').value;
+      const sdrId = document.getElementById('ganho-sdr-select').value;
+      const valorInput = document.getElementById('ganho-valor-input').value;
+      const valor = valorInput ? parseFloat(valorInput) : null;
+      
+      // Validar origem, serviço e SDR (obrigatórios)
+      if (!origemId || !servicoId || !sdrId || valor === null || isNaN(valor)) {
+        alert('Preencha todos os campos obrigatórios (Origem, Serviço, SDR e Valor)');
+        return;
+      }
+      
+      // Validar sub-origem APENAS se o campo está visível
+      if (subOrigemGroup.style.display !== 'none' && !subOrigemSelect.value) {
+        alert('Selecione a sub-origem');
+        return;
+      }
+      
+      const origem = origens.find(o => o.id == origemId);
+      const servico = servicos.find(s => s.id == servicoId);
+      const sdr = sdrs.find(s => s.id == sdrId);
+      const subOrigem = subOrigemGroup.style.display !== 'none' ? subOrigemSelect.value : null;
+      
+      const novoGanho = {
+        origem_id: parseInt(origemId),
+        origem_name: origem.name,
+        sub_origem: subOrigem,
+        servico_id: parseInt(servicoId),
+        servico_name: servico.name,
+        sdr_id: parseInt(sdrId),
+        sdr_name: sdr.name,
+        valor: valor
+      };
+      
+      // Se estamos EDITANDO um ganho
+      if (editingGanhoIndex !== -1 && editingMovement) {
+        editTempGanhos[editingGanhoIndex] = novoGanho;
+        console.log('✏️ Ganho atualizado no índice:', editingGanhoIndex);
+        renderEditGanhos();
+        editingGanhoIndex = -1;
+      } 
+      // Se estamos CRIANDO um novo ganho
+      else if (editingMovement) {
+        editTempGanhos.push(novoGanho);
+        console.log('✅ Ganho adicionado ao movimento em edição');
+        renderEditGanhos();
+      } else {
+        // Criação normal (não em modo edição)
+        tempGanhos.push(novoGanho);
+        console.log('✅ Ganho adicionado');
+        renderizarGanhos();
+      }
+      
+      closeGanhoModal();
     }
 
     function openEditModal(id) {
@@ -1687,6 +1791,13 @@
       document.getElementById('ganho-sdr-select').value = '';
       document.getElementById('ganho-valor-input').value = '';
       document.getElementById('ganho-sub-origem-group').style.display = 'none';
+      
+      // Resetar título e botão para modo de adição
+      document.querySelector('#ganhoModal .modal-header h2').textContent = 'Registrar Ganho';
+      document.querySelector('#ganhoModal form button[type="submit"]').textContent = 'Adicionar Ganho';
+      
+      // Resetar índice de edição
+      editingGanhoIndex = -1;
     }
 
     function populateGanhoSelects() {
@@ -1736,57 +1847,8 @@
     }
 
     function adicionarGanho(e) {
-      e.preventDefault();
-      
-      const origemId = document.getElementById('ganho-origem-select').value;
-      const subOrigemGroup = document.getElementById('ganho-sub-origem-group');
-      const subOrigemSelect = document.getElementById('ganho-sub-origem-select');
-      const servicoId = document.getElementById('ganho-servico-select').value;
-      const sdrId = document.getElementById('ganho-sdr-select').value;
-      const valorInput = document.getElementById('ganho-valor-input').value;
-      const valor = valorInput ? parseFloat(valorInput) : null;
-      
-      // Validar origem, serviço e SDR (obrigatórios)
-      if (!origemId || !servicoId || !sdrId || valor === null || isNaN(valor)) {
-        alert('Preencha todos os campos obrigatórios (Origem, Serviço, SDR e Valor)');
-        return;
-      }
-      
-      // Validar sub-origem APENAS se o campo está visível
-      if (subOrigemGroup.style.display !== 'none' && !subOrigemSelect.value) {
-        alert('Selecione a sub-origem');
-        return;
-      }
-      
-      const origem = origens.find(o => o.id == origemId);
-      const servico = servicos.find(s => s.id == servicoId);
-      const sdr = sdrs.find(s => s.id == sdrId);
-      const subOrigem = subOrigemGroup.style.display !== 'none' ? subOrigemSelect.value : null;
-      
-      const novoGanho = {
-        origem_id: parseInt(origemId),
-        origem_name: origem.name,
-        sub_origem: subOrigem,
-        servico_id: parseInt(servicoId),
-        servico_name: servico.name,
-        sdr_id: parseInt(sdrId),
-        sdr_name: sdr.name,
-        valor: valor
-      };
-      
-      // Se estamos EDITANDO um movimento, adicionar a editTempGanhos
-      if (editingMovement) {
-        editTempGanhos.push(novoGanho);
-        renderEditGanhos();
-        console.log('✅ Ganho adicionado ao movimento em edição');
-      } else {
-        // Senão, adicionar a tempGanhos (criação normal)
-        tempGanhos.push(novoGanho);
-        renderizarGanhos();
-        console.log('✅ Ganho adicionado');
-      }
-      
-      closeGanhoModal();
+      // Compatibilidade: chama a função unificada
+      adicionarOuEditarGanho(e);
     }
 
     function removerGanho(index) {
