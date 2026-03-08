@@ -627,10 +627,10 @@
 
     async function loadMovementsFromSupabase() {
       try {
-        // Guardar IDs locais ANTES de carregar Supabase
+        // Guardar dados locais ANTES de carregar Supabase
         const localMovements = JSON.parse(localStorage.getItem('movements') || '[]');
-        const localIds = new Set(localMovements.map(m => m.id));
-        console.log('💾 IDs em localStorage:', Array.from(localIds));
+        const localMap = new Map(localMovements.map(m => [m.id, m]));
+        console.log('💾 IDs em localStorage:', Array.from(localMap.keys()));
         
         const data = await supabaseFetch('movements?order=id.desc');
         if (data && Array.isArray(data)) {
@@ -651,11 +651,28 @@
           
           console.log('🌐 IDs no Supabase:', supabaseMovements.map(m => m.id));
           
-          // Filtrar: só incluir movimentos que TAMBÉM tão no localStorage
-          // Isso preserva deletions locais (se apagou localmente, não carrega do Supabase)
-          movements = supabaseMovements.filter(m => localIds.has(m.id));
+          // MESCLAR: 
+          // 1. Começa com Supabase (fonte de verdade)
+          // 2. Mantém locais que não estão no Supabase (ainda sincronizando)
+          const result = [];
+          const processedIds = new Set();
           
-          console.log('✅ Movements após merge:', movements.length, 'IDs (deletions locais preservadas)');
+          // Adicionar dados do Supabase (sempre mais recentes)
+          supabaseMovements.forEach(m => {
+            result.push(m);
+            processedIds.add(m.id);
+          });
+          
+          // Adicionar locais que ainda não foram sincronizados (IDs > 1000 = pendentes)
+          localMovements.forEach(m => {
+            if (!processedIds.has(m.id) && m.id > 1000) {
+              console.log('⏳ Mantendo movimento local pendente de sync:', m.id);
+              result.push(m);
+            }
+          });
+          
+          movements = result;
+          console.log('✅ Movements após merge:', movements.length, 'IDs');
           localStorage.setItem('movements', JSON.stringify(movements));
           return true;
         }
@@ -958,20 +975,18 @@
         expanded: false
       };
 
-      // Salvar no Supabase e aguardar ID
-      const supabaseId = await saveMovementToSupabase(movement);
+      // Usar ID local provisório
+      movement.id = Math.max(...movements.map(m => m.id || 0), 0) + 1;
+      console.log('📝 Movimento criado localmente com ID provisório:', movement.id);
       
-      // Se recebeu ID do Supabase, usar; senão, gerar local
-      if (typeof supabaseId === 'number') {
-        movement.id = supabaseId;
-        console.log('🆔 Usando ID do Supabase:', supabaseId);
-      } else {
-        movement.id = Math.max(...movements.map(m => m.id), 0) + 1;
-        console.log('🆔 ID local:', movement.id);
-      }
-
+      // Salvar localmente PRIMEIRO
       movements.push(movement);
       localStorage.setItem('movements', JSON.stringify(movements));
+      console.log('💾 Salvo em localStorage');
+      
+      // Sincronizar com Supabase em BACKGROUND (com retry automático)
+      console.log('🔄 Iniciando sincronização com Supabase (retry 3x)...');
+      saveMovementWithRetry(movement);
 
       const msg = document.getElementById('success-msg');
       msg.classList.add('show');
@@ -1293,6 +1308,42 @@
       }
     }
     
+    async function saveMovementWithRetry(movement, maxRetries = 3) {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        console.log(`🔄 Tentativa ${attempt}/${maxRetries} de salvar no Supabase...`);
+        const result = await saveMovementToSupabase(movement);
+        
+        if (typeof result === 'number') {
+          // Supabase retornou um ID real! Atualizar o movimento local
+          console.log('✅ Salvo no Supabase com ID real:', result);
+          
+          // Encontrar o movimento na array e atualizar seu ID
+          const idx = movements.findIndex(m => m.id === movement.id);
+          if (idx !== -1) {
+            movements[idx].id = result;
+            localStorage.setItem('movements', JSON.stringify(movements));
+            console.log('🆔 ID atualizado localmente:', movement.id, '→', result);
+          }
+          return true;
+        }
+        
+        if (result === true) {
+          console.log('✅ Salvo no Supabase (sem ID retornado)');
+          return true;
+        }
+        
+        if (attempt < maxRetries) {
+          // Esperar 2 segundos antes de tentar novamente
+          console.log('⏳ Aguardando 2s antes de tentar novamente...');
+          await new Promise(r => setTimeout(r, 2000));
+        }
+      }
+      
+      console.error('❌ Falhou ao salvar do Supabase após 3 tentativas');
+      console.warn('⚠️ Mas foi salvo localmente - sincronizando novamente em 30 segundos');
+      return false;
+    }
+
     async function deleteMovementWithRetry(id, maxRetries = 3) {
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         console.log(`🔄 Tentativa ${attempt}/${maxRetries} de deletar do Supabase...`);
