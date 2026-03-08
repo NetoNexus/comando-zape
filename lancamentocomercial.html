@@ -233,10 +233,6 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Filtrar por Data</label>
-            <input type="date" id="filter-date" onchange="applyFilters()">
-          </div>
-          <div class="form-group">
             <label>Filtrar por Mês</label>
             <input type="month" id="filter-month" onchange="applyFilters()">
           </div>
@@ -1068,15 +1064,19 @@
 
     function clearFilters() {
       document.getElementById('filter-closer').value = '';
-      document.getElementById('filter-date').value = '';
       document.getElementById('filter-month').value = '';
       renderTable();
     }
 
     function loadAcompanhamento() {
-      // Preencher select de closers
+      // Preencher select de closers (SEMPRE, pra garantir que tá atualizado)
       const closerSelect = document.getElementById('filter-closer-acompanhamento');
-      if (closerSelect && closerSelect.options.length === 1) {
+      if (closerSelect) {
+        // Limpar opções antigas (menos a primeira "Todos")
+        while (closerSelect.options.length > 1) {
+          closerSelect.remove(1);
+        }
+        // Adicionar closers atuais
         closers.forEach(c => {
           const opt = document.createElement('option');
           opt.value = c.id;
@@ -1262,12 +1262,10 @@
 
     function renderTable() {
       const filterCloserId = document.getElementById('filter-closer').value;
-      const filterDate = document.getElementById('filter-date').value;
       const filterMonth = document.getElementById('filter-month').value;
 
       let filtered = movements;
       if (filterCloserId) filtered = filtered.filter(m => m.closer_id == filterCloserId);
-      if (filterDate) filtered = filtered.filter(m => (m.data_raw || m.data) === filterDate);
       
       // Filtro por mês (YYYY-MM)
       if (filterMonth) {

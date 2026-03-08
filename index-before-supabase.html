@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comando Zape</title>
+  <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1A1A1A; color: #fff; font-family: 'Albert Sans', sans-serif; }
+    
+    .login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .login-container { background: #2A2A2A; padding: 40px; border-radius: 12px; max-width: 400px; width: 100%; }
+    .logo { font-size: 32px; font-weight: 900; color: #B2FF00; text-align: center; margin-bottom: 32px; }
+    .title { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 24px; color: #fff; }
+    
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 8px; color: #999; }
+    .form-group input { width: 100%; padding: 12px; background: #1A1A1A; border: 1px solid #383838; color: #fff; border-radius: 6px; font-family: inherit; }
+    .form-group input:focus { outline: none; border-color: #B2FF00; }
+    
+    .btn { width: 100%; padding: 12px; background: #B2FF00; color: #1A1A1A; border: none; border-radius: 6px; font-weight: 900; font-size: 14px; cursor: pointer; margin-top: 16px; }
+    .btn:hover { opacity: 0.9; }
+    
+    .error { color: #F44336; padding: 12px; border-radius: 6px; margin-bottom: 16px; display: none; }
+    .error.show { display: block; }
+    
+    .dashboard { display: none; }
+    .dashboard.active { display: block; }
+    
+    .sidebar { background: #242424; padding: 24px; width: 240px; position: fixed; height: 100vh; left: 0; top: 0; border-right: 1px solid #383838; }
+    .sidebar-logo { color: #B2FF00; font-weight: 900; margin-bottom: 32px; font-size: 16px; }
+    .sidebar-menu { display: flex; flex-direction: column; gap: 8px; }
+    .menu-item { padding: 12px 16px; cursor: pointer; font-size: 12px; color: #999; border-radius: 6px; border-left: 3px solid transparent; }
+    .menu-item:hover { background: rgba(178,255,0,0.05); color: #B2FF00; }
+    .menu-item.active { background: rgba(178,255,0,0.1); color: #B2FF00; border-left-color: #B2FF00; font-weight: 700; }
+    .menu-item.expandable { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+    .menu-item.expandable::after { content: '▼'; font-size: 8px; transition: transform 0.3s; margin-right: -8px; }
+    .menu-item.expandable.expanded::after { transform: rotate(-180deg); }
+    .submenu { display: none; flex-direction: column; gap: 0; padding-left: 16px; }
+    .submenu.show { display: flex; }
+    .submenu .menu-item { padding: 10px 12px; font-size: 11px; border-radius: 4px; }
+    .submenu .menu-item::before { content: ''; }
+    .user-info { margin-top: auto; padding-top: 24px; border-top: 1px solid #383838; font-size: 10px; }
+    .logout-btn { background: #F44336; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-top: 8px; }
+    
+    main { margin-left: 240px; padding: 24px 32px; }
+    .page { display: none; }
+    .page.active { display: block; }
+    
+    header { margin-bottom: 32px; border-bottom: 1px solid #383838; padding-bottom: 20px; }
+    header h1 { font-size: 28px; font-weight: 900; }
+    
+    .card { background: #2A2A2A; padding: 20px; margin-bottom: 24px; border-radius: 8px; border: 1px solid #383838; }
+    .card-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+    
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .form-row.full { grid-template-columns: 1fr; }
+    
+    .form-group select, .form-group textarea { width: 100%; padding: 10px; background: #1A1A1A; border: 1px solid #383838; color: #fff; border-radius: 6px; font-family: inherit; }
+    
+    .success { color: #4CAF50; padding: 12px; border-radius: 6px; margin-bottom: 16px; display: none; }
+    .success.show { display: block; }
+    
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    table th { padding: 12px; text-align: left; font-weight: 700; color: #B2FF00; border-bottom: 1px solid #383838; }
+    table td { padding: 12px; border-bottom: 1px solid #383838; }
+  </style>
+</head>
+<body>
+  <!-- LOGIN -->
+  <div id="login-page" class="login-page">
+    <div class="login-container">
+      <div class="logo">ZAPE</div>
+      <div class="title">Acesso ao Sistema</div>
+      <div class="error" id="error-msg"></div>
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Usuário</label>
+          <input type="text" id="user" placeholder="Digite seu usuário" required>
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="pass" placeholder="Digite sua senha" required>
+        </div>
+        <button type="submit" class="btn">Entrar</button>
+      </form>
+      <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #383838; font-size: 11px; color: #999; text-align: center;">
+        <strong>Usuários de Teste:</strong><br><br>
+        adm / 123456<br>
+        comercial / 123456<br>
+        analista / 123456
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="dashboard">
+    <div class="sidebar">
+      <div class="sidebar-logo">ZAPE</div>
+      <div class="sidebar-menu">
+        <div class="menu-item active" onclick="goToPage('painel')">Painel</div>
+        <div class="menu-item expandable" onclick="toggleSubmenu('comercial-menu')">Comercial</div>
+        <div id="comercial-menu" class="submenu">
+          <div class="menu-item" onclick="goToPage('dash-comercial')">Dash Comercial</div>
+          <div class="menu-item" onclick="window.location.href='/comando-zape/lancamentocomercial'">Lançamento de Dados</div>
+          <div class="menu-item expandable" onclick="toggleSubmenu('gerenciamento-menu')" style="padding-left: 20px;">Gerenciamento</div>
+          <div id="gerenciamento-menu" class="submenu">
+            <div class="menu-item" onclick="goToPage('cadastro-closers')">Cadastrar Closers</div>
+            <div class="menu-item" onclick="goToPage('cadastro-sdrs')">Cadastrar SDRs</div>
+            <div class="menu-item" onclick="goToPage('cadastro-origens')">Cadastrar Origens</div>
+          </div>
+        </div>
+        <div class="menu-item" onclick="goToPage('usuarios')">Gerenciar Usuários</div>
+      </div>
+      <div class="user-info">
+        <div style="color: #B2FF00; font-weight: 700; margin-bottom: 8px;">
+          <span id="user-display">--</span>
+        </div>
+        <button class="logout-btn" onclick="logout()">Sair</button>
+      </div>
+    </div>
+
+    <main>
+      <!-- PAINEL -->
+      <div id="painel" class="page active">
+        <header><h1>Painel de Controle</h1></header>
+        <div class="card">
+          <div class="card-title">Bem-vindo ao Comando Zape</div>
+          <p>Dashboard ativo e funcionando corretamente!</p>
+        </div>
+      </div>
+
+      <!-- LANÇAMENTO -->
+      <div id="comercial" class="page">
+        <header><h1>Comercial</h1></header>
+        <div class="card">
+          <div class="card-title">Dashboard Comercial</div>
+          <p>Acesse a página de lançamento de dados para registrar novos leads:</p>
+          <br>
+          <a href="/comando-zape/lancamentocomercial" style="display:inline-block;background:#B2FF00;color:#1A1A1A;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:900;cursor:pointer;">Ir para Lançamento de Dados</a>
+        </div>
+      </div>
+
+      <!-- DASH COMERCIAL -->
+      <div id="dash-comercial" class="page">
+        <header><h1>Dashboard Comercial</h1></header>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+          <div class="card" style="text-align: center; padding: 24px;">
+            <div style="font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 8px;">Leads Recebidos</div>
+            <div style="font-size: 32px; font-weight: 900; color: #B2FF00;">156</div>
+            <div style="font-size: 9px; color: #999; margin-top: 8px;">total</div>
+          </div>
+          <div class="card" style="text-align: center; padding: 24px;">
+            <div style="font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 8px;">Taxa Conversão</div>
+            <div style="font-size: 32px; font-weight: 900; color: #B2FF00;">24%</div>
+            <div style="font-size: 9px; color: #999; margin-top: 8px;">%</div>
+          </div>
+          <div class="card" style="text-align: center; padding: 24px;">
+            <div style="font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 8px;">Receita Total</div>
+            <div style="font-size: 32px; font-weight: 900; color: #B2FF00;">445.8K</div>
+            <div style="font-size: 9px; color: #999; margin-top: 8px;">R$</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Resumo Comercial</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Métrica</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Leads Qualificados</td><td>68%</td></tr>
+              <tr><td>Em Negociação</td><td>32</td></tr>
+              <tr><td>Ticket Médio</td><td>R$ 2.850</td></tr>
+              <tr><td>Melhor Origem</td><td>WhatsApp</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Ações Rápidas</div>
+          <a href="/comando-zape/lancamentocomercial" style="display: inline-block; background: #B2FF00; color: #1A1A1A; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 900; cursor: pointer;">Registrar Novo Lead</a>
+        </div>
+      </div>
+
+      <!-- USUÁRIOS -->
+      <div id="usuarios" class="page">
+        <header><h1>Gerenciar Usuários</h1></header>
+        <div class="card">
+          <div class="card-title">Criar Novo Usuário</div>
+          <div class="success" id="user-success-msg">Usuário criado com sucesso!</div>
+          <form onsubmit="createUser(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Usuário</label>
+                <input type="text" name="username" placeholder="nome_usuario" required>
+              </div>
+              <div class="form-group">
+                <label>Senha</label>
+                <input type="password" name="password" placeholder="Senha" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nome Completo</label>
+                <input type="text" name="fullname" placeholder="Nome completo" required>
+              </div>
+              <div class="form-group">
+                <label>Função</label>
+                <select name="role" required>
+                  <option value="">Selecione...</option>
+                  <option value="adm">Administrador</option>
+                  <option value="comercial">Comercial</option>
+                  <option value="analista">Analista</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn">Criar Usuário</button>
+          </form>
+
+          <div style="margin-top: 32px;">
+            <div class="card-title">Usuários do Sistema</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Usuário</th>
+                  <th>Nome</th>
+                  <th>Função</th>
+                </tr>
+              </thead>
+              <tbody id="users-table">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const defaultUsers = [
+      { id: 1, username: 'adm', password: '123456', fullname: 'Administrador', role: 'adm' },
+      { id: 2, username: 'comercial', password: '123456', fullname: 'Time Comercial', role: 'comercial' },
+      { id: 3, username: 'analista', password: '123456', fullname: 'Analista', role: 'analista' }
+    ];
+
+    let currentUser = null;
+    let users = JSON.parse(localStorage.getItem('users')) || defaultUsers;
+    let leads = JSON.parse(localStorage.getItem('leads')) || [];
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('user').value.trim();
+      const password = document.getElementById('pass').value.trim();
+      
+      console.log('Login attempt:', username, password);
+      const user = users.find(u => u.username === username && u.password === password);
+      
+      if (user) {
+        currentUser = user;
+        localStorage.setItem('current_user', JSON.stringify(user));
+        showDashboard();
+      } else {
+        const errorEl = document.getElementById('error-msg');
+        errorEl.textContent = 'Usuário ou senha incorretos';
+        errorEl.classList.add('show');
+        setTimeout(() => errorEl.classList.remove('show'), 5000);
+      }
+    }
+
+    function showDashboard() {
+      document.getElementById('login-page').style.display = 'none';
+      document.getElementById('dashboard').classList.add('active');
+      document.getElementById('user-display').textContent = currentUser.fullname;
+      loadUsersTable();
+    }
+
+    function logout() {
+      currentUser = null;
+      localStorage.removeItem('current_user');
+      document.getElementById('dashboard').classList.remove('active');
+      document.getElementById('login-page').style.display = 'flex';
+      document.getElementById('user').value = '';
+      document.getElementById('pass').value = '';
+    }
+
+    function goToPage(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(page).classList.add('active');
+      
+      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+      if (event.target) event.target.classList.add('active');
+    }
+
+    function toggleSubmenu(submenuId) {
+      const submenu = document.getElementById(submenuId);
+      const button = event.target;
+      
+      submenu.classList.toggle('show');
+      button.classList.toggle('expanded');
+    }
+
+    function createUser(e) {
+      e.preventDefault();
+      const form = e.target;
+      
+      if (users.find(u => u.username === form.username.value)) {
+        alert('Usuário já existe!');
+        return;
+      }
+      
+      const newUser = {
+        id: users.length + 1,
+        username: form.username.value,
+        password: form.password.value,
+        fullname: form.fullname.value,
+        role: form.role.value
+      };
+      
+      users.push(newUser);
+      localStorage.setItem('users', JSON.stringify(users));
+      
+      const msg = document.getElementById('user-success-msg');
+      msg.classList.add('show');
+      setTimeout(() => msg.classList.remove('show'), 3000);
+      
+      form.reset();
+      loadUsersTable();
+    }
+
+    function loadUsersTable() {
+      const tbody = document.getElementById('users-table');
+      tbody.innerHTML = users.map(user => `<tr>
+        <td>${user.username}</td>
+        <td>${user.fullname}</td>
+        <td>${user.role}</td>
+      </tr>`).join('');
+    }
+
+    // Check for existing session
+    window.addEventListener('load', function() {
+      const saved = localStorage.getItem('current_user');
+      if (saved) {
+        currentUser = JSON.parse(saved);
+        showDashboard();
+      }
+    });
+  </script>
+</body>
+</html>
