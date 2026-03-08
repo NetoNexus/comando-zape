@@ -507,7 +507,7 @@
               <tr><td colspan="5" style="padding: 8px; text-align: center; color: #999;">Nenhum ganho registrado</td></tr>
             </tbody>
           </table>
-          <button type="button" class="add-btn" onclick="openEditGanhoModal()">+ Registrar Ganho</button>
+
         </div>
 
         <button type="submit" class="btn" style="width: 100%;">Salvar Alterações</button>
@@ -1279,13 +1279,7 @@
       container.appendChild(newField);
     }
     
-    function openEditGanhoModal() {
-      // Reutiliza o mesmo modal de ganho da criação
-      // (usa editTempGanhos em vez de tempGanhos)
-      document.getElementById('ganhoModal').classList.add('show');
-      document.getElementById('ganho-origem-select').focus();
-    }
-    
+
     function renderEditGanhos() {
       const tbody = document.getElementById('edit-ganhos-tbody');
       if (!editTempGanhos || editTempGanhos.length === 0) {
