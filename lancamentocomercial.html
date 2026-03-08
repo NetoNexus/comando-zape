@@ -627,13 +627,17 @@
 
     async function loadMovementsFromSupabase() {
       try {
+        console.log('🔄 [LOAD] Iniciando loadMovementsFromSupabase...');
+        
         // Guardar dados locais ANTES de carregar Supabase
         const localMovements = JSON.parse(localStorage.getItem('movements') || '[]');
         const localMap = new Map(localMovements.map(m => [m.id, m]));
-        console.log('💾 IDs em localStorage:', Array.from(localMap.keys()));
+        console.log('💾 [LOAD] IDs em localStorage:', Array.from(localMap.keys()));
         
         const data = await supabaseFetch('movements?order=id.desc');
-        if (data && Array.isArray(data)) {
+        console.log('🌐 [LOAD] Resposta do Supabase:', data ? `${data.length} registros` : 'nulo/vazio');
+        
+        if (data && Array.isArray(data) && data.length > 0) {
           // Converter dados do Supabase
           const supabaseMovements = data.map(m => ({
             id: m.id,
@@ -649,7 +653,7 @@
             expanded: false
           }));
           
-          console.log('🌐 IDs no Supabase:', supabaseMovements.map(m => m.id));
+          console.log('🌐 [LOAD] IDs do Supabase:', supabaseMovements.map(m => m.id));
           
           // MESCLAR: 
           // 1. Começa com Supabase (fonte de verdade)
@@ -666,20 +670,28 @@
           // Adicionar locais que ainda não foram sincronizados (IDs > 1000 = pendentes)
           localMovements.forEach(m => {
             if (!processedIds.has(m.id) && m.id > 1000) {
-              console.log('⏳ Mantendo movimento local pendente de sync:', m.id);
+              console.log('⏳ [LOAD] Mantendo movimento local pendente de sync:', m.id);
               result.push(m);
             }
           });
           
           movements = result;
-          console.log('✅ Movements após merge:', movements.length, 'IDs');
+          console.log('✅ [LOAD] Movements após merge:', movements.length, 'registros. IDs:', movements.map(m => m.id));
           localStorage.setItem('movements', JSON.stringify(movements));
+          return true;
+        } else {
+          console.warn('⚠️ [LOAD] Supabase retornou vazio. Usando localStorage apenas.');
+          movements = localMovements;
+          console.log('📌 [LOAD] Movimentos do localStorage:', movements.length);
           return true;
         }
       } catch (err) {
-        console.error('❌ Erro ao carregar movements:', err);
+        console.error('❌ [LOAD] Erro ao carregar movements:', err);
+        // Fallback: carregar só do localStorage
+        movements = JSON.parse(localStorage.getItem('movements') || '[]');
+        console.log('⚠️ [LOAD] Fallback para localStorage:', movements.length);
+        return false;
       }
-      return false;
     }
 
     async function deleteMovementFromSupabase(movementId) {
