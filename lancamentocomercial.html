@@ -206,13 +206,13 @@
             <tr>
               <th>Data</th>
               <th>Closer</th>
-              <th>Origem</th>
               <th>Agendamentos</th>
               <th>Reuniões</th>
               <th>Reagendamentos</th>
               <th>No-Shows</th>
               <th>Qtd. Ganho</th>
               <th>Valor Ganho</th>
+              <th>Origem</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -268,13 +268,13 @@
             <tr>
               <th>Data</th>
               <th>Closer</th>
-              <th>Origem</th>
               <th>Agendamentos</th>
               <th>Reuniões</th>
               <th>Reagendamentos</th>
               <th>No-Shows</th>
               <th>Qtd. Ganho</th>
               <th>Valor Ganho</th>
+              <th>Origem</th>
             </tr>
           </thead>
           <tbody id="acompanhamento-table">
@@ -823,21 +823,30 @@
           return `${sdrName}: ${r.quantidade}`;
         }).join(', ') || '--';
 
-        const noshowStr = m.noshows.map(n => {
+        const noshowStr = (m.noshows && Array.isArray(m.noshows)) ? m.noshows.map(n => {
           const sdrName = sdrs.find(s => s.id == n.sdr_id)?.name || 'N/A';
           return `${sdrName}: ${n.quantidade}`;
-        }).join(', ') || '--';
+        }).join(', ') : '--';
+
+        // Extrair origens separadas do valor
+        let origemsDisplay = '--';
+        if (m.ganhos && Array.isArray(m.ganhos) && m.ganhos.length > 0) {
+          origemsDisplay = m.ganhos.map(g => {
+            const origemName = origens.find(o => o.id == g.origem_id)?.name || 'N/A';
+            return origemName;
+          }).join(', ');
+        }
 
         return `<tr>
           <td>${m.data}</td>
           <td>${closerName}</td>
-          <td>${ganhosDisplay}</td>
           <td>${agendStr}</td>
           <td>${m.reunioes}</td>
           <td>${reagendStr}</td>
           <td>${noshowStr}</td>
           <td>${totalQtdGanho}</td>
           <td>R$ ${totalValorGanho.toFixed(2)}</td>
+          <td>${origemsDisplay}</td>
         </tr>`;
       }).join('');
     }
@@ -852,27 +861,25 @@
 
       const tbody = document.getElementById('records-table');
       if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#999;">Nenhum registro</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:#999;">Nenhum registro</td></tr>';
         return;
       }
 
       tbody.innerHTML = filtered.map(m => {
         const closerName = closers.find(c => c.id == m.closer_id)?.name || '--';
         
-        // Calcular ganhos
+        // Calcular ganhos - separar origem do valor
         let totalValorGanho = 0;
         let totalQtdGanho = 0;
-        let ganhosDisplay = '--';
-        let ganhosDetalhes = '--';
+        let origemsDisplay = '--';
         
         if (m.ganhos && Array.isArray(m.ganhos) && m.ganhos.length > 0) {
           totalQtdGanho = m.ganhos.length;
-          ganhosDisplay = m.ganhos.map(g => {
+          origemsDisplay = m.ganhos.map(g => {
             const origemName = origens.find(o => o.id == g.origem_id)?.name || 'N/A';
             totalValorGanho += g.valor;
-            return `${origemName}: R$ ${g.valor.toFixed(2)}`;
+            return origemName;
           }).join(', ');
-          ganhosDetalhes = ganhosDisplay;
         }
 
         const agendStr = m.agendamentos.map(a => {
@@ -885,15 +892,21 @@
           return `${sdrName}: ${r.quantidade}`;
         }).join(', ') || '--';
 
+        const noshowStr = (m.noshows && Array.isArray(m.noshows)) ? m.noshows.map(n => {
+          const sdrName = sdrs.find(s => s.id == n.sdr_id)?.name || 'N/A';
+          return `${sdrName}: ${n.quantidade}`;
+        }).join(', ') : '--';
+
         return `<tr>
           <td>${m.data}</td>
           <td>${closerName}</td>
-          <td>${ganhosDisplay}</td>
           <td>${agendStr}</td>
           <td>${m.reunioes}</td>
           <td>${reagendStr}</td>
+          <td>${noshowStr}</td>
           <td>${totalQtdGanho}</td>
           <td>R$ ${totalValorGanho.toFixed(2)}</td>
+          <td>${origemsDisplay}</td>
           <td>
             <div class="btn-group">
               <button class="edit-btn" onclick="openEditMovementModal(${m.id})">Editar</button>
