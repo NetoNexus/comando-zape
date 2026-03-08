@@ -1312,39 +1312,52 @@
       editingGanhoIndex = idx;
       const ganho = editTempGanhos[idx];
       
-      console.log('✏️ Abrindo ganho para edição:', ganho);
+      console.log('✏️ [EDIT_GANHO] Abrindo ganho para edição:', ganho);
+      console.log('✏️ [EDIT_GANHO] Index:', idx);
       
       // PRÉ-PREENCHER os campos do modal com dados do ganho
       populateGanhoSelects();
+      console.log('✏️ [EDIT_GANHO] Selects populados');
       
       // Preencher origem
-      document.getElementById('ganho-origem-select').value = ganho.origem_id;
-      
-      // Disparar onChange para carregar sub-origens se houver
-      onGanhoOrigemChange();
       setTimeout(() => {
-        if (ganho.sub_origem) {
-          document.getElementById('ganho-sub-origem-select').value = ganho.sub_origem;
-        }
+        document.getElementById('ganho-origem-select').value = ganho.origem_id;
+        console.log('✏️ [EDIT_GANHO] Origem preenchida:', ganho.origem_id);
+        
+        // Disparar onChange para carregar sub-origens se houver
+        onGanhoOrigemChange();
+        console.log('✏️ [EDIT_GANHO] onGanhoOrigemChange disparado');
+        
+        setTimeout(() => {
+          if (ganho.sub_origem) {
+            document.getElementById('ganho-sub-origem-select').value = ganho.sub_origem;
+            console.log('✏️ [EDIT_GANHO] Sub-origem preenchida:', ganho.sub_origem);
+          }
+          
+          // Preencher serviço
+          document.getElementById('ganho-servico-select').value = ganho.servico_id;
+          console.log('✏️ [EDIT_GANHO] Serviço preenchido:', ganho.servico_id);
+          
+          // Preencher SDR
+          document.getElementById('ganho-sdr-select').value = ganho.sdr_id;
+          console.log('✏️ [EDIT_GANHO] SDR preenchido:', ganho.sdr_id);
+          
+          // Preencher valor
+          document.getElementById('ganho-valor-input').value = ganho.valor;
+          console.log('✏️ [EDIT_GANHO] Valor preenchido:', ganho.valor);
+          
+          // Mudar título do modal
+          document.querySelector('#ganhoModal .modal-header h2').textContent = 'Editar Ganho';
+          
+          // Mudar botão para "Salvar Alterações"
+          document.querySelector('#ganhoModal form button[type="submit"]').textContent = 'Salvar Alterações';
+          console.log('✏️ [EDIT_GANHO] Título e botão atualizados');
+          
+          // Abrir modal
+          document.getElementById('ganhoModal').classList.add('show');
+          console.log('✏️ [EDIT_GANHO] Modal aberto!');
+        }, 100);
       }, 50);
-      
-      // Preencher serviço
-      document.getElementById('ganho-servico-select').value = ganho.servico_id;
-      
-      // Preencher SDR
-      document.getElementById('ganho-sdr-select').value = ganho.sdr_id;
-      
-      // Preencher valor
-      document.getElementById('ganho-valor-input').value = ganho.valor;
-      
-      // Mudar título do modal
-      document.querySelector('#ganhoModal .modal-header h2').textContent = 'Editar Ganho';
-      
-      // Mudar botão para "Salvar Alterações"
-      document.querySelector('#ganhoModal form button[type="submit"]').textContent = 'Salvar Alterações';
-      
-      // Abrir modal
-      document.getElementById('ganhoModal').classList.add('show');
     }
     
     function adicionarOuEditarGanho(e) {
