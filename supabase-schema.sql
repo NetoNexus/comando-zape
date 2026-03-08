@@ -72,11 +72,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS trigger_audit_movements ON movements;
-CREATE TRIGGER trigger_audit_movements
-AFTER INSERT OR UPDATE OR DELETE ON movements
-FOR EACH ROW
-EXECUTE FUNCTION audit_movements();
+-- ⚠️ TRIGGER DESABILITADO - CAUSAVA FOREIGN KEY ERROR NO INSERT
+-- DROP TRIGGER IF EXISTS trigger_audit_movements ON movements;
+-- CREATE TRIGGER trigger_audit_movements
+-- AFTER INSERT OR UPDATE OR DELETE ON movements
+-- FOR EACH ROW
+-- EXECUTE FUNCTION audit_movements();
 
 -- ============================================================
 -- Configurar RLS (Row Level Security) para acesso público
