@@ -1532,22 +1532,106 @@
 
         const metaMensal = metasResult[0];
         
-        // Pré-preencher modal
+        // Carregar metas de closers
+        const closersResult = await supabaseFetch(`metas_closers?mes_id=eq.${metaMensal.id}`);
+        const closersMap = {};
+        if (Array.isArray(closersResult)) {
+          closersResult.forEach(c => {
+            closersMap[c.closer_id] = { meta_mensal: c.meta_mensal, meta_diaria: c.meta_diaria };
+          });
+        }
+
+        // Carregar metas de SDRs
+        const sdrsResult = await supabaseFetch(`metas_sdrs?mes_id=eq.${metaMensal.id}`);
+        const sdrsMap = {};
+        if (Array.isArray(sdrsResult)) {
+          sdrsResult.forEach(s => {
+            sdrsMap[s.sdr_id] = { meta_mensal: s.meta_mensal, meta_diaria: s.meta_diaria };
+          });
+        }
+
+        // Abrir modal em branco primeiro
+        abrirModalRegistrarMeta();
+
+        // Agora preencher os valores
         document.getElementById('registrar-mes').value = mes;
         document.getElementById('registrar-meta-mensal').value = metaMensal.meta_mensal_vendas;
         document.getElementById('registrar-meta-diaria').value = metaMensal.meta_diaria_vendas;
         
-        // Encontrar qual template corresponde
-        const closersResult = await supabaseFetch(`metas_closers?mes_id=eq.${metaMensal.id}&limit=1`);
-        if (closersResult && closersResult.length > 0) {
-          const template = Object.values(metaTemplates).find(t => t.meta_closer_mensal == closersResult[0].meta_mensal);
-          if (template) {
-            selecionarNivel(template.nivel);
+        // Encontrar qual nível é
+        const template = Object.values(metaTemplates).find(t => t.nivel == metaMensal.nivel);
+        if (template) {
+          // Selecionar o nível (sem passar el pq é programático)
+          nivelSelecionado = metaMensal.nivel;
+          document.getElementById('registrar-nivel').value = metaMensal.nivel;
+          
+          // Highlight do card
+          document.querySelectorAll('.nivel-card').forEach(card => {
+            card.style.borderColor = '#383838';
+            card.style.background = '#2A2A2A';
+          });
+          const cardTexto = Array.from(document.querySelectorAll('.nivel-card')).find(card => 
+            card.textContent.includes(metaMensal.nivel.toUpperCase())
+          );
+          if (cardTexto) {
+            cardTexto.style.borderColor = '#B2FF00';
           }
-        }
 
-        abrirModalRegistrarMeta();
+          // Pré-preencher closers com valores salvos
+          const closersFields = document.getElementById('registrar-closers-fields');
+          closersFields.innerHTML = closers.map(c => {
+            const meta = closersMap[c.id] || { meta_mensal: template.meta_closer_mensal, meta_diaria: template.meta_closer_diaria };
+            return `
+              <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                  <label>${c.name} - Meta Mensal (R$)</label>
+                  <input type="number" class="closer-meta-mensal" data-closer-id="${c.id}" value="${meta.meta_mensal}" placeholder="0">
+                </div>
+                <div>
+                  <label>${c.name} - Meta Diária (R$)</label>
+                  <input type="number" class="closer-meta-diaria" data-closer-id="${c.id}" value="${meta.meta_diaria}" placeholder="0" readonly style="background: #383838;">
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          // Pré-preencher SDRs com valores salvos
+          const sdrsFields = document.getElementById('registrar-sdrs-fields');
+          sdrsFields.innerHTML = sdrs.map(s => {
+            const meta = sdrsMap[s.id] || { meta_mensal: template.meta_sdr_mensal, meta_diaria: template.meta_sdr_diaria };
+            return `
+              <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                  <label>${s.name} - Meta Mensal (Agend.)</label>
+                  <input type="number" class="sdr-meta-mensal" data-sdr-id="${s.id}" value="${meta.meta_mensal}" placeholder="0">
+                </div>
+                <div>
+                  <label>${s.name} - Meta Diária (Agend.)</label>
+                  <input type="number" class="sdr-meta-diaria" data-sdr-id="${s.id}" value="${meta.meta_diaria}" placeholder="0" readonly style="background: #383838;">
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          // Adicionar listeners
+          document.querySelectorAll('.closer-meta-mensal').forEach(input => {
+            input.addEventListener('change', function() {
+              const diasUteis = 22;
+              const metaDiaria = (parseFloat(this.value) / diasUteis).toFixed(2);
+              document.querySelector(`.closer-meta-diaria[data-closer-id="${this.dataset.closerId}"]`).value = metaDiaria;
+            });
+          });
+
+          document.querySelectorAll('.sdr-meta-mensal').forEach(input => {
+            input.addEventListener('change', function() {
+              const diasUteis = 22;
+              const metaDiaria = (parseInt(this.value) / diasUteis).toFixed(0);
+              document.querySelector(`.sdr-meta-diaria[data-sdr-id="${this.dataset.sdrId}"]`).value = metaDiaria;
+            });
+          });
+        }
       } catch (e) {
+        console.error('Erro ao abrir meta:', e);
         alert('Erro ao abrir meta: ' + e.message);
       }
     }
