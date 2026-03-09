@@ -283,9 +283,9 @@
           </table>
         </div>
 
-        <!-- Modal de Registrar Meta - SIMPLES E DIRETO -->
+        <!-- Modal de Registrar Meta - COM CLOSERS E SDRS -->
         <div id="registrar-meta-modal" class="modal">
-          <div class="modal-content" style="max-width: 600px;">
+          <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
               <h2>Registrar Metas do Mês</h2>
               <button class="modal-close" onclick="fecharModalRegistrarMeta()">×</button>
@@ -294,50 +294,110 @@
               <!-- Seleção de Mês -->
               <div class="form-group">
                 <label>Mês</label>
-                <select id="registrar-mes" required>
+                <select id="registrar-mes" required onchange="atualizarDiasUteis()">
                   <option value="">Escolha um mês</option>
                 </select>
               </div>
-
-              <hr style="border: none; border-top: 1px solid #383838; margin: 20px 0;">
+              <div style="font-size: 11px; color: #999; margin-bottom: 20px;">
+                Dias úteis (seg-sex): <span id="dias-uteis-info">-</span>
+              </div>
 
               <!-- MÍNIMA -->
-              <div style="margin-bottom: 20px;">
-                <h4 style="color: #B2FF00; font-size: 14px; font-weight: 900; margin-bottom: 12px;">MÍNIMA</h4>
+              <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #383838;">
+                <h4 style="color: #B2FF00; font-size: 14px; font-weight: 900; margin-bottom: 16px;">MÍNIMA</h4>
+                
+                <!-- Meta Geral -->
                 <div class="form-group">
-                  <label>Meta Mensal (R$)</label>
-                  <input type="number" class="nivel-meta-mensal" data-nivel="minima" placeholder="0" step="0.01">
+                  <label>Meta Geral Mensal (R$)</label>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <input type="number" class="nivel-meta-mensal" data-nivel="minima" placeholder="0" step="0.01" onchange="calcularMetaDiaria('minima')">
+                    <input type="text" class="nivel-meta-diaria-display" data-nivel="minima" readonly placeholder="Meta Diária: R$ -" style="background: #383838; color: #B2FF00; font-weight: 600;">
+                  </div>
+                </div>
+
+                <!-- Closers -->
+                <div style="margin-top: 12px;">
+                  <label style="font-size: 12px; color: #B2FF00; font-weight: 700;">Closers (Venda)</label>
+                  <div id="closers-container-minima" data-nivel="minima" style="margin-top: 8px;"></div>
+                </div>
+
+                <!-- SDRs -->
+                <div style="margin-top: 12px;">
+                  <label style="font-size: 12px; color: #B2FF00; font-weight: 700;">SDRs (Reunião Agendada)</label>
+                  <div id="sdrs-container-minima" data-nivel="minima" style="margin-top: 8px;"></div>
                 </div>
               </div>
 
               <!-- SUPER -->
-              <div style="margin-bottom: 20px;">
-                <h4 style="color: #B2FF00; font-size: 14px; font-weight: 900; margin-bottom: 12px;">SUPER</h4>
+              <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #383838;">
+                <h4 style="color: #B2FF00; font-size: 14px; font-weight: 900; margin-bottom: 16px;">SUPER</h4>
+                
                 <div class="form-group">
-                  <label>Meta Mensal (R$)</label>
-                  <input type="number" class="nivel-meta-mensal" data-nivel="super" placeholder="0" step="0.01">
+                  <label>Meta Geral Mensal (R$)</label>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <input type="number" class="nivel-meta-mensal" data-nivel="super" placeholder="0" step="0.01" onchange="calcularMetaDiaria('super')">
+                    <input type="text" class="nivel-meta-diaria-display" data-nivel="super" readonly placeholder="Meta Diária: R$ -" style="background: #383838; color: #B2FF00; font-weight: 600;">
+                  </div>
+                </div>
+
+                <div style="margin-top: 12px;">
+                  <label style="font-size: 12px; color: #B2FF00; font-weight: 700;">Closers (Venda)</label>
+                  <div id="closers-container-super" data-nivel="super" style="margin-top: 8px;"></div>
+                </div>
+
+                <div style="margin-top: 12px;">
+                  <label style="font-size: 12px; color: #B2FF00; font-weight: 700;">SDRs (Reunião Agendada)</label>
+                  <div id="sdrs-container-super" data-nivel="super" style="margin-top: 8px;"></div>
                 </div>
               </div>
 
               <!-- ULTRA -->
-              <div style="margin-bottom: 20px;">
-                <h4 style="color: #B2FF00; font-size: 14px; font-weight: 900; margin-bottom: 12px;">ULTRA</h4>
+              <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #383838;">
+                <h4 style="color: #B2FF00; font-size: 14px; font-weight: 900; margin-bottom: 16px;">ULTRA</h4>
+                
                 <div class="form-group">
-                  <label>Meta Mensal (R$)</label>
-                  <input type="number" class="nivel-meta-mensal" data-nivel="ultra" placeholder="0" step="0.01">
+                  <label>Meta Geral Mensal (R$)</label>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <input type="number" class="nivel-meta-mensal" data-nivel="ultra" placeholder="0" step="0.01" onchange="calcularMetaDiaria('ultra')">
+                    <input type="text" class="nivel-meta-diaria-display" data-nivel="ultra" readonly placeholder="Meta Diária: R$ -" style="background: #383838; color: #B2FF00; font-weight: 600;">
+                  </div>
+                </div>
+
+                <div style="margin-top: 12px;">
+                  <label style="font-size: 12px; color: #B2FF00; font-weight: 700;">Closers (Venda)</label>
+                  <div id="closers-container-ultra" data-nivel="ultra" style="margin-top: 8px;"></div>
+                </div>
+
+                <div style="margin-top: 12px;">
+                  <label style="font-size: 12px; color: #B2FF00; font-weight: 700;">SDRs (Reunião Agendada)</label>
+                  <div id="sdrs-container-ultra" data-nivel="ultra" style="margin-top: 8px;"></div>
                 </div>
               </div>
 
               <!-- BLACK -->
-              <div style="margin-bottom: 20px;">
-                <h4 style="color: #B2FF00; font-size: 14px; font-weight: 900; margin-bottom: 12px;">BLACK</h4>
+              <div style="margin-bottom: 30px;">
+                <h4 style="color: #B2FF00; font-size: 14px; font-weight: 900; margin-bottom: 16px;">BLACK</h4>
+                
                 <div class="form-group">
-                  <label>Meta Mensal (R$)</label>
-                  <input type="number" class="nivel-meta-mensal" data-nivel="black" placeholder="0" step="0.01">
+                  <label>Meta Geral Mensal (R$)</label>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <input type="number" class="nivel-meta-mensal" data-nivel="black" placeholder="0" step="0.01" onchange="calcularMetaDiaria('black')">
+                    <input type="text" class="nivel-meta-diaria-display" data-nivel="black" readonly placeholder="Meta Diária: R$ -" style="background: #383838; color: #B2FF00; font-weight: 600;">
+                  </div>
+                </div>
+
+                <div style="margin-top: 12px;">
+                  <label style="font-size: 12px; color: #B2FF00; font-weight: 700;">Closers (Venda)</label>
+                  <div id="closers-container-black" data-nivel="black" style="margin-top: 8px;"></div>
+                </div>
+
+                <div style="margin-top: 12px;">
+                  <label style="font-size: 12px; color: #B2FF00; font-weight: 700;">SDRs (Reunião Agendada)</label>
+                  <div id="sdrs-container-black" data-nivel="black" style="margin-top: 8px;"></div>
                 </div>
               </div>
 
-              <button type="submit" class="btn" style="width: 100%; margin-top: 20px;">Salvar Metas</button>
+              <button type="submit" class="btn" style="width: 100%; margin-top: 20px;">Salvar Todas as Metas</button>
             </form>
           </div>
         </div>
@@ -1131,9 +1191,101 @@
 
     // Função removida - modal agora renderiza todos os 4 níveis simultaneamente
 
+    function calcularDiasUteis(ano, mes) {
+      // Calcula dias úteis (segunda a sexta) do mês
+      const primeiroDia = new Date(ano, mes - 1, 1);
+      const ultimoDia = new Date(ano, mes, 0);
+      let diasUteis = 0;
+
+      for (let d = new Date(primeiroDia); d <= ultimoDia; d.setDate(d.getDate() + 1)) {
+        const dia = d.getDay();
+        // 1 = segunda, 2 = terça, ... 5 = sexta
+        if (dia >= 1 && dia <= 5) {
+          diasUteis++;
+        }
+      }
+      return diasUteis;
+    }
+
+    function atualizarDiasUteis() {
+      const mes = document.getElementById('registrar-mes').value;
+      if (!mes) {
+        document.getElementById('dias-uteis-info').textContent = '-';
+        return;
+      }
+      const [ano, mês] = mes.split('-');
+      const diasUteis = calcularDiasUteis(parseInt(ano), parseInt(mês));
+      document.getElementById('dias-uteis-info').textContent = `${diasUteis} dias`;
+      
+      // Renderizar closers e SDRs
+      ['minima', 'super', 'ultra', 'black'].forEach(nivel => {
+        renderizarClosersSDRsNoModal(nivel, diasUteis);
+      });
+    }
+
+    function renderizarClosersSDRsNoModal(nivel, diasUteis) {
+      // Closers
+      const closersContainer = document.getElementById(`closers-container-${nivel}`);
+      if (closersContainer && closers && closers.length > 0) {
+        closersContainer.innerHTML = closers.map(c => `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+            <input type="number" class="closer-meta-mensal" data-nivel="${nivel}" data-closer-id="${c.id}" placeholder="Meta ${c.name}" step="0.01" onchange="calcularCloserMetaDiaria('${nivel}', '${c.id}', ${diasUteis})">
+            <input type="text" class="closer-meta-diaria" data-nivel="${nivel}" data-closer-id="${c.id}" readonly placeholder="Diária: R$ -" style="background: #383838; font-size: 10px;">
+          </div>
+        `).join('');
+      }
+
+      // SDRs
+      const sdrsContainer = document.getElementById(`sdrs-container-${nivel}`);
+      if (sdrsContainer && sdrs && sdrs.length > 0) {
+        sdrsContainer.innerHTML = sdrs.map(s => `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+            <input type="number" class="sdr-meta-mensal" data-nivel="${nivel}" data-sdr-id="${s.id}" placeholder="Meta ${s.name}" step="1" onchange="calcularSDRMetaDiaria('${nivel}', '${s.id}', ${diasUteis})">
+            <input type="text" class="sdr-meta-diaria" data-nivel="${nivel}" data-sdr-id="${s.id}" readonly placeholder="Diária: -" style="background: #383838; font-size: 10px;">
+          </div>
+        `).join('');
+      }
+    }
+
+    function calcularMetaDiaria(nivel) {
+      const mes = document.getElementById('registrar-mes').value;
+      if (!mes) return;
+      
+      const [ano, mês] = mes.split('-');
+      const diasUteis = calcularDiasUteis(parseInt(ano), parseInt(mês));
+      
+      const input = document.querySelector(`.nivel-meta-mensal[data-nivel="${nivel}"]`);
+      const metaMensal = parseFloat(input.value) || 0;
+      const metaDiaria = metaMensal > 0 ? (metaMensal / diasUteis).toFixed(2) : 0;
+      
+      document.querySelector(`.nivel-meta-diaria-display[data-nivel="${nivel}"]`).value = `Meta Diária: R$ ${parseFloat(metaDiaria).toLocaleString('pt-BR')}`;
+    }
+
+    function calcularCloserMetaDiaria(nivel, closerId, diasUteis) {
+      const input = document.querySelector(`.closer-meta-mensal[data-nivel="${nivel}"][data-closer-id="${closerId}"]`);
+      const metaMensal = parseFloat(input.value) || 0;
+      const metaDiaria = metaMensal > 0 ? (metaMensal / diasUteis).toFixed(2) : 0;
+      
+      document.querySelector(`.closer-meta-diaria[data-nivel="${nivel}"][data-closer-id="${closerId}"]`).value = `Diária: R$ ${parseFloat(metaDiaria).toLocaleString('pt-BR')}`;
+    }
+
+    function calcularSDRMetaDiaria(nivel, sdrId, diasUteis) {
+      const input = document.querySelector(`.sdr-meta-mensal[data-nivel="${nivel}"][data-sdr-id="${sdrId}"]`);
+      const metaMensal = parseInt(input.value) || 0;
+      const metaDiaria = metaMensal > 0 ? (metaMensal / diasUteis).toFixed(1) : 0;
+      
+      document.querySelector(`.sdr-meta-diaria[data-nivel="${nivel}"][data-sdr-id="${sdrId}"]`).value = `Diária: ${parseFloat(metaDiaria).toLocaleString('pt-BR')}`;
+    }
+
     function abrirModalRegistrarMeta() {
-      // Mostrar modal simples
+      // Mostrar modal
       document.getElementById('registrar-meta-modal').classList.add('show');
+      
+      // Se houver mês selecionado, atualizar dias úteis
+      setTimeout(() => {
+        const mes = document.getElementById('registrar-mes').value;
+        if (mes) atualizarDiasUteis();
+      }, 100);
     }
 
     function fecharModalRegistrarMeta() {
@@ -1150,7 +1302,8 @@
           return;
         }
 
-        const diasUteis = 22;
+        const [ano, mês] = mes.split('-');
+        const diasUteis = calcularDiasUteis(parseInt(ano), parseInt(mês));
         const niveis = ['minima', 'super', 'ultra', 'black'];
         let quantidadeSalva = 0;
 
@@ -1171,35 +1324,69 @@
 
         // Salvar cada um dos 4 níveis
         for (const nivel of niveis) {
-          const input = document.querySelector(`.nivel-meta-mensal[data-nivel="${nivel}"]`);
-          if (!input) continue;
+          const inputGeral = document.querySelector(`.nivel-meta-mensal[data-nivel="${nivel}"]`);
+          if (!inputGeral) continue;
 
-          const metaMensal = parseFloat(input.value) || 0;
-          if (metaMensal === 0) continue;
+          const metaMensalGeral = parseFloat(inputGeral.value) || 0;
+          if (metaMensalGeral === 0) continue;
 
-          const metaDiaria = (metaMensal / diasUteis).toFixed(2);
+          const metaDiariaGeral = (metaMensalGeral / diasUteis).toFixed(2);
 
-          // Salvar no Supabase
+          // Salvar meta geral do nível
           const result = await supabaseFetch('metas_mensais', 'POST', {
             mes: mes,
             nivel: nivel,
-            meta_mensal_vendas: metaMensal,
-            meta_diaria_vendas: metaDiaria
+            meta_mensal_vendas: metaMensalGeral,
+            meta_diaria_vendas: metaDiariaGeral
           });
 
-          if (result && result[0]) {
-            quantidadeSalva++;
-            console.log(`✅ ${nivel} salva`);
+          if (!result || !result[0]) continue;
+
+          const metaId = result[0].id;
+          quantidadeSalva++;
+
+          // Salvar metas dos closers
+          const closersInputs = document.querySelectorAll(`.closer-meta-mensal[data-nivel="${nivel}"]`);
+          for (const input of closersInputs) {
+            const closerId = input.dataset.closerId;
+            const metaMensal = parseFloat(input.value) || 0;
+            if (metaMensal > 0) {
+              const metaDiaria = (metaMensal / diasUteis).toFixed(2);
+              await supabaseFetch('metas_closers', 'POST', {
+                mes_id: metaId,
+                closer_id: closerId,
+                meta_mensal: metaMensal,
+                meta_diaria: metaDiaria
+              }).catch(err => console.log('Aviso: Erro ao salvar closer', err));
+            }
           }
+
+          // Salvar metas dos SDRs
+          const sdrsInputs = document.querySelectorAll(`.sdr-meta-mensal[data-nivel="${nivel}"]`);
+          for (const input of sdrsInputs) {
+            const sdrId = input.dataset.sdrId;
+            const metaMensal = parseInt(input.value) || 0;
+            if (metaMensal > 0) {
+              const metaDiaria = (metaMensal / diasUteis).toFixed(1);
+              await supabaseFetch('metas_sdrs', 'POST', {
+                mes_id: metaId,
+                sdr_id: sdrId,
+                meta_mensal: metaMensal,
+                meta_diaria: metaDiaria
+              }).catch(err => console.log('Aviso: Erro ao salvar SDR', err));
+            }
+          }
+
+          console.log(`✅ ${nivel} completa com ${closersInputs.length} closers e ${sdrsInputs.length} SDRs`);
         }
 
         if (quantidadeSalva === 0) {
-          alert('❌ Preencha pelo menos uma meta');
+          alert('❌ Preencha pelo menos uma meta geral');
           return;
         }
 
         fecharModalRegistrarMeta();
-        alert(`✅ ${quantidadeSalva} metas salvas!`);
+        alert(`✅ ${quantidadeSalva} níveis salvos com sucesso!`);
         
         // Atualizar
         document.getElementById('meta-mes-filtro').value = mes;
