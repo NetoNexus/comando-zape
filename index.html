@@ -1184,35 +1184,86 @@
         return;
       }
 
-      const primeiroNivelKey = Object.keys(metasMesAno)[0];
-      const metaMesAtiva = metasMesAno[primeiroNivelKey];
+      const [ano, mês] = mes.split('-');
+      const primeiroDia = new Date(parseInt(ano), parseInt(mês) - 1, 1);
+      const hoje = new Date();
+      const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
+      const anoAtual = String(hoje.getFullYear());
 
-      const cards = closers.map(closer => {
-        const metaCloser = metaMesAtiva.closers[closer.id] || { meta_mensal: 0, meta_diaria: 0 };
-        let totalRealizado = 0;
-        
-        movements.forEach(m => {
-          if (m.closer_id == closer.id && Array.isArray(m.ganhos)) {
-            totalRealizado += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
+      let diasUteisPasados = 0;
+      if (anoAtual === ano && mesAtual === mês) {
+        for (let d = new Date(primeiroDia); d <= hoje; d.setDate(d.getDate() + 1)) {
+          const dia = d.getDay();
+          if (dia >= 1 && dia <= 5) diasUteisPasados++;
+        }
+      }
+
+      const cards = [];
+      closers.forEach(closer => {
+        ['minima', 'super', 'ultra', 'black'].forEach(nivel => {
+          const metaNivel = metasMesAno[nivel];
+          if (!metaNivel || !metaNivel.closers[closer.id]) return;
+
+          const metaCloser = metaNivel.closers[closer.id];
+          let totalRealizado = 0;
+          
+          movements.forEach(m => {
+            if (m.closer_id == closer.id && Array.isArray(m.ganhos)) {
+              totalRealizado += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
+            }
+          });
+
+          const metaEsperada = anoAtual === ano && mesAtual === mês 
+            ? parseFloat(metaCloser.meta_diaria) * diasUteisPasados 
+            : metaCloser.meta_mensal;
+
+          const percentualRealizado = metaEsperada > 0 ? (totalRealizado / metaEsperada * 100) : 0;
+          
+          let corPizza = '#F44336';
+          if (percentualRealizado >= 91 && percentualRealizado <= 100) {
+            corPizza = '#FFC107';
+          } else if (percentualRealizado > 100) {
+            corPizza = '#4CAF50';
           }
-        });
 
-        const percMes = metaCloser.meta_mensal > 0 ? (totalRealizado / metaCloser.meta_mensal * 100) : 0;
-        
-        return `
-          <div style="background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px; padding: 16px;">
-            <div style="color: #B2FF00; font-weight: 900; font-size: 13px; margin-bottom: 12px; text-transform: uppercase;">${closer.name}</div>
-            <div style="font-size: 11px; color: #fff; font-weight: 700; margin-bottom: 8px;">Meta R$ ${metaCloser.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} - Realizado R$ ${totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-            <div style="background: #383838; height: 20px; border-radius: 4px; overflow: hidden; margin-bottom: 8px;">
-              <div style="height: 100%; width: ${Math.min(percMes, 100)}%; background: ${percMes < 90 ? '#F44336' : percMes <= 100 ? '#FFC107' : '#4CAF50'}; display: flex; align-items: center; justify-content: center;">
-                <span style="color: #fff; font-weight: 900; font-size: 9px;">${Math.round(percMes)}%</span>
+          const angleEnd = (percentualRealizado / 100) * 360;
+          const radius = 40;
+          const x = 50 + radius * Math.cos((angleEnd - 90) * Math.PI / 180);
+          const y = 50 + radius * Math.sin((angleEnd - 90) * Math.PI / 180);
+          const largeArc = angleEnd > 180 ? 1 : 0;
+
+          const metaFormatada = metaCloser.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          const metaDiariaFormatada = parseFloat(metaCloser.meta_diaria).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          const deveriaFormatada = Math.round(metaEsperada).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          const realizadoFormatada = totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+          cards.push(`
+            <div style="background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px; padding: 16px;">
+              <div style="margin-bottom: 12px;">
+                <div style="color: #B2FF00; font-weight: 900; font-size: 12px; text-transform: uppercase; margin-bottom: 2px;">${closer.name}</div>
+                <div style="color: #999; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">${nivel}</div>
+              </div>
+              <div style="display: flex; gap: 16px; font-weight: 700; font-size: 11px; margin-bottom: 12px; flex-wrap: wrap;">
+                <div>Meta <span style="color: #B2FF00;">R$ ${metaFormatada}</span></div>
+                <div>Diária <span style="color: #B2FF00;">R$ ${metaDiariaFormatada}</span></div>
+                <div>Deveria <span style="color: #fff;">R$ ${deveriaFormatada}</span></div>
+                <div>Realizado <span style="color: ${corPizza}; font-weight: 900;">R$ ${realizadoFormatada}</span></div>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: center;">
+                <svg width="120" height="120" style="transform: rotate(-90deg);">
+                  <circle cx="60" cy="60" r="45" fill="none" stroke="#383838" stroke-width="12"/>
+                  ${angleEnd > 0 ? `<path d="M 60 15 A 45 45 0 ${largeArc} 1 ${x} ${y}" fill="none" stroke="${corPizza}" stroke-width="12" stroke-linecap="round"/>` : ''}
+                  <text x="60" y="65" text-anchor="middle" fill="#fff" font-weight="bold" font-size="18">${Math.round(percentualRealizado)}%</text>
+                </svg>
               </div>
             </div>
-          </div>
-        `;
-      }).join('');
+          `);
+        });
+      });
 
-      grid.innerHTML = cards || '<div style="grid-column: 1/-1; text-align: center; color: #999;">Nenhum closer cadastrado</div>';
+      grid.innerHTML = cards.length > 0 
+        ? cards.join('') 
+        : '<div style="grid-column: 1/-1; text-align: center; color: #999;">Nenhum closer ou meta registrado</div>';
     }
 
     function renderSDRsKPICards() {
@@ -1230,37 +1281,83 @@
         return;
       }
 
-      const primeiroNivelKey = Object.keys(metasMesAno)[0];
-      const metaMesAtiva = metasMesAno[primeiroNivelKey];
+      const [ano, mês] = mes.split('-');
+      const primeiroDia = new Date(parseInt(ano), parseInt(mês) - 1, 1);
+      const hoje = new Date();
+      const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
+      const anoAtual = String(hoje.getFullYear());
 
-      const cards = sdrs.map(sdr => {
-        const metaSdr = metaMesAtiva.sdrs[sdr.id] || { meta_mensal: 0, meta_diaria: 0 };
-        let totalRealizado = 0;
-        
-        movements.forEach(m => {
-          if (Array.isArray(m.agendamentos)) {
-            m.agendamentos.forEach(a => {
-              if (a.sdr_id == sdr.id) totalRealizado += a.quantidade || 0;
-            });
+      let diasUteisPasados = 0;
+      if (anoAtual === ano && mesAtual === mês) {
+        for (let d = new Date(primeiroDia); d <= hoje; d.setDate(d.getDate() + 1)) {
+          const dia = d.getDay();
+          if (dia >= 1 && dia <= 5) diasUteisPasados++;
+        }
+      }
+
+      const cards = [];
+      sdrs.forEach(sdr => {
+        ['minima', 'super', 'ultra', 'black'].forEach(nivel => {
+          const metaNivel = metasMesAno[nivel];
+          if (!metaNivel || !metaNivel.sdrs[sdr.id]) return;
+
+          const metaSdr = metaNivel.sdrs[sdr.id];
+          let totalRealizado = 0;
+          
+          movements.forEach(m => {
+            if (Array.isArray(m.agendamentos)) {
+              m.agendamentos.forEach(a => {
+                if (a.sdr_id == sdr.id) totalRealizado += a.quantidade || 0;
+              });
+            }
+          });
+
+          const metaEsperada = anoAtual === ano && mesAtual === mês 
+            ? parseInt(metaSdr.meta_diaria) * diasUteisPasados 
+            : metaSdr.meta_mensal;
+
+          const percentualRealizado = metaEsperada > 0 ? (totalRealizado / metaEsperada * 100) : 0;
+          
+          let corPizza = '#F44336';
+          if (percentualRealizado >= 91 && percentualRealizado <= 100) {
+            corPizza = '#FFC107';
+          } else if (percentualRealizado > 100) {
+            corPizza = '#4CAF50';
           }
-        });
 
-        const percMes = metaSdr.meta_mensal > 0 ? (totalRealizado / metaSdr.meta_mensal * 100) : 0;
-        
-        return `
-          <div style="background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px; padding: 16px;">
-            <div style="color: #B2FF00; font-weight: 900; font-size: 13px; margin-bottom: 12px; text-transform: uppercase;">${sdr.name}</div>
-            <div style="font-size: 11px; color: #fff; font-weight: 700; margin-bottom: 8px;">Meta ${metaSdr.meta_mensal} reuniões - Realizado ${totalRealizado}</div>
-            <div style="background: #383838; height: 20px; border-radius: 4px; overflow: hidden; margin-bottom: 8px;">
-              <div style="height: 100%; width: ${Math.min(percMes, 100)}%; background: ${percMes < 90 ? '#F44336' : percMes <= 100 ? '#FFC107' : '#4CAF50'}; display: flex; align-items: center; justify-content: center;">
-                <span style="color: #fff; font-weight: 900; font-size: 9px;">${Math.round(percMes)}%</span>
+          const angleEnd = (percentualRealizado / 100) * 360;
+          const radius = 40;
+          const x = 50 + radius * Math.cos((angleEnd - 90) * Math.PI / 180);
+          const y = 50 + radius * Math.sin((angleEnd - 90) * Math.PI / 180);
+          const largeArc = angleEnd > 180 ? 1 : 0;
+
+          cards.push(`
+            <div style="background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px; padding: 16px;">
+              <div style="margin-bottom: 12px;">
+                <div style="color: #B2FF00; font-weight: 900; font-size: 12px; text-transform: uppercase; margin-bottom: 2px;">${sdr.name}</div>
+                <div style="color: #999; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">${nivel}</div>
+              </div>
+              <div style="display: flex; gap: 16px; font-weight: 700; font-size: 11px; margin-bottom: 12px; flex-wrap: wrap;">
+                <div>Meta <span style="color: #B2FF00;">${metaSdr.meta_mensal}</span></div>
+                <div>Diária <span style="color: #B2FF00;">${metaSdr.meta_diaria}</span></div>
+                <div>Deveria <span style="color: #fff;">${Math.round(metaEsperada)}</span></div>
+                <div>Realizado <span style="color: ${corPizza}; font-weight: 900;">${totalRealizado}</span></div>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: center;">
+                <svg width="120" height="120" style="transform: rotate(-90deg);">
+                  <circle cx="60" cy="60" r="45" fill="none" stroke="#383838" stroke-width="12"/>
+                  ${angleEnd > 0 ? `<path d="M 60 15 A 45 45 0 ${largeArc} 1 ${x} ${y}" fill="none" stroke="${corPizza}" stroke-width="12" stroke-linecap="round"/>` : ''}
+                  <text x="60" y="65" text-anchor="middle" fill="#fff" font-weight="bold" font-size="18">${Math.round(percentualRealizado)}%</text>
+                </svg>
               </div>
             </div>
-          </div>
-        `;
-      }).join('');
+          `);
+        });
+      });
 
-      grid.innerHTML = cards || '<div style="grid-column: 1/-1; text-align: center; color: #999;">Nenhum SDR cadastrado</div>';
+      grid.innerHTML = cards.length > 0 
+        ? cards.join('') 
+        : '<div style="grid-column: 1/-1; text-align: center; color: #999;">Nenhum SDR ou meta registrado</div>';
     }
 
     function filtrarClosersSDRs() {
