@@ -376,7 +376,7 @@
     /* ===== CARDS ABAIXO DO FUNIL ===== */
     .funnel-details {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 20px;
       margin-top: 30px;
     }
@@ -1232,21 +1232,46 @@
             const sdr = sdrs.find(s => s.id == a.sdr_id);
             if (sdr) {
               if (!sdrData[sdr.id]) {
-                sdrData[sdr.id] = { nome: sdr.name, quantidade: 0 };
+                sdrData[sdr.id] = { nome: sdr.name, agendamentos: 0, reunioes: 0 };
               }
-              sdrData[sdr.id].quantidade += a.quantidade || 0;
+              sdrData[sdr.id].agendamentos += a.quantidade || 0;
             }
           });
         }
       });
 
-      // Montar HTML para os 3 cards
-      const sdrHtml = Object.values(sdrData)
-        .sort((a, b) => b.quantidade - a.quantidade)
+      // Coletar SDRs com reuniões naquele período
+      movimentosFiltrados.forEach(m => {
+        if (Array.isArray(m.reunioes)) {
+          m.reunioes.forEach(r => {
+            const sdr = sdrs.find(s => s.id == r.sdr_id);
+            if (sdr) {
+              if (!sdrData[sdr.id]) {
+                sdrData[sdr.id] = { nome: sdr.name, agendamentos: 0, reunioes: 0 };
+              }
+              sdrData[sdr.id].reunioes += r.quantidade || 0;
+            }
+          });
+        }
+      });
+
+      // Montar HTML para agendamentos por SDR
+      const agendamentosHtml = Object.values(sdrData)
+        .sort((a, b) => b.agendamentos - a.agendamentos)
         .map(sdr => `
           <div class="funnel-detail-item">
             <span class="funnel-detail-item-label">${sdr.nome}</span>
-            <span class="funnel-detail-item-value">${sdr.quantidade}</span>
+            <span class="funnel-detail-item-value">${sdr.agendamentos}</span>
+          </div>
+        `).join('');
+
+      // Montar HTML para reuniões por SDR
+      const reunioesHtml = Object.values(sdrData)
+        .sort((a, b) => b.reunioes - a.reunioes)
+        .map(sdr => `
+          <div class="funnel-detail-item">
+            <span class="funnel-detail-item-label">${sdr.nome}</span>
+            <span class="funnel-detail-item-value">${sdr.reunioes}</span>
           </div>
         `).join('');
 
@@ -1280,7 +1305,13 @@
         <div class="funnel-detail-card">
           <div class="funnel-detail-title">Agendamentos por SDR</div>
           <div class="funnel-detail-content">
-            ${sdrHtml || '<div class="funnel-detail-item"><span class="funnel-detail-item-label">Sem dados</span></div>'}
+            ${agendamentosHtml || '<div class="funnel-detail-item"><span class="funnel-detail-item-label">Sem dados</span></div>'}
+          </div>
+        </div>
+        <div class="funnel-detail-card">
+          <div class="funnel-detail-title">Reuniões Realizadas por SDR</div>
+          <div class="funnel-detail-content">
+            ${reunioesHtml || '<div class="funnel-detail-item"><span class="funnel-detail-item-label">Sem dados</span></div>'}
           </div>
         </div>
       `;
