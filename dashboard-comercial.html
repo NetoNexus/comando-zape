@@ -936,7 +936,6 @@
     }
 
     async function loadData() {
-      console.log('🔄 [DASHBOARD] Carregando dados...');
       showSyncStatus(true);
 
       closers = await supabaseFetch('closers?order=name') || [];
@@ -944,28 +943,6 @@
       origens = await supabaseFetch('origens?order=name') || [];
       servicos = await supabaseFetch('servicos?order=name') || [];
       movements = await supabaseFetch('movements?order=id.desc') || [];
-
-      // DEBUG: Resumo de dados carregados
-      let totalGanhos = 0;
-      let totalAgendamentos = 0;
-      movements.forEach(m => {
-        if (Array.isArray(m.ganhos)) {
-          totalGanhos += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
-        }
-        if (Array.isArray(m.agendamentos)) {
-          totalAgendamentos += m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0);
-        }
-      });
-
-      console.log('✅ DADOS CARREGADOS:', {
-        movimentos: movements.length,
-        closers: closers.length,
-        sdrs: sdrs.length,
-        origens: origens.length,
-        servicos: servicos.length,
-        totalGanhosValor: `R$ ${totalGanhos.toFixed(0)}`,
-        totalAgendamentos: totalAgendamentos
-      });
       
       renderDashboard();
       showSyncStatus(false);
@@ -1516,14 +1493,6 @@
       const stats = calculateStats();
       const colors = ['#B2FF00', '#4CAF50', '#FF9800', '#E91E63', '#2196F3', '#00BCD4', '#673AB7', '#FFC107'];
       const movimentosFiltrados = getMovementsFiltrados();
-      
-      console.log('🔍 DEBUG getChartConfigs:', {
-        totalMovimentos: movements.length,
-        movimentosFiltrados: movimentosFiltrados.length,
-        filtroDataInicio,
-        filtroDataFim,
-        primeiros3: movimentosFiltrados.slice(0, 3).map(m => ({ id: m.id, data_raw: m.data_raw, ganhos: m.ganhos?.length || 0 }))
-      });
 
       // Pizza: Origem (QUANTIDADE DE GANHOS POR ORIGEM)
       const origemData = {};
@@ -1625,7 +1594,6 @@
       movimentosFiltrados.forEach(m => {
         const closer = closers.find(c => c.id == m.closer_id);
         if (!closer) {
-          console.log('❌ Closer não encontrado para ID:', m.closer_id);
           return;
         }
         if (!closerData[closer.name]) closerData[closer.name] = 0;
@@ -1647,15 +1615,6 @@
       });
       
       const closerLabels = Object.keys(closerData).sort((a, b) => closerData[b] - closerData[a]).slice(0, 8);
-      
-      // Log com dados expandidos e legíveis
-      console.log('%c📞 AGENDAMENTOS POR CLOSER - RESUMO FINAL', 'color: #00FF00; font-weight: bold; font-size: 14px');
-      console.log('Total de agendamentos:', Object.values(closerData).reduce((a, b) => a + b, 0));
-      console.log('Quantidade de movimentos processados:', agendamentosDetalhes.length);
-      console.log('Breakdown por Closer:', closerData);
-      console.log('Closers que entram no gráfico:', closerLabels);
-      console.log('Dados que vão para o gráfico:', closerLabels.map(l => ({ closer: l, agendamentos: closerData[l] })));
-      console.log('Todas as entradas processadas:', agendamentosDetalhes);
       
       const closerAgendamentos = {
         labels: closerLabels,
@@ -1687,13 +1646,6 @@
         }
       });
       const ganhosServicoLabels = Object.keys(ganhosServicoData).sort((a, b) => ganhosServicoData[b] - ganhosServicoData[a]);
-      
-      console.log('💰 Ganhos por Serviço - DETALHADO:', {
-        totalGanhos: Object.values(ganhosServicoData).reduce((a, b) => a + b, 0),
-        quantidadeGanhos: ganhosDetalhes.length,
-        porServico: ganhosServicoData,
-        primeiros10Ganhos: ganhosDetalhes.slice(0, 10)
-      });
       
       const ganhosServico = {
         labels: ganhosServicoLabels,
@@ -1921,9 +1873,6 @@
       filtroDataFim = dataFim;
 
       const movimentosFiltrados = getMovementsFiltrados();
-      console.log(`✅ FILTRO APLICADO: ${dataInicio} a ${dataFim}`);
-      console.log(`   Total de movimentos: ${movements.length}`);
-      console.log(`   Movimentos no período: ${movimentosFiltrados.length}`);
       renderDashboard();
     }
 
@@ -1933,8 +1882,6 @@
       document.getElementById('filterDataInicio').value = '';
       document.getElementById('filterDataFim').value = '';
       
-      console.log(`🔄 FILTRO LIMPO`);
-      console.log(`   Mostrando TODOS os ${movements.length} movimentos`);
       renderDashboard();
     }
 
