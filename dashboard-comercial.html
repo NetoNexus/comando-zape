@@ -207,11 +207,11 @@
       box-shadow: 0 0 8px rgba(178, 255, 0, 0.2);
     }
 
-    /* Layout horizontal: funil esquerda + métricas direita */
+    /* Layout horizontal: funil esquerda + valores meio + métricas direita */
     .funnel-wrapper {
       display: grid;
-      grid-template-columns: 2fr 1.2fr;
-      gap: 40px;
+      grid-template-columns: 1.5fr 0.8fr 1fr;
+      gap: 25px;
       align-items: stretch;
     }
 
@@ -229,21 +229,57 @@
       font-weight: 700;
       font-size: 15px;
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start;
       align-items: center;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
       min-height: 50px;
     }
 
     .funnel-stage-label {
-      color: #fff;
+      color: #666;
       font-weight: 700;
+      font-size: 15px;
     }
 
     .funnel-stage-value {
-      color: #fff;
+      display: none;
+    }
+
+    /* Card com percentuais do funil */
+    .funnel-values-card {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .funnel-value-item {
+      background: #1a1a1a;
+      border: 1px solid #383838;
+      border-radius: 6px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .funnel-value-label {
+      color: #999;
+      font-size: 11px;
       font-weight: 700;
-      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .funnel-value-number {
+      color: #B2FF00;
+      font-size: 24px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .funnel-value-percent {
+      color: #666;
+      font-size: 12px;
+      font-weight: 600;
     }
 
     /* Métricas ao lado do funil */
@@ -289,6 +325,60 @@
       font-size: 10px;
       font-weight: 500;
       margin-top: 4px;
+    }
+
+    /* ===== CARDS ABAIXO DO FUNIL ===== */
+    .funnel-details {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .funnel-detail-card {
+      background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+      border: 1px solid #383838;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .funnel-detail-title {
+      color: #B2FF00;
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+      border-bottom: 2px solid #383838;
+      padding-bottom: 12px;
+    }
+
+    .funnel-detail-content {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .funnel-detail-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: #2A2A2A;
+      border-radius: 4px;
+    }
+
+    .funnel-detail-item-label {
+      color: #999;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .funnel-detail-item-value {
+      color: #B2FF00;
+      font-size: 18px;
+      font-weight: 900;
     }
 
     /* ===== TABELAS ===== */
@@ -461,7 +551,16 @@
 
       .funnel-wrapper {
         grid-template-columns: 1fr;
-        gap: 30px;
+        gap: 20px;
+      }
+
+      .funnel-details {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+
+      .funnel-detail-card {
+        padding: 15px;
       }
 
       .funnel-container-title {
@@ -557,6 +656,33 @@
       .funnel-metric-value {
         font-size: 22px;
       }
+
+      .funnel-value-item {
+        padding: 10px;
+      }
+
+      .funnel-details {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .funnel-detail-card {
+        padding: 12px;
+      }
+
+      .funnel-detail-title {
+        font-size: 12px;
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+      }
+
+      .funnel-detail-item {
+        padding: 8px;
+      }
+
+      .funnel-detail-item-value {
+        font-size: 16px;
+      }
     }
   </style>
 </head>
@@ -606,9 +732,17 @@
         <div class="funnel" id="funnelChart">
           <div class="loading">Carregando...</div>
         </div>
+        <div class="funnel-values-card" id="funnelValues">
+          <div class="loading">Carregando...</div>
+        </div>
         <div class="funnel-metrics" id="funnelMetrics">
           <div class="loading">Carregando...</div>
         </div>
+      </div>
+      
+      <!-- CARDS ABAIXO DO FUNIL -->
+      <div class="funnel-details" id="funnelDetails">
+        <div class="loading">Carregando...</div>
       </div>
     </div>
 
@@ -917,18 +1051,109 @@
         { label: 'Ganhos', value: stats.totalGanhos, percentage: percentualGanhos }
       ];
 
+      // Renderizar funil (apenas labels em grafite)
       let html = '';
       funnelData.forEach(stage => {
         html += `
           <div class="funnel-stage" style="--percentage: ${stage.percentage}%;">
             <span class="funnel-stage-label">${stage.label}</span>
-            <span class="funnel-stage-value">${stage.value} (${stage.percentage.toFixed(1)}%)</span>
           </div>
         `;
       });
-
       document.getElementById('funnelChart').innerHTML = html;
+
+      // Renderizar valores do funil
+      renderFunnelValues(funnelData);
+
+      // Renderizar métricas
       renderFunnelMetrics(stats);
+
+      // Renderizar cards de detalhe (NoShow, Reagendamento, SDRs)
+      renderFunnelDetails(stats);
+    }
+
+    function renderFunnelValues(funnelData) {
+      let html = '';
+      funnelData.forEach((stage, idx) => {
+        html += `
+          <div class="funnel-value-item">
+            <div class="funnel-value-label">${stage.label}</div>
+            <div class="funnel-value-number">${stage.value}</div>
+            <div class="funnel-value-percent">${stage.percentage.toFixed(1)}%</div>
+          </div>
+        `;
+      });
+      document.getElementById('funnelValues').innerHTML = html;
+    }
+
+    function renderFunnelDetails(stats) {
+      let movementsFiltrados = getMovementsFiltrados();
+      if (funnelCloserFilter) {
+        movementsFiltrados = movementsFiltrados.filter(m => m.closer_id == funnelCloserFilter);
+      }
+
+      // Coletar SDRs com agendamentos naquele período
+      const sdrData = {};
+      movimentosFiltrados.forEach(m => {
+        if (Array.isArray(m.agendamentos)) {
+          m.agendamentos.forEach(a => {
+            const sdr = sdrs.find(s => s.id == a.sdr_id);
+            if (sdr) {
+              if (!sdrData[sdr.id]) {
+                sdrData[sdr.id] = { nome: sdr.name, quantidade: 0 };
+              }
+              sdrData[sdr.id].quantidade += a.quantidade || 0;
+            }
+          });
+        }
+      });
+
+      // Montar HTML para os 3 cards
+      const sdrHtml = Object.values(sdrData)
+        .sort((a, b) => b.quantidade - a.quantidade)
+        .map(sdr => `
+          <div class="funnel-detail-item">
+            <span class="funnel-detail-item-label">${sdr.nome}</span>
+            <span class="funnel-detail-item-value">${sdr.quantidade}</span>
+          </div>
+        `).join('');
+
+      const html = `
+        <div class="funnel-detail-card">
+          <div class="funnel-detail-title">Total No-Show</div>
+          <div class="funnel-detail-content">
+            <div class="funnel-detail-item">
+              <span class="funnel-detail-item-label">No-Shows</span>
+              <span class="funnel-detail-item-value">${stats.totalNoShows}</span>
+            </div>
+            <div class="funnel-detail-item">
+              <span class="funnel-detail-item-label">Taxa</span>
+              <span class="funnel-detail-item-value">${stats.percNoShow.toFixed(1)}%</span>
+            </div>
+          </div>
+        </div>
+        <div class="funnel-detail-card">
+          <div class="funnel-detail-title">Total Reagendamento</div>
+          <div class="funnel-detail-content">
+            <div class="funnel-detail-item">
+              <span class="funnel-detail-item-label">Reagendamentos</span>
+              <span class="funnel-detail-item-value">${stats.totalReagendamentos}</span>
+            </div>
+            <div class="funnel-detail-item">
+              <span class="funnel-detail-item-label">Taxa</span>
+              <span class="funnel-detail-item-value">${stats.taxaReagendamento.toFixed(1)}%</span>
+            </div>
+          </div>
+        </div>
+        <div class="funnel-detail-card">
+          <div class="funnel-detail-title">Agendamentos por SDR</div>
+          <div class="funnel-detail-content">
+            ${sdrHtml || '<div class="funnel-detail-item"><span class="funnel-detail-item-label">Sem dados</span></div>'}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('funnelDetails').innerHTML = html;
     }
 
     function renderFunnelMetrics(stats) {
