@@ -1628,12 +1628,12 @@
           percentualRealizado = metaEsperada > 0 ? (totalRealizado / metaEsperada * 100) : 0;
         }
 
-        // Determinar cor da barra
-        let corBarra = '#F44336'; // Vermelho por padrão
-        if (percentualRealizado >= 90 && percentualRealizado <= 110) {
-          corBarra = '#FFC107'; // Amarelo
-        } else if (percentualRealizado > 110) {
-          corBarra = '#4CAF50'; // Verde
+        // Determinar cor da barra baseado no percentual da meta do período
+        let corBarra = '#F44336'; // Vermelho por padrão (abaixo de 90%)
+        if (percentualRealizado >= 91 && percentualRealizado <= 100) {
+          corBarra = '#FFC107'; // Amarelo (91-100%)
+        } else if (percentualRealizado > 100) {
+          corBarra = '#4CAF50'; // Verde (acima de 100%)
         }
 
         // Limitar largura visual a 100% (mas mantém percentual real)
@@ -1644,7 +1644,7 @@
         document.getElementById(`barra-${nivel}`).style.background = corBarra;
         document.getElementById(`percentual-${nivel}`).textContent = `${Math.round(percentualRealizado)}%`;
         
-        // Info: Meta Mínima R$ (Valor) - Realizado (Valor) (Percentual)
+        // Info: Meta Mínima R$ (Valor) - Realizado (Valor)
         const metaFormatada = metaNivel.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         const realizadoFormatado = totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         document.getElementById(`info-${nivel}`).innerHTML = `Meta R$ ${metaFormatada} - Realizado R$ ${realizadoFormatado}`;
