@@ -156,11 +156,55 @@
       margin-bottom: 30px;
     }
 
+    .funnel-container-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 20px;
+    }
+
     .funnel-title {
       color: #B2FF00;
       font-size: 16px;
-      margin-bottom: 20px;
       font-weight: 600;
+    }
+
+    .funnel-filter {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .funnel-filter label {
+      color: #B2FF00;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .funnel-filter select {
+      padding: 8px 12px;
+      background: #1a1a1a;
+      border: 1px solid #383838;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .funnel-filter select:focus {
+      outline: none;
+      border-color: #B2FF00;
+    }
+
+    /* Layout horizontal: funil esquerda + métricas direita */
+    .funnel-wrapper {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 20px;
+      align-items: flex-start;
     }
 
     .funnel {
@@ -188,6 +232,41 @@
     .funnel-stage-value {
       color: #B2FF00;
       font-weight: 700;
+    }
+
+    /* Métricas ao lado do funil */
+    .funnel-metrics {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .funnel-metric-card {
+      background: #1a1a1a;
+      border: 1px solid #383838;
+      border-radius: 4px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .funnel-metric-label {
+      color: #999;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .funnel-metric-value {
+      color: #B2FF00;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .funnel-metric-unit {
+      color: #666;
+      font-size: 9px;
+      margin-top: 2px;
     }
 
     /* ===== TABELAS ===== */
@@ -435,9 +514,22 @@
 
     <!-- FUNIL DE VENDAS -->
     <div class="funnel-container">
-      <div class="funnel-title">Funil de Vendas (Conversão)</div>
-      <div class="funnel" id="funnelChart">
-        <div class="loading">Carregando...</div>
+      <div class="funnel-container-title">
+        <div class="funnel-title">Funil de Vendas (Conversão)</div>
+        <div class="funnel-filter">
+          <label for="funnelCloserFilter">Closer</label>
+          <select id="funnelCloserFilter" onchange="atualizarFunil()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+      </div>
+      <div class="funnel-wrapper">
+        <div class="funnel" id="funnelChart">
+          <div class="loading">Carregando...</div>
+        </div>
+        <div class="funnel-metrics" id="funnelMetrics">
+          <div class="loading">Carregando...</div>
+        </div>
       </div>
     </div>
 
@@ -546,6 +638,9 @@
     // Filtro de período
     let filtroDataInicio = null;
     let filtroDataFim = null;
+    
+    // Filtro de closer (funil)
+    let funnelCloserFilter = null;
 
     async function supabaseFetch(path) {
       try {
@@ -579,10 +674,35 @@
     }
 
     function renderDashboard() {
+      populateCloserFilter();
       renderMainKPIs();
       renderFunnel();
       renderCharts();
       renderTables();
+    }
+
+    function populateCloserFilter() {
+      const select = document.getElementById('funnelCloserFilter');
+      if (!select) return;
+
+      // Limpar opções existentes (menos "Todos")
+      while (select.options.length > 1) {
+        select.remove(1);
+      }
+
+      // Adicionar closers ordenados
+      closers.sort((a, b) => a.name.localeCompare(b.name)).forEach(closer => {
+        const option = document.createElement('option');
+        option.value = closer.id;
+        option.textContent = closer.name;
+        select.appendChild(option);
+      });
+    }
+
+    function atualizarFunil() {
+      const closerId = document.getElementById('funnelCloserFilter').value;
+      funnelCloserFilter = closerId ? parseInt(closerId) : null;
+      renderFunnel();
     }
 
     function renderMainKPIs() {
@@ -699,19 +819,23 @@
     }
 
     function renderFunnel() {
-      const stats = calculateStats();
-      // Funil: Agendamentos → Reuniões (% agend) → Ganhos (% reun) + No-Shows + Reagendamentos
+      let stats;
+      
+      // Se tem filtro de closer, calcula stats apenas para esse closer
+      if (funnelCloserFilter) {
+        stats = calculateStatsByCloser(funnelCloserFilter);
+      } else {
+        stats = calculateStats();
+      }
+
+      // Funil: Agendamentos → Reuniões → Ganhos (apenas estes 3)
       const percentualReunioes = stats.totalAgendamentos > 0 ? (stats.totalReunioes / stats.totalAgendamentos) * 100 : 0;
       const percentualGanhos = stats.totalReunioes > 0 ? (stats.totalGanhos / stats.totalReunioes) * 100 : 0;
-      const percentualNoShows = stats.totalAgendamentos > 0 ? (stats.totalNoShows / stats.totalAgendamentos) * 100 : 0;
-      const percentualReagendamentos = stats.totalAgendamentos > 0 ? (stats.totalReagendamentos / stats.totalAgendamentos) * 100 : 0;
       
       const funnelData = [
         { label: 'Agendamentos', value: stats.totalAgendamentos, percentage: 100 },
         { label: 'Reuniões', value: stats.totalReunioes, percentage: percentualReunioes },
-        { label: 'Ganhos', value: stats.totalGanhos, percentage: percentualGanhos },
-        { label: 'No-Shows', value: stats.totalNoShows, percentage: percentualNoShows },
-        { label: 'Reagendamentos', value: stats.totalReagendamentos, percentage: percentualReagendamentos }
+        { label: 'Ganhos', value: stats.totalGanhos, percentage: percentualGanhos }
       ];
 
       let html = '';
@@ -725,6 +849,87 @@
       });
 
       document.getElementById('funnelChart').innerHTML = html;
+      renderFunnelMetrics(stats);
+    }
+
+    function renderFunnelMetrics(stats) {
+      const html = `
+        <div class="funnel-metric-card">
+          <div class="funnel-metric-label">Taxa Reagendamento</div>
+          <div class="funnel-metric-value">${stats.taxaReagendamento.toFixed(1)}%</div>
+          <div class="funnel-metric-unit">Reagend. / Agend.</div>
+        </div>
+        <div class="funnel-metric-card">
+          <div class="funnel-metric-label">Taxa No-Show</div>
+          <div class="funnel-metric-value">${stats.percNoShow.toFixed(1)}%</div>
+          <div class="funnel-metric-unit">No-Shows / Agend.</div>
+        </div>
+        <div class="funnel-metric-card">
+          <div class="funnel-metric-label">Taxa Conversão</div>
+          <div class="funnel-metric-value">${stats.taxaConversao.toFixed(1)}%</div>
+          <div class="funnel-metric-unit">Ganhos / Reuniões</div>
+        </div>
+        <div class="funnel-metric-card">
+          <div class="funnel-metric-label">Valor Total</div>
+          <div class="funnel-metric-value">R$ ${stats.valorTotalGanho.toFixed(0)}</div>
+          <div class="funnel-metric-unit">Ganho acumulado</div>
+        </div>
+        <div class="funnel-metric-card">
+          <div class="funnel-metric-label">Ticket Médio</div>
+          <div class="funnel-metric-value">R$ ${stats.ticketMedio.toFixed(0)}</div>
+          <div class="funnel-metric-unit">Valor / Qtd</div>
+        </div>
+      `;
+
+      document.getElementById('funnelMetrics').innerHTML = html;
+    }
+
+    function calculateStatsByCloser(closerId) {
+      let totalAgendamentos = 0;
+      let totalReunioes = 0;
+      let totalGanhos = 0;
+      let valorTotalGanho = 0;
+      let totalNoShows = 0;
+      let totalReagendamentos = 0;
+
+      const movimentosFiltrados = getMovementsFiltrados().filter(m => m.closer_id == closerId);
+
+      movimentosFiltrados.forEach(m => {
+        if (Array.isArray(m.agendamentos)) {
+          totalAgendamentos += m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0);
+        }
+        if (Array.isArray(m.reunioes)) {
+          totalReunioes += m.reunioes.reduce((sum, r) => sum + (r.quantidade || 0), 0);
+        }
+        if (Array.isArray(m.ganhos)) {
+          totalGanhos += m.ganhos.length;
+          valorTotalGanho += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
+        }
+        if (Array.isArray(m.noshows)) {
+          totalNoShows += m.noshows.reduce((sum, n) => sum + (n.quantidade || 0), 0);
+        }
+        if (Array.isArray(m.reagendamentos)) {
+          totalReagendamentos += m.reagendamentos.reduce((sum, r) => sum + (r.quantidade || 0), 0);
+        }
+      });
+
+      const taxaConversao = totalReunioes > 0 ? (totalGanhos / totalReunioes * 100) : 0;
+      const ticketMedio = totalGanhos > 0 ? (valorTotalGanho / totalGanhos) : 0;
+      const percNoShow = totalAgendamentos > 0 ? (totalNoShows / totalAgendamentos * 100) : 0;
+      const taxaReagendamento = totalAgendamentos > 0 ? (totalReagendamentos / totalAgendamentos * 100) : 0;
+
+      return {
+        totalAgendamentos,
+        totalReunioes,
+        totalGanhos,
+        valorTotalGanho,
+        totalNoShows,
+        totalReagendamentos,
+        taxaConversao,
+        ticketMedio,
+        percNoShow,
+        taxaReagendamento
+      };
     }
 
     function renderCharts() {
