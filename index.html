@@ -1218,14 +1218,8 @@
             : metaCloser.meta_mensal;
 
           const percentualRealizado = metaEsperada > 0 ? (totalRealizado / metaEsperada * 100) : 0;
+          const percentualMes = metaCloser.meta_mensal > 0 ? (totalRealizado / metaCloser.meta_mensal * 100) : 0;
           
-          let corPizza = '#F44336';
-          if (percentualRealizado >= 91 && percentualRealizado <= 100) {
-            corPizza = '#FFC107';
-          } else if (percentualRealizado > 100) {
-            corPizza = '#4CAF50';
-          }
-
           let corHoje = '#F44336';
           if (percentualRealizado >= 91 && percentualRealizado <= 100) corHoje = '#FFC107';
           else if (percentualRealizado > 100) corHoje = '#4CAF50';
@@ -1329,14 +1323,6 @@
             : metaSdr.meta_mensal;
 
           const percentualRealizado = metaEsperada > 0 ? (totalRealizado / metaEsperada * 100) : 0;
-          
-          let corPizza = '#F44336';
-          if (percentualRealizado >= 91 && percentualRealizado <= 100) {
-            corPizza = '#FFC107';
-          } else if (percentualRealizado > 100) {
-            corPizza = '#4CAF50';
-          }
-
           const percentualMes = metaSdr.meta_mensal > 0 ? (totalRealizado / metaSdr.meta_mensal * 100) : 0;
 
           let corHoje = '#F44336';
