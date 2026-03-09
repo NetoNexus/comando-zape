@@ -1087,9 +1087,9 @@
     }
 
     function renderFunnelDetails(stats) {
-      let movementsFiltrados = getMovementsFiltrados();
+      let movimentosFiltrados = getMovementsFiltrados();
       if (funnelCloserFilter) {
-        movementsFiltrados = movementsFiltrados.filter(m => m.closer_id == funnelCloserFilter);
+        movimentosFiltrados = movimentosFiltrados.filter(m => m.closer_id == funnelCloserFilter);
       }
 
       // Coletar SDRs com agendamentos naquele período
