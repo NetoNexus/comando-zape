@@ -308,7 +308,7 @@
 
       <!-- Donut: Taxa de Conversão -->
       <div class="chart-container">
-        <div class="chart-title">Taxa de Conversão (Agend → Reunião)</div>
+        <div class="chart-title">Taxa de Conversão (Reunião → Ganho)</div>
         <canvas id="chartConversao"></canvas>
       </div>
 
@@ -419,7 +419,12 @@
         <div class="kpi-card">
           <div class="kpi-label">Total Reuniões</div>
           <div class="kpi-value">${stats.totalReunioes}</div>
-          <div class="kpi-subtext">Taxa: ${stats.taxaConversao.toFixed(1)}%</div>
+          <div class="kpi-subtext">Comparecidas</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Taxa de Conversão</div>
+          <div class="kpi-value">${stats.taxaConversao.toFixed(1)}%</div>
+          <div class="kpi-subtext">Ganhos / Reuniões</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">Total Ganhos</div>
@@ -454,7 +459,8 @@
         }
       });
 
-      const taxaConversao = totalAgendamentos > 0 ? (totalReunioes / totalAgendamentos * 100) : 0;
+      // Taxa de Conversão = Ganhos / Reuniões (%)
+      const taxaConversao = totalReunioes > 0 ? (totalGanhos / totalReunioes * 100) : 0;
       const ticketMedio = totalGanhos > 0 ? (valorTotalGanho / totalGanhos) : 0;
 
       return {
@@ -463,17 +469,20 @@
         totalReunioes,
         totalGanhos,
         valorTotalGanho,
-        taxaConversao,
+        taxaConversao, // Ganhos / Reuniões
         ticketMedio
       };
     }
 
     function renderFunnel() {
       const stats = calculateStats();
+      // Funil: Agendamentos → Reuniões (% de agendamentos) → Ganhos (% de reuniões)
+      const percentualReunioes = stats.totalAgendamentos > 0 ? (stats.totalReunioes / stats.totalAgendamentos) * 100 : 0;
+      const percentualGanhos = stats.totalReunioes > 0 ? (stats.totalGanhos / stats.totalReunioes) * 100 : 0; // Taxa de conversão
       const funnelData = [
         { label: 'Agendamentos', value: stats.totalAgendamentos, percentage: 100 },
-        { label: 'Reuniões', value: stats.totalReunioes, percentage: stats.totalAgendamentos > 0 ? (stats.totalReunioes / stats.totalAgendamentos) * 100 : 0 },
-        { label: 'Ganhos', value: stats.totalGanhos, percentage: stats.totalAgendamentos > 0 ? (stats.totalGanhos / stats.totalAgendamentos) * 100 : 0 }
+        { label: 'Reuniões', value: stats.totalReunioes, percentage: percentualReunioes },
+        { label: 'Ganhos', value: stats.totalGanhos, percentage: percentualGanhos }
       ];
 
       let html = '';
@@ -773,13 +782,13 @@
         }]
       };
 
-      // Donut: Conversão (Agendamentos → Reuniões)
-      const conversaoReunioes = stats.totalAgendamentos > 0 ? (stats.totalReunioes / stats.totalAgendamentos) * 100 : 0;
-      const conversaoPerda = 100 - conversaoReunioes;
+      // Donut: Conversão (Reuniões → Ganhos) = Taxa de conversão
+      const conversaoGanhos = stats.totalReunioes > 0 ? (stats.totalGanhos / stats.totalReunioes) * 100 : 0;
+      const naoConvertidas = 100 - conversaoGanhos;
       const conversao = {
-        labels: [`Convertidas (${conversaoReunioes.toFixed(1)}%)`, `Não convertidas (${conversaoPerda.toFixed(1)}%)`],
+        labels: [`Convertidas em Ganho (${conversaoGanhos.toFixed(1)}%)`, `Não convertidas (${naoConvertidas.toFixed(1)}%)`],
         datasets: [{
-          data: [conversaoReunioes, conversaoPerda],
+          data: [conversaoGanhos, naoConvertidas],
           backgroundColor: ['#B2FF00', '#383838'],
           borderColor: '#1a1a1a',
           borderWidth: 2
