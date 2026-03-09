@@ -244,6 +244,7 @@
 
     .funnel-stage:hover .funnel-stage-label {
       color: #fff;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
     }
 
     /* Tooltip no hover */
@@ -271,7 +272,7 @@
     }
 
     .funnel-stage-label {
-      color: #B2FF00;
+      color: #000;
       font-weight: 700;
       font-size: 15px;
     }
@@ -1087,8 +1088,8 @@
       let html = '';
       const tooltips = [
         `Agendamentos: ${stats.totalAgendamentos}`,
-        `Reuniões: ${stats.totalReunioes} | Agendamentos: ${stats.totalAgendamentos}`,
-        `Ganhos: ${stats.totalGanhos} | Valor: R$ ${stats.valorTotalGanho.toFixed(0)}`
+        `Reuniões: ${stats.totalReunioes} | Taxa: ${percentualReunioes.toFixed(1)}%`,
+        `Ganhos: ${stats.totalGanhos} | Taxa: ${percentualGanhos.toFixed(1)}%`
       ];
 
       funnelData.forEach((stage, idx) => {
