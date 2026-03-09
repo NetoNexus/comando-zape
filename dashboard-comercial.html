@@ -595,7 +595,67 @@
       text-align: center;
     }
 
-    @media (max-width: 1024px) {
+    .filter-section-centered {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+      width: 100%;
+    }
+
+    .filter-container {
+      background: #2A2A2A;
+      border: 1px solid #383838;
+      border-radius: 8px;
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+      max-width: 650px;
+      width: 100%;
+    }
+
+    .filter-container .filter-group {
+      width: 100%;
+    }
+
+    .filter-container .filter-group label {
+      text-align: center;
+    }
+
+    .filter-container .filter-group input {
+      width: 100%;
+      text-align: center;
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 15px;
+      width: 100%;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .filter-buttons button {
+      flex: 1;
+      max-width: 140px;
+    }
+
+    @media (max-width: 768px) {
+      .filter-container {
+        padding: 15px;
+      }
+
+      .filter-buttons {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .filter-buttons button {
+        max-width: 100%;
+        width: 100%;
+      }
+
       .kpi-grid-row1 {
         grid-template-columns: repeat(2, 1fr);
       }
@@ -768,20 +828,20 @@
     </div>
 
     <!-- FILTRO DE PERÍODO -->
-    <div class="filter-section">
-      <div class="filter-group">
-        <label for="filterDataInicio">Data Início</label>
-        <input type="date" id="filterDataInicio">
-        <div class="filter-info">Ex: 2026-01-01</div>
-      </div>
-      <div class="filter-group">
-        <label for="filterDataFim">Data Fim</label>
-        <input type="date" id="filterDataFim">
-        <div class="filter-info">Ex: 2026-03-31</div>
-      </div>
-      <div style="display: flex; gap: 10px;">
-        <button class="btn-filter" onclick="aplicarFiltro()">Aplicar</button>
-        <button class="btn-filter-reset" onclick="limparFiltro()">Limpar</button>
+    <div class="filter-section-centered">
+      <div class="filter-container">
+        <div class="filter-group">
+          <label for="filterDataInicio">Data Início</label>
+          <input type="date" id="filterDataInicio">
+        </div>
+        <div class="filter-group">
+          <label for="filterDataFim">Data Fim</label>
+          <input type="date" id="filterDataFim">
+        </div>
+        <div class="filter-buttons">
+          <button class="btn-filter" onclick="aplicarFiltro()">Aplicar</button>
+          <button class="btn-filter-reset" onclick="limparFiltro()">Limpar</button>
+        </div>
       </div>
     </div>
 
