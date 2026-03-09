@@ -207,10 +207,10 @@
       box-shadow: 0 0 8px rgba(178, 255, 0, 0.2);
     }
 
-    /* Layout horizontal: funil esquerda + valores meio + métricas direita */
+    /* Layout horizontal: funil esquerda + métricas direita */
     .funnel-wrapper {
       display: grid;
-      grid-template-columns: 1.5fr 0.8fr 1fr;
+      grid-template-columns: 2fr 1fr;
       gap: 25px;
       align-items: stretch;
     }
@@ -233,10 +233,45 @@
       align-items: center;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
       min-height: 50px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .funnel-stage:hover {
+      box-shadow: 0 4px 12px rgba(178, 255, 0, 0.2);
+    }
+
+    .funnel-stage:hover .funnel-stage-label {
+      color: #fff;
+    }
+
+    /* Tooltip no hover */
+    .funnel-stage::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: -60px;
+      left: 0;
+      background: #1a1a1a;
+      border: 1px solid #B2FF00;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: #B2FF00;
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      z-index: 10;
+    }
+
+    .funnel-stage:hover::after {
+      opacity: 1;
     }
 
     .funnel-stage-label {
-      color: #666;
+      color: #B2FF00;
       font-weight: 700;
       font-size: 15px;
     }
@@ -732,9 +767,6 @@
         <div class="funnel" id="funnelChart">
           <div class="loading">Carregando...</div>
         </div>
-        <div class="funnel-values-card" id="funnelValues">
-          <div class="loading">Carregando...</div>
-        </div>
         <div class="funnel-metrics" id="funnelMetrics">
           <div class="loading">Carregando...</div>
         </div>
@@ -1051,39 +1083,28 @@
         { label: 'Ganhos', value: stats.totalGanhos, percentage: percentualGanhos }
       ];
 
-      // Renderizar funil (apenas labels em grafite)
+      // Renderizar funil com tooltip no hover
       let html = '';
-      funnelData.forEach(stage => {
+      const tooltips = [
+        `Agendamentos: ${stats.totalAgendamentos}`,
+        `Reuniões: ${stats.totalReunioes} | Agendamentos: ${stats.totalAgendamentos}`,
+        `Ganhos: ${stats.totalGanhos} | Valor: R$ ${stats.valorTotalGanho.toFixed(0)}`
+      ];
+
+      funnelData.forEach((stage, idx) => {
         html += `
-          <div class="funnel-stage" style="--percentage: ${stage.percentage}%;">
+          <div class="funnel-stage" style="--percentage: ${stage.percentage}%;" data-tooltip="${tooltips[idx]}">
             <span class="funnel-stage-label">${stage.label}</span>
           </div>
         `;
       });
       document.getElementById('funnelChart').innerHTML = html;
 
-      // Renderizar valores do funil
-      renderFunnelValues(funnelData);
-
       // Renderizar métricas
       renderFunnelMetrics(stats);
 
       // Renderizar cards de detalhe (NoShow, Reagendamento, SDRs)
       renderFunnelDetails(stats);
-    }
-
-    function renderFunnelValues(funnelData) {
-      let html = '';
-      funnelData.forEach((stage, idx) => {
-        html += `
-          <div class="funnel-value-item">
-            <div class="funnel-value-label">${stage.label}</div>
-            <div class="funnel-value-number">${stage.value}</div>
-            <div class="funnel-value-percent">${stage.percentage.toFixed(1)}%</div>
-          </div>
-        `;
-      });
-      document.getElementById('funnelValues').innerHTML = html;
     }
 
     function renderFunnelDetails(stats) {
