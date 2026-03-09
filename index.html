@@ -303,13 +303,7 @@
           </div>
         </div>
 
-        <!-- Meta Geral do Mês -->
-        <div class="card">
-          <div class="card-title" id="meta-geral-titulo">Meta Geral - Selecione um mês</div>
-          <div class="meta-grid" id="meta-geral-content">
-            <div style="grid-column: 1/-1; text-align: center; color: #999;">Selecione um mês para visualizar</div>
-          </div>
-        </div>
+
 
         <!-- Meta por Closer -->
         <div class="card">
@@ -1801,14 +1795,16 @@
         document.getElementById(`barra-mes-${nivel}`).style.background = corBarra2;
         document.getElementById(`percentual-mes-${nivel}`).textContent = `${Math.round(percentualMes)}%`;
         
-        // Info: Meta (Valor) - Deveria Estar (Valor) - Realizado (Valor)
+        // Info: Meta (Valor) - Meta Diária (Valor) - Deveria Estar (Valor) - Realizado (Valor)
         const metaFormatada = metaNivel.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const metaDiariaFormatada = parseFloat(metaNivel.meta_diaria).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const deveriaEstarFormatado = Math.round(metaEsperada).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const realizadoFormatado = totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         
         document.getElementById(`info-${nivel}`).innerHTML = `
           <div style="display: flex; gap: 16px; font-weight: 700; font-size: 13px;">
             <div>Meta <span style="color: #B2FF00;">R$ ${metaFormatada}</span></div>
+            <div>Meta Diária <span style="color: #B2FF00;">R$ ${metaDiariaFormatada}</span></div>
             <div>Deveria <span style="color: #fff;">R$ ${deveriaEstarFormatado}</span></div>
             <div>Realizado <span style="color: ${corRealizado}; font-weight: 900;">R$ ${realizadoFormatado}</span></div>
           </div>
@@ -1819,7 +1815,6 @@
     function filtrarPorMes() {
       const mes = document.getElementById('meta-mes-filtro').value;
       if (!mes) {
-        document.getElementById('meta-geral-content').innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">Selecione um mês para visualizar</div>';
         mesSelecionado = null;
         ['minima', 'super', 'ultra', 'black'].forEach(nivel => {
           document.getElementById(`barra-${nivel}`).style.width = '0%';
@@ -1845,11 +1840,6 @@
       });
 
       if (!metasMesAno || Object.keys(metasMesAno).length === 0) {
-        const [ano, mês] = mes.split('-');
-        const mesNome = new Date(parseInt(ano), parseInt(mês) - 1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase();
-        document.getElementById('meta-geral-titulo').textContent = `Meta Geral - ${mesNome} (Sem dados)`;
-        document.getElementById('meta-geral-content').innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">Nenhuma meta registrada para este mês. <button class="btn" style="margin: 12px auto 0;" onclick="abrirModalRegistrarMeta()">Registrar Meta</button></div>';
-        
         // Atualizar barras de progresso
         atualizarSemaforo(mes, {});
         return;
@@ -1862,32 +1852,8 @@
       const metaMesAtiva = primeiroNivelKey ? metasMesAno[primeiroNivelKey] : null;
 
       if (!metaMesAtiva) {
-        document.getElementById('meta-geral-titulo').textContent = `Meta Geral - ${dataLabel} (Sem dados)`;
-        document.getElementById('meta-geral-content').innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">Nenhuma meta registrada</div>';
         return;
       }
-
-      document.getElementById('meta-geral-titulo').textContent = `Meta Geral - ${dataLabel}`;
-
-      const percentual = metaMesAtiva.meta_mensal > 0 ? (totalRealizado / metaMesAtiva.meta_mensal * 100) : 0;
-      document.getElementById('meta-geral-content').innerHTML = `
-        <div class="meta-card">
-          <div class="meta-label">Meta Mensal (R$)</div>
-          <div class="meta-value">R$ ${metaMesAtiva.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-        </div>
-        <div class="meta-card">
-          <div class="meta-label">Meta Diária (R$)</div>
-          <div class="meta-value">R$ ${metaMesAtiva.meta_diaria}</div>
-        </div>
-        <div class="meta-card">
-          <div class="meta-label">Realizado (R$)</div>
-          <div class="meta-value">R$ ${totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-          <div class="meta-progress" style="margin-top: 12px;">
-            <div class="progress-bar" style="width: ${Math.min(percentual, 100)}%;"></div>
-          </div>
-          <div class="meta-percentage">${percentual.toFixed(1)}%</div>
-        </div>
-      `;
 
       // Renderizar closers
       const closersHtml = closers.map(closer => {
