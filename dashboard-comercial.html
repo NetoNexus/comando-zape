@@ -1529,7 +1529,27 @@
           options: {
             responsive: true,
             maintainAspectRatio: true,
-            plugins: { legend: { display: false }, tooltip: getDefaultTooltipConfig() },
+            plugins: { 
+              legend: { display: false }, 
+              tooltip: {
+                backgroundColor: '#1a1a1a',
+                borderColor: '#B2FF00',
+                borderWidth: 2,
+                borderRadius: 6,
+                padding: 12,
+                titleColor: '#B2FF00',
+                bodyColor: '#B2FF00',
+                titleFont: { size: 12, weight: '700' },
+                bodyFont: { size: 12, weight: '600' },
+                displayColors: false,
+                callbacks: {
+                  label: function(context) {
+                    const value = context.parsed.x || 0;
+                    return `Reuniões: ${Math.round(value)}`;
+                  }
+                }
+              }
+            },
             scales: {
               x: { grid: { color: '#383838' }, ticks: { color: '#999' } },
               y: { grid: { color: '#383838' }, ticks: { color: '#999' } }
