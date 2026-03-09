@@ -1297,18 +1297,47 @@
         displayColors: false,
         callbacks: {
           label: function(context) {
-            const label = context.label || '';
-            const value = context.parsed || 0;
-            
-            // Se tem dataset.data (para calcular percentual)
-            if (context.dataset.data && Array.isArray(context.dataset.data)) {
-              const total = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = ((value / total) * 100).toFixed(1);
-              return `${label}: ${value} (${percentage}%)`;
+            try {
+              const label = context.label || '';
+              
+              // Extrair valor correto (pode ser number ou object com x/y)
+              let value = 0;
+              if (typeof context.parsed === 'number') {
+                value = context.parsed;
+              } else if (typeof context.parsed === 'object' && context.parsed !== null) {
+                // Bar charts têm context.parsed.x ou context.parsed.y
+                value = context.parsed.x || context.parsed.y || 0;
+              } else {
+                value = context.raw || 0;
+              }
+              
+              // Validar que é número
+              value = parseFloat(value) || 0;
+              
+              // Se tem dataset.data (para calcular percentual)
+              if (context.dataset.data && Array.isArray(context.dataset.data)) {
+                // Filtrar apenas números válidos
+                const validNumbers = context.dataset.data
+                  .map(d => {
+                    if (typeof d === 'number') return d;
+                    if (typeof d === 'object' && d !== null) return d.x || d.y || 0;
+                    return 0;
+                  })
+                  .filter(n => !isNaN(n) && n !== null);
+                
+                const total = validNumbers.reduce((a, b) => a + b, 0);
+                if (total > 0) {
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  return `${label}: ${value.toFixed(0)} (${percentage}%)`;
+                }
+              }
+              
+              // Senão, mostra só o valor
+              return `${label}: ${value.toFixed(0)}`;
+            } catch (err) {
+              console.error('Tooltip error:', err);
+              return 'Erro ao exibir dado';
             }
-            
-            // Senão, mostra só o valor
-            return `${label}: ${value}`;
           }
         }
       };
