@@ -847,6 +847,11 @@
         <canvas id="chartGanhosServico"></canvas>
       </div>
 
+      <!-- Barras: Reuniões por Closer -->
+      <div class="chart-container">
+        <div class="chart-title">Reuniões por Closer</div>
+        <canvas id="chartReunioesPorCloser"></canvas>
+      </div>
 
     </div>
 
@@ -1630,19 +1635,31 @@
         }]
       };
 
-      // Barras: Reuniões Agendadas por Closer (EXATAMENTE IGUAL A AGENDAMENTOS)
-      const reunioesCloserLabels = Object.keys(closerData).sort((a, b) => closerData[b] - closerData[a]).slice(0, 8);
+      // Barras: Reuniões por Closer (USANDO A MESMA LÓGICA DO FUNIL)
+      const reunioesCloserData = {};
+      movimentosFiltrados.forEach(m => {
+        const closer = closers.find(c => c.id == m.closer_id);
+        if (!closer) {
+          return;
+        }
+        if (!reunioesCloserData[closer.name]) reunioesCloserData[closer.name] = 0;
+        
+        // MESMA LÓGICA DO FUNIL: somar m.reunioes[].quantidade
+        if (Array.isArray(m.reunioes)) {
+          reunioesCloserData[closer.name] += m.reunioes.reduce((sum, r) => sum + (r.quantidade || 0), 0);
+        }
+      });
+      const reunioesCloserLabels = Object.keys(reunioesCloserData).sort((a, b) => reunioesCloserData[b] - reunioesCloserData[a]).slice(0, 8);
       const reunioesPorCloser = {
         labels: reunioesCloserLabels,
         datasets: [{
           label: 'Reuniões',
-          data: reunioesCloserLabels.map(l => closerData[l]),
+          data: reunioesCloserLabels.map(l => reunioesCloserData[l]),
           backgroundColor: '#B2FF00',
           borderColor: '#B2FF00',
           borderWidth: 1
         }]
       };
-      console.log('FINAL closerData para gráfico:', closerData);
       console.log('DEBUG Reuniões por Closer:', { closerData, reunioesCloserLabels, dados: reunioesCloserLabels.map(l => ({ closer: l, reunioes: closerData[l] })) });
 
       return {
