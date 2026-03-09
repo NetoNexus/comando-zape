@@ -242,59 +242,94 @@
           </table>
         </div>
 
+        <!-- Histórico de Metas -->
+        <div class="card">
+          <div class="card-title">Histórico de Metas</div>
+          <table id="historico-metas-table">
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th>Nível</th>
+                <th>Meta Vendas</th>
+                <th>Total Closers</th>
+                <th>Total SDRs</th>
+                <th>Data</th>
+              </tr>
+            </thead>
+            <tbody id="historico-metas-body">
+              <tr><td colspan="6" style="text-align:center; color: #999;">Nenhum histórico</td></tr>
+            </tbody>
+          </table>
+        </div>
+
         <!-- Modal de Registrar Meta -->
         <div id="registrar-meta-modal" class="modal">
-          <div class="modal-content" style="max-width: 600px;">
+          <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
-              <h2>Registrar Meta</h2>
+              <h2>Registrar Meta do Mês</h2>
               <button class="modal-close" onclick="fecharModalRegistrarMeta()">×</button>
             </div>
             <form onsubmit="salvarNovaMetaMes(event)">
               <!-- Seleção de Mês -->
               <div class="form-group">
-                <label>Mês</label>
+                <label>Selecione o Mês</label>
                 <select id="registrar-mes" required>
-                  <option value="">Selecione um mês</option>
+                  <option value="">Escolha um mês</option>
                 </select>
               </div>
 
-              <!-- Nível de Meta -->
-              <div class="form-group">
-                <label>Nível de Meta</label>
-                <select id="registrar-nivel" required>
-                  <option value="">Selecione um nível</option>
-                  <option value="minima">Mínima</option>
-                  <option value="super">Super</option>
-                  <option value="ultra">Ultra</option>
-                  <option value="black">Black</option>
-                </select>
+              <!-- Seleção de Nível com Cards -->
+              <div style="margin-bottom: 24px;">
+                <label style="display: block; margin-bottom: 12px; color: #B2FF00; font-weight: 700;">Selecione o Nível de Meta</label>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;">
+                  <div class="nivel-card" onclick="selecionarNivel('minima', this)" style="cursor: pointer; padding: 12px; border: 2px solid #383838; border-radius: 6px; text-align: center; transition: all 0.3s; background: #2A2A2A;">
+                    <div style="font-weight: 700; color: #B2FF00; margin-bottom: 8px;">MÍNIMA</div>
+                    <div style="font-size: 12px; color: #999;">R$ 30.000</div>
+                  </div>
+                  <div class="nivel-card" onclick="selecionarNivel('super', this)" style="cursor: pointer; padding: 12px; border: 2px solid #383838; border-radius: 6px; text-align: center; transition: all 0.3s; background: #2A2A2A;">
+                    <div style="font-weight: 700; color: #B2FF00; margin-bottom: 8px;">SUPER</div>
+                    <div style="font-size: 12px; color: #999;">R$ 50.000</div>
+                  </div>
+                  <div class="nivel-card" onclick="selecionarNivel('ultra', this)" style="cursor: pointer; padding: 12px; border: 2px solid #383838; border-radius: 6px; text-align: center; transition: all 0.3s; background: #2A2A2A;">
+                    <div style="font-weight: 700; color: #B2FF00; margin-bottom: 8px;">ULTRA</div>
+                    <div style="font-size: 12px; color: #999;">R$ 80.000</div>
+                  </div>
+                  <div class="nivel-card" onclick="selecionarNivel('black', this)" style="cursor: pointer; padding: 12px; border: 2px solid #383838; border-radius: 6px; text-align: center; transition: all 0.3s; background: #2A2A2A;">
+                    <div style="font-weight: 700; color: #B2FF00; margin-bottom: 8px;">BLACK</div>
+                    <div style="font-size: 12px; color: #999;">R$ 120.000</div>
+                  </div>
+                </div>
+                <input type="hidden" id="registrar-nivel" required>
               </div>
 
-              <!-- Meta Mensal de Vendas -->
-              <div class="form-group">
-                <label>Meta Mensal de Vendas (R$)</label>
-                <input type="number" id="registrar-meta-mensal" placeholder="ex: 50000" required onchange="calcularMetaDiaria()">
-              </div>
+              <hr style="border: none; border-top: 1px solid #383838; margin: 24px 0;">
 
-              <!-- Meta Diária Calculada -->
-              <div class="form-group">
-                <label>Meta Diária (seg-sex) - Calculada automaticamente</label>
-                <input type="number" id="registrar-meta-diaria" placeholder="Calculada automaticamente" readonly style="background: #383838;">
+              <!-- Meta Geral de Vendas (pré-preenchida) -->
+              <h3 style="color: #B2FF00; margin-bottom: 12px; font-size: 14px;">Meta Geral de Vendas</h3>
+              <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                  <label>Meta Mensal (R$)</label>
+                  <input type="number" id="registrar-meta-mensal" placeholder="0" required onchange="calcularMetaDiaria()">
+                </div>
+                <div>
+                  <label>Meta Diária (R$)</label>
+                  <input type="number" id="registrar-meta-diaria" placeholder="0" readonly style="background: #383838;">
+                </div>
               </div>
 
               <hr style="border: none; border-top: 1px solid #383838; margin: 24px 0;">
 
               <!-- Metas por Closer -->
-              <h3 style="color: #B2FF00; margin-bottom: 16px; font-size: 14px;">Metas por Closer</h3>
+              <h3 style="color: #B2FF00; margin-bottom: 12px; font-size: 14px;">Metas por Closer</h3>
               <div id="registrar-closers-fields"></div>
 
               <hr style="border: none; border-top: 1px solid #383838; margin: 24px 0;">
 
               <!-- Metas por SDR -->
-              <h3 style="color: #B2FF00; margin-bottom: 16px; font-size: 14px;">Metas por SDR</h3>
+              <h3 style="color: #B2FF00; margin-bottom: 12px; font-size: 14px;">Metas por SDR</h3>
               <div id="registrar-sdrs-fields"></div>
 
-              <button type="submit" class="btn" style="width: 100%;">Salvar Meta do Mês</button>
+              <button type="submit" class="btn" style="width: 100%; margin-top: 24px;">Salvar Meta do Mês</button>
             </form>
           </div>
         </div>
@@ -1020,6 +1055,8 @@
     // ========== META DE VENDAS V2 ==========
     let metasMeses = {}; // { 'YYYY-MM': { nivel, meta_mensal, meta_diaria, closers: {...}, sdrs: {...} } }
     let mesSelecionado = null;
+    let metaTemplates = {}; // { 'minima': {...}, 'super': {...}, ... }
+    let nivelSelecionado = null;
 
     // Gerar lista de meses disponíveis
     function preencherDropdownMeses() {
@@ -1054,52 +1091,89 @@
       document.getElementById('registrar-meta-diaria').value = metaDiaria;
     }
 
-    function abrirModalRegistrarMeta() {
-      // Popular campos de closers e SDRs
-      const closersFields = document.getElementById('registrar-closers-fields');
-      const sdrsFields = document.getElementById('registrar-sdrs-fields');
+    async function carregarMetaTemplates() {
+      try {
+        const result = await supabaseFetch('meta_templates?order=id');
+        if (Array.isArray(result)) {
+          result.forEach(template => {
+            metaTemplates[template.nivel] = template;
+          });
+          console.log('✅ Templates de meta carregados:', metaTemplates);
+        }
+      } catch (e) {
+        console.log('Nota: Templates de meta não carregados');
+      }
+    }
+
+    function selecionarNivel(nivel, el) {
+      nivelSelecionado = nivel;
+      const template = metaTemplates[nivel];
       
+      if (!template) {
+        alert('Template não encontrado');
+        return;
+      }
+
+      // Highlight do card selecionado
+      document.querySelectorAll('.nivel-card').forEach(card => {
+        card.style.borderColor = '#383838';
+        card.style.background = '#2A2A2A';
+      });
+      if (el) {
+        el.style.borderColor = '#B2FF00';
+        el.style.background = '#2A2A2A';
+      }
+      
+      // Pré-preencher meta geral
+      document.getElementById('registrar-meta-mensal').value = template.meta_vendas_mensal;
+      calcularMetaDiaria();
+
+      // Pré-preencher closers
+      const closersFields = document.getElementById('registrar-closers-fields');
       closersFields.innerHTML = closers.map(c => `
         <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div>
             <label>${c.name} - Meta Mensal (R$)</label>
-            <input type="number" class="closer-meta-mensal" data-closer-id="${c.id}" placeholder="0">
+            <input type="number" class="closer-meta-mensal" data-closer-id="${c.id}" value="${template.meta_closer_mensal}" placeholder="0">
           </div>
           <div>
             <label>${c.name} - Meta Diária (R$)</label>
-            <input type="number" class="closer-meta-diaria" data-closer-id="${c.id}" placeholder="0" readonly style="background: #383838;">
+            <input type="number" class="closer-meta-diaria" data-closer-id="${c.id}" value="${template.meta_closer_diaria}" placeholder="0" readonly style="background: #383838;">
           </div>
         </div>
       `).join('');
-      
+
+      // Pré-preencher SDRs
+      const sdrsFields = document.getElementById('registrar-sdrs-fields');
       sdrsFields.innerHTML = sdrs.map(s => `
         <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div>
             <label>${s.name} - Meta Mensal (Agend.)</label>
-            <input type="number" class="sdr-meta-mensal" data-sdr-id="${s.id}" placeholder="0">
+            <input type="number" class="sdr-meta-mensal" data-sdr-id="${s.id}" value="${template.meta_sdr_mensal}" placeholder="0">
           </div>
           <div>
             <label>${s.name} - Meta Diária (Agend.)</label>
-            <input type="number" class="sdr-meta-diaria" data-sdr-id="${s.id}" placeholder="0" readonly style="background: #383838;">
+            <input type="number" class="sdr-meta-diaria" data-sdr-id="${s.id}" value="${template.meta_sdr_diaria}" placeholder="0" readonly style="background: #383838;">
           </div>
         </div>
       `).join('');
 
-      // Adicionar event listeners para calcular metas diárias
-      document.querySelectorAll('.closer-meta-mensal').forEach(input => {
-        input.addEventListener('change', function() {
-          const diasUteis = 22;
-          const metaDiaria = (parseFloat(this.value) / diasUteis).toFixed(2);
-          document.querySelector(`.closer-meta-diaria[data-closer-id="${this.dataset.closerId}"]`).value = metaDiaria;
-        });
-      });
+      // Hidden field pra guardar o nível selecionado
+      document.getElementById('registrar-nivel').value = nivel;
+    }
 
-      document.querySelectorAll('.sdr-meta-mensal').forEach(input => {
-        input.addEventListener('change', function() {
-          const diasUteis = 22;
-          const metaDiaria = (parseFloat(this.value) / diasUteis).toFixed(2);
-          document.querySelector(`.sdr-meta-diaria[data-sdr-id="${this.dataset.sdrId}"]`).value = metaDiaria;
-        });
+    function abrirModalRegistrarMeta() {
+      nivelSelecionado = null;
+      document.getElementById('registrar-meta-mensal').value = '';
+      document.getElementById('registrar-meta-diaria').value = '';
+      document.getElementById('registrar-nivel').value = '';
+      document.getElementById('registrar-closers-fields').innerHTML = '';
+      document.getElementById('registrar-sdrs-fields').innerHTML = '';
+      
+      // Resetar cards de nível
+      document.querySelectorAll('.nivel-card').forEach(card => {
+        card.style.borderColor = '#383838';
+        card.style.background = '#2A2A2A';
       });
 
       document.getElementById('registrar-meta-modal').classList.add('show');
@@ -1196,7 +1270,16 @@
           }
         }
 
-        // 4. Salvar na memória também (backup local)
+        // 4. Salvar histórico
+        await supabaseFetch('meta_historico', 'POST', {
+          mes: mes,
+          nivel: nivel,
+          meta_mensal_vendas: metaMensal,
+          total_closers: closers.length,
+          total_sdrs: sdrs.length
+        });
+
+        // 5. Salvar na memória também (backup local)
         metasMeses[mes] = {
           id: metaMensalId,
           nivel: nivel,
@@ -1213,10 +1296,39 @@
         // Carregar o mês que foi criado
         document.getElementById('meta-mes-filtro').value = mes;
         await carregarMetasDoSupabase();
+        await renderizarHistoricoMetas();
         filtrarPorMes();
       } catch (error) {
         console.error('Erro ao salvar meta:', error);
         alert('Erro ao registrar meta: ' + error.message);
+      }
+    }
+
+    async function renderizarHistoricoMetas() {
+      try {
+        const result = await supabaseFetch('meta_historico?order=criado_em.desc&limit=50');
+        const tbody = document.getElementById('historico-metas-body');
+        
+        if (!Array.isArray(result) || result.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: #999;">Nenhum histórico</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = result.map(h => {
+          const dataLabel = new Date(`${h.mes}-01`).toLocaleString('pt-BR', { month: 'short', year: 'numeric' });
+          const dataCriacao = new Date(h.criado_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+          return `<tr>
+            <td>${dataLabel}</td>
+            <td style="text-transform: uppercase; font-weight: 700; color: #B2FF00;">${h.nivel}</td>
+            <td>R$ ${parseFloat(h.meta_mensal_vendas).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+            <td>${h.total_closers || 0}</td>
+            <td>${h.total_sdrs || 0}</td>
+            <td style="font-size: 11px; color: #999;">${dataCriacao}</td>
+          </tr>`;
+        }).join('');
+      } catch (e) {
+        console.log('Erro ao carregar histórico:', e);
+        document.getElementById('historico-metas-body').innerHTML = '<tr><td colspan="6" style="text-align:center; color: #999;">Erro ao carregar</td></tr>';
       }
     }
 
@@ -1371,7 +1483,9 @@
       originalGoToPage2(page);
       if (page === 'acompanhamento-meta') {
         preencherDropdownMeses();
+        carregarMetaTemplates();  // Carregar templates de nível
         carregarMetasDoSupabase();  // Carregar metas existentes do Supabase
+        renderizarHistoricoMetas();  // Carregar histórico
       }
     };
   </script>
