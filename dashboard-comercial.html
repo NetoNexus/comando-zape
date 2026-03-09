@@ -320,46 +320,55 @@
 
     /* Métricas ao lado do funil */
     .funnel-metrics {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 14px;
     }
 
     .funnel-metric-card {
       background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
-      border: 1px solid #383838;
-      border-radius: 6px;
-      padding: 16px 14px;
+      border: 2px solid #383838;
+      border-radius: 8px;
+      padding: 20px 16px;
       text-align: center;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-      transition: transform 0.2s, border-color 0.2s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
 
     .funnel-metric-card:hover {
       border-color: #B2FF00;
-      transform: translateY(-2px);
+      background: linear-gradient(135deg, #252525 0%, #2a2a2a 100%);
+      transform: translateY(-4px);
+      box-shadow: 0 6px 16px rgba(178, 255, 0, 0.15);
     }
 
     .funnel-metric-label {
-      color: #999;
-      font-size: 11px;
+      color: #B2FF00;
+      font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 1.2px;
-      margin-bottom: 8px;
+      letter-spacing: 1.3px;
+      margin-bottom: 10px;
     }
 
     .funnel-metric-value {
       color: #B2FF00;
-      font-size: 26px;
+      font-size: 32px;
       font-weight: 900;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      line-height: 1;
     }
 
     .funnel-metric-unit {
-      color: #666;
-      font-size: 10px;
-      font-weight: 500;
+      color: #999;
+      font-size: 11px;
+      font-weight: 600;
       margin-top: 4px;
     }
 
@@ -590,6 +599,10 @@
         gap: 20px;
       }
 
+      .funnel-metrics {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
       .funnel-details {
         grid-template-columns: 1fr;
         gap: 15px;
@@ -682,15 +695,25 @@
       }
 
       .funnel-metrics {
+        grid-template-columns: 1fr 1fr;
         gap: 10px;
       }
 
       .funnel-metric-card {
-        padding: 12px 10px;
+        padding: 14px 10px;
+        min-height: 100px;
+      }
+
+      .funnel-metric-label {
+        font-size: 11px;
       }
 
       .funnel-metric-value {
-        font-size: 22px;
+        font-size: 26px;
+      }
+
+      .funnel-metric-unit {
+        font-size: 10px;
       }
 
       .funnel-value-item {
