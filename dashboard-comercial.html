@@ -840,18 +840,6 @@
         <div class="chart-title">Agendamentos por Closer</div>
         <canvas id="chartCloserAgendamentos"></canvas>
       </div>
-
-      <!-- Donut: Taxa de Conversão -->
-      <div class="chart-container">
-        <div class="chart-title">Taxa de Conversão (Reunião → Ganho)</div>
-        <canvas id="chartConversao"></canvas>
-      </div>
-
-      <!-- Barras: Ganhos por SDR (Valor) -->
-      <div class="chart-container">
-        <div class="chart-title">Ganhos (R$) por SDR</div>
-        <canvas id="chartGanhosSDR"></canvas>
-      </div>
     </div>
 
     <!-- TABELAS -->
@@ -1501,38 +1489,6 @@
         });
       }
 
-      // Donut: Conversão
-      if (chartConfig.conversao) {
-        const ctx = document.getElementById('chartConversao').getContext('2d');
-        charts.conversao = new Chart(ctx, {
-          type: 'doughnut',
-          data: chartConfig.conversao,
-          options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: { legend: { position: 'bottom', labels: { color: '#999', font: { size: 11 } } } }
-          }
-        });
-      }
-
-      // Barras: Ganhos por SDR
-      if (chartConfig.ganhosSDR) {
-        const ctx = document.getElementById('chartGanhosSDR').getContext('2d');
-        charts.ganhosSDR = new Chart(ctx, {
-          type: 'bar',
-          data: chartConfig.ganhosSDR,
-          options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: { legend: { display: false }, tooltip: getDefaultTooltipConfig() },
-            scales: {
-              x: { grid: { color: '#383838' }, ticks: { color: '#999' } },
-              y: { grid: { display: false }, ticks: { color: '#999' } }
-            }
-          }
-        });
-      }
     }
 
     function getChartConfigs() {
@@ -1679,52 +1635,13 @@
         }]
       };
 
-      // Donut: Conversão (Reuniões → Ganhos) = Taxa de conversão
-      const conversaoGanhos = stats.totalReunioes > 0 ? (stats.totalGanhos / stats.totalReunioes) * 100 : 0;
-      const naoConvertidas = 100 - conversaoGanhos;
-      const conversao = {
-        labels: [`Convertidas em Ganho (${conversaoGanhos.toFixed(1)}%)`, `Não convertidas (${naoConvertidas.toFixed(1)}%)`],
-        datasets: [{
-          data: [conversaoGanhos, naoConvertidas],
-          backgroundColor: ['#B2FF00', '#383838'],
-          borderColor: '#1a1a1a',
-          borderWidth: 2
-        }]
-      };
-
-      // Barras: Ganhos por SDR (Valor)
-      const ganhosSdrData = {};
-      movimentosFiltrados.forEach(m => {
-        if (Array.isArray(m.ganhos)) {
-          m.ganhos.forEach(g => {
-            const sdr = sdrs.find(s => s.id == g.sdr_id);
-            if (sdr) {
-              ganhosSdrData[sdr.name] = (ganhosSdrData[sdr.name] || 0) + (g.valor || 0);
-            }
-          });
-        }
-      });
-      const ganhosSdrLabels = Object.keys(ganhosSdrData).sort((a, b) => ganhosSdrData[b] - ganhosSdrData[a]);
-      const ganhosSDR = {
-        labels: ganhosSdrLabels,
-        datasets: [{
-          label: 'Valor (R$)',
-          data: ganhosSdrLabels.map(l => ganhosSdrData[l]),
-          backgroundColor: '#B2FF00',
-          borderColor: '#B2FF00',
-          borderWidth: 1
-        }]
-      };
-
       return {
         origemPizza: origemLabels.length > 0 ? origemPizza : null,
         servicoPizza: servicoLabels.length > 0 ? servicoPizza : null,
         sdrPizza: sdrLabels.length > 0 ? sdrPizza : null,
         ganhosOrigem: ganhosOrigemLabels.length > 0 ? ganhosOrigem : null,
         closerAgendamentos: closerLabels.length > 0 ? closerAgendamentos : null,
-        ganhosServico: ganhosServicoLabels.length > 0 ? ganhosServico : null,
-        conversao: conversao,
-        ganhosSDR: ganhosSdrLabels.length > 0 ? ganhosSDR : null
+        ganhosServico: ganhosServicoLabels.length > 0 ? ganhosServico : null
       };
     }
 
