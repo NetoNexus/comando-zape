@@ -1265,8 +1265,13 @@
         // 2. Coletar metas de closers e inserir
         const closersData = {};
         for (const closer of closers) {
-          const mensal = parseFloat(document.querySelector(`.closer-meta-mensal[data-closer-id="${closer.id}"]`).value) || 0;
-          const diaria = parseFloat(document.querySelector(`.closer-meta-diaria[data-closer-id="${closer.id}"]`).value) || 0;
+          const inputMensal = document.querySelector(`.closer-meta-mensal[data-closer-id="${closer.id}"]`);
+          const inputDiaria = document.querySelector(`.closer-meta-diaria[data-closer-id="${closer.id}"]`);
+          
+          const mensal = inputMensal ? (parseFloat(inputMensal.value) || 0) : 0;
+          const diaria = inputDiaria ? (parseFloat(inputDiaria.value) || 0) : 0;
+          
+          console.log(`Closer ${closer.id}: Mensal=${mensal}, Diária=${diaria}`);
           
           closersData[closer.id] = { nome: closer.name, meta_mensal: mensal, meta_diaria: diaria };
           
@@ -1284,8 +1289,13 @@
         // 3. Coletar metas de SDRs e inserir
         const sdrsData = {};
         for (const sdr of sdrs) {
-          const mensal = parseInt(document.querySelector(`.sdr-meta-mensal[data-sdr-id="${sdr.id}"]`).value) || 0;
-          const diaria = parseInt(document.querySelector(`.sdr-meta-diaria[data-sdr-id="${sdr.id}"]`).value) || 0;
+          const inputMensal = document.querySelector(`.sdr-meta-mensal[data-sdr-id="${sdr.id}"]`);
+          const inputDiaria = document.querySelector(`.sdr-meta-diaria[data-sdr-id="${sdr.id}"]`);
+          
+          const mensal = inputMensal ? (parseInt(inputMensal.value) || 0) : 0;
+          const diaria = inputDiaria ? (parseInt(inputDiaria.value) || 0) : 0;
+          
+          console.log(`SDR ${sdr.id}: Mensal=${mensal}, Diária=${diaria}`);
           
           sdrsData[sdr.id] = { nome: sdr.name, meta_mensal: mensal, meta_diaria: diaria };
           
