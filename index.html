@@ -1171,6 +1171,23 @@
         </div>
       `).join('');
 
+      // Adicionar event listeners para calcular metas diárias
+      document.querySelectorAll('.closer-meta-mensal').forEach(input => {
+        input.addEventListener('change', function() {
+          const diasUteis = 22;
+          const metaDiaria = (parseFloat(this.value) / diasUteis).toFixed(2);
+          document.querySelector(`.closer-meta-diaria[data-closer-id="${this.dataset.closerId}"]`).value = metaDiaria;
+        });
+      });
+
+      document.querySelectorAll('.sdr-meta-mensal').forEach(input => {
+        input.addEventListener('change', function() {
+          const diasUteis = 22;
+          const metaDiaria = (parseInt(this.value) / diasUteis).toFixed(0);
+          document.querySelector(`.sdr-meta-diaria[data-sdr-id="${this.dataset.sdrId}"]`).value = metaDiaria;
+        });
+      });
+
       // Hidden field pra guardar o nível selecionado
       document.getElementById('registrar-nivel').value = nivel;
     }
