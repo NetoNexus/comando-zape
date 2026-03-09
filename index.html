@@ -1137,39 +1137,60 @@
         el.style.background = '#2A2A2A';
       }
       
+      // SALVAR VALORES ATUAIS ANTES DE RECONSTRUIR
+      const closersValores = {};
+      document.querySelectorAll('.closer-meta-mensal').forEach(input => {
+        const id = input.dataset.closerId;
+        closersValores[id] = parseFloat(input.value) || 0;
+      });
+
+      const sdrsValores = {};
+      document.querySelectorAll('.sdr-meta-mensal').forEach(input => {
+        const id = input.dataset.sdrId;
+        sdrsValores[id] = parseInt(input.value) || 0;
+      });
+
       // Pré-preencher meta geral
       document.getElementById('registrar-meta-mensal').value = template.meta_vendas_mensal;
       calcularMetaDiaria();
 
-      // Pré-preencher closers
+      // Pré-preencher closers (usando valores salvos se existirem)
       const closersFields = document.getElementById('registrar-closers-fields');
-      closersFields.innerHTML = closers.map(c => `
-        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <div>
-            <label>${c.name} - Meta Mensal (R$)</label>
-            <input type="number" class="closer-meta-mensal" data-closer-id="${c.id}" value="${template.meta_closer_mensal}" placeholder="0">
+      closersFields.innerHTML = closers.map(c => {
+        const valorMensal = closersValores[c.id] > 0 ? closersValores[c.id] : template.meta_closer_mensal;
+        const valorDiaria = (valorMensal / 22).toFixed(2);
+        return `
+          <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label>${c.name} - Meta Mensal (R$)</label>
+              <input type="number" class="closer-meta-mensal" data-closer-id="${c.id}" value="${valorMensal}" placeholder="0">
+            </div>
+            <div>
+              <label>${c.name} - Meta Diária (R$)</label>
+              <input type="number" class="closer-meta-diaria" data-closer-id="${c.id}" value="${valorDiaria}" placeholder="0" readonly style="background: #383838;">
+            </div>
           </div>
-          <div>
-            <label>${c.name} - Meta Diária (R$)</label>
-            <input type="number" class="closer-meta-diaria" data-closer-id="${c.id}" value="${template.meta_closer_diaria}" placeholder="0" readonly style="background: #383838;">
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
-      // Pré-preencher SDRs
+      // Pré-preencher SDRs (usando valores salvos se existirem)
       const sdrsFields = document.getElementById('registrar-sdrs-fields');
-      sdrsFields.innerHTML = sdrs.map(s => `
-        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <div>
-            <label>${s.name} - Meta Mensal (Agend.)</label>
-            <input type="number" class="sdr-meta-mensal" data-sdr-id="${s.id}" value="${template.meta_sdr_mensal}" placeholder="0">
+      sdrsFields.innerHTML = sdrs.map(s => {
+        const valorMensal = sdrsValores[s.id] > 0 ? sdrsValores[s.id] : template.meta_sdr_mensal;
+        const valorDiaria = (valorMensal / 22).toFixed(0);
+        return `
+          <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label>${s.name} - Meta Mensal (Agend.)</label>
+              <input type="number" class="sdr-meta-mensal" data-sdr-id="${s.id}" value="${valorMensal}" placeholder="0">
+            </div>
+            <div>
+              <label>${s.name} - Meta Diária (Agend.)</label>
+              <input type="number" class="sdr-meta-diaria" data-sdr-id="${s.id}" value="${valorDiaria}" placeholder="0" readonly style="background: #383838;">
+            </div>
           </div>
-          <div>
-            <label>${s.name} - Meta Diária (Agend.)</label>
-            <input type="number" class="sdr-meta-diaria" data-sdr-id="${s.id}" value="${template.meta_sdr_diaria}" placeholder="0" readonly style="background: #383838;">
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
       // Adicionar event listeners para calcular metas diárias
       document.querySelectorAll('.closer-meta-mensal').forEach(input => {
@@ -1438,7 +1459,9 @@
       const metaMes = metasMeses[mes];
 
       if (!metaMes) {
-        document.getElementById('meta-geral-titulo').textContent = `Meta Geral - ${new Date(`${mes}-01`).toLocaleString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase()} (Sem dados)`;
+        const [ano, mês] = mes.split('-');
+        const mesNome = new Date(parseInt(ano), parseInt(mês) - 1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase();
+        document.getElementById('meta-geral-titulo').textContent = `Meta Geral - ${mesNome} (Sem dados)`;
         document.getElementById('meta-geral-content').innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">Nenhuma meta registrada para este mês. <button class="btn" style="margin: 12px auto 0;" onclick="abrirModalRegistrarMeta()">Registrar Meta</button></div>';
         document.getElementById('meta-closers-body').innerHTML = '<tr><td colspan="6" style="text-align:center; color: #999;">Sem dados</td></tr>';
         document.getElementById('meta-sdrs-body').innerHTML = '<tr><td colspan="6" style="text-align:center; color: #999;">Sem dados</td></tr>';
@@ -1446,7 +1469,8 @@
       }
 
       // Renderizar meta geral
-      const dataLabel = new Date(`${mes}-01`).toLocaleString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase();
+      const [ano, mês] = mes.split('-');
+      const dataLabel = new Date(parseInt(ano), parseInt(mês) - 1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase();
       document.getElementById('meta-geral-titulo').textContent = `Meta Geral - ${dataLabel} (${metaMes.nivel.toUpperCase()})`;
 
       let totalRealizado = 0;
@@ -1637,7 +1661,9 @@
     }
 
     async function deletarMeta(mes) {
-      if (!confirm(`Tem certeza que quer deletar a meta de ${new Date(`${mes}-01`).toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}?`)) {
+      const [ano, mês] = mes.split('-');
+      const mesNome = new Date(parseInt(ano), parseInt(mês) - 1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+      if (!confirm(`Tem certeza que quer deletar a meta de ${mesNome}?`)) {
         return;
       }
 
