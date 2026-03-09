@@ -310,8 +310,8 @@
                 <div style="margin-bottom: 16px;">
                   <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block;">Meta Geral (Mensal / Diária)</label>
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <input type="number" class="nivel-meta-mensal" data-nivel="minima" placeholder="R$ 0,00" step="0.01" onchange="calcularMetaDiaria('minima')">
-                    <input type="text" class="nivel-meta-diaria-display" data-nivel="minima" readonly placeholder="R$ 0,00" style="color: #B2FF00; font-weight: 700;">
+                    <input type="number" class="nivel-meta-mensal" data-nivel="minima" placeholder="R$ 0,00" step="0.01" onchange="calcularMetaDiaria('minima')" style="background: #1A1A1A; border: 1px solid #383838; color: #fff; border-radius: 6px; padding: 10px 12px; font-family: inherit; font-size: 13px;">
+                    <input type="text" class="nivel-meta-diaria-display" data-nivel="minima" readonly placeholder="R$ 0,00" style="background: #1A1A1A; border: 1px solid #383838; color: #B2FF00; font-weight: 700; border-radius: 6px; padding: 10px 12px; font-size: 13px;">
                   </div>
                 </div>
 
@@ -335,8 +335,8 @@
                 <div style="margin-bottom: 16px;">
                   <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block;">Meta Geral (Mensal / Diária)</label>
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <input type="number" class="nivel-meta-mensal" data-nivel="super" placeholder="R$ 0,00" step="0.01" onchange="calcularMetaDiaria('super')">
-                    <input type="text" class="nivel-meta-diaria-display" data-nivel="super" readonly placeholder="R$ 0,00" style="color: #B2FF00; font-weight: 700;">
+                    <input type="number" class="nivel-meta-mensal" data-nivel="super" placeholder="R$ 0,00" step="0.01" onchange="calcularMetaDiaria('super')" style="background: #1A1A1A; border: 1px solid #383838; color: #fff; border-radius: 6px; padding: 10px 12px; font-family: inherit; font-size: 13px;">
+                    <input type="text" class="nivel-meta-diaria-display" data-nivel="super" readonly placeholder="R$ 0,00" style="background: #1A1A1A; border: 1px solid #383838; color: #B2FF00; font-weight: 700; border-radius: 6px; padding: 10px 12px; font-size: 13px;">
                   </div>
                 </div>
 
@@ -358,8 +358,8 @@
                 <div style="margin-bottom: 16px;">
                   <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block;">Meta Geral (Mensal / Diária)</label>
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <input type="number" class="nivel-meta-mensal" data-nivel="ultra" placeholder="R$ 0,00" step="0.01" onchange="calcularMetaDiaria('ultra')">
-                    <input type="text" class="nivel-meta-diaria-display" data-nivel="ultra" readonly placeholder="R$ 0,00" style="color: #B2FF00; font-weight: 700;">
+                    <input type="number" class="nivel-meta-mensal" data-nivel="ultra" placeholder="R$ 0,00" step="0.01" onchange="calcularMetaDiaria('ultra')" style="background: #1A1A1A; border: 1px solid #383838; color: #fff; border-radius: 6px; padding: 10px 12px; font-family: inherit; font-size: 13px;">
+                    <input type="text" class="nivel-meta-diaria-display" data-nivel="ultra" readonly placeholder="R$ 0,00" style="background: #1A1A1A; border: 1px solid #383838; color: #B2FF00; font-weight: 700; border-radius: 6px; padding: 10px 12px; font-size: 13px;">
                   </div>
                 </div>
 
@@ -381,8 +381,8 @@
                 <div style="margin-bottom: 16px;">
                   <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block;">Meta Geral (Mensal / Diária)</label>
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <input type="number" class="nivel-meta-mensal" data-nivel="black" placeholder="R$ 0,00" step="0.01" onchange="calcularMetaDiaria('black')">
-                    <input type="text" class="nivel-meta-diaria-display" data-nivel="black" readonly placeholder="R$ 0,00" style="color: #B2FF00; font-weight: 700;">
+                    <input type="number" class="nivel-meta-mensal" data-nivel="black" placeholder="R$ 0,00" step="0.01" onchange="calcularMetaDiaria('black')" style="background: #1A1A1A; border: 1px solid #383838; color: #fff; border-radius: 6px; padding: 10px 12px; font-family: inherit; font-size: 13px;">
+                    <input type="text" class="nivel-meta-diaria-display" data-nivel="black" readonly placeholder="R$ 0,00" style="background: #1A1A1A; border: 1px solid #383838; color: #B2FF00; font-weight: 700; border-radius: 6px; padding: 10px 12px; font-size: 13px;">
                   </div>
                 </div>
 
@@ -1228,9 +1228,9 @@
       const closersContainer = document.getElementById(`closers-container-${nivel}`);
       if (closersContainer && closers && closers.length > 0) {
         closersContainer.innerHTML = closers.map(c => `
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px; align-items: center;">
-            <input type="number" class="closer-meta-mensal" data-nivel="${nivel}" data-closer-id="${c.id}" placeholder="${c.name}" step="0.01" onchange="calcularCloserMetaDiaria('${nivel}', '${c.id}', ${diasUteis})" style="margin-bottom: 0;">
-            <input type="text" class="closer-meta-diaria" data-nivel="${nivel}" data-closer-id="${c.id}" readonly placeholder="R$ -" style="margin-bottom: 0; color: #B2FF00; font-weight: 600;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <input type="number" class="closer-meta-mensal" data-nivel="${nivel}" data-closer-id="${c.id}" placeholder="${c.name}" step="0.01" onchange="calcularCloserMetaDiaria('${nivel}', '${c.id}', ${diasUteis})" style="margin-bottom: 0; background: #1A1A1A; border: 1px solid #383838; color: #fff; border-radius: 6px; padding: 10px 12px; font-family: inherit; font-size: 13px;">
+            <input type="text" class="closer-meta-diaria" data-nivel="${nivel}" data-closer-id="${c.id}" readonly placeholder="R$ -" style="margin-bottom: 0; background: #1A1A1A; border: 1px solid #383838; color: #B2FF00; font-weight: 700; border-radius: 6px; padding: 10px 12px; font-size: 13px;">
           </div>
         `).join('');
       } else if (closersContainer) {
@@ -1241,9 +1241,9 @@
       const sdrsContainer = document.getElementById(`sdrs-container-${nivel}`);
       if (sdrsContainer && sdrs && sdrs.length > 0) {
         sdrsContainer.innerHTML = sdrs.map(s => `
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px; align-items: center;">
-            <input type="number" class="sdr-meta-mensal" data-nivel="${nivel}" data-sdr-id="${s.id}" placeholder="${s.name}" step="1" onchange="calcularSDRMetaDiaria('${nivel}', '${s.id}', ${diasUteis})" style="margin-bottom: 0;">
-            <input type="text" class="sdr-meta-diaria" data-nivel="${nivel}" data-sdr-id="${s.id}" readonly placeholder="-" style="margin-bottom: 0; color: #B2FF00; font-weight: 600;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <input type="number" class="sdr-meta-mensal" data-nivel="${nivel}" data-sdr-id="${s.id}" placeholder="${s.name}" step="1" onchange="calcularSDRMetaDiaria('${nivel}', '${s.id}', ${diasUteis})" style="margin-bottom: 0; background: #1A1A1A; border: 1px solid #383838; color: #fff; border-radius: 6px; padding: 10px 12px; font-family: inherit; font-size: 13px;">
+            <input type="text" class="sdr-meta-diaria" data-nivel="${nivel}" data-sdr-id="${s.id}" readonly placeholder="-" style="margin-bottom: 0; background: #1A1A1A; border: 1px solid #383838; color: #B2FF00; font-weight: 700; border-radius: 6px; padding: 10px 12px; font-size: 13px;">
           </div>
         `).join('');
       } else if (sdrsContainer) {
@@ -1389,12 +1389,26 @@
           return;
         }
 
+        // Salvar histórico consolidado
+        try {
+          await supabaseFetch('meta_historico', 'POST', {
+            mes: mes,
+            nivel: 'consolidado',
+            meta_mensal_vendas: 0,
+            total_closers: closers.length,
+            total_sdrs: sdrs.length
+          }).catch(() => {});
+        } catch (err) {
+          console.log('Aviso: Erro ao salvar histórico consolidado');
+        }
+
         fecharModalRegistrarMeta();
         alert(`✅ ${quantidadeSalva} níveis salvos com sucesso!`);
         
-        // Atualizar
+        // Atualizar tela - mês selecionado + histórico
         document.getElementById('meta-mes-filtro').value = mes;
         await carregarMetasDoSupabase();
+        await renderizarHistoricoMetas();
         filtrarPorMes();
       } catch (error) {
         console.error('Erro:', error);
