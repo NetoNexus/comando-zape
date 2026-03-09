@@ -856,16 +856,16 @@
 
     <!-- TABELAS -->
     <div class="section">
-      <h2 class="section-title">Top 10 - Closers (Performance)</h2>
+      <h2 class="section-title">RANKING Closers (Performance)</h2>
       <table id="tableClosers">
         <thead>
           <tr>
             <th>Closer</th>
-            <th>Agendamentos</th>
             <th>Reuniões</th>
-            <th>Taxa Conv.</th>
             <th>Ganhos</th>
+            <th>Taxa Conversão</th>
             <th>Valor Total</th>
+            <th>Ticket Médio</th>
           </tr>
         </thead>
         <tbody id="closersBody">
@@ -875,18 +875,38 @@
     </div>
 
     <div class="section">
-      <h2 class="section-title">Top 10 - Origens (Geração de Valor)</h2>
+      <h2 class="section-title">RANKING Origens (Geração de Valor)</h2>
       <table id="tableOrigens">
         <thead>
           <tr>
             <th>Origem</th>
             <th>Ganhos</th>
             <th>Valor Total</th>
-            <th>Valor Médio</th>
+            <th>Ticket Médio</th>
           </tr>
         </thead>
         <tbody id="origensBody">
           <tr><td colspan="4" class="loading">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">RANKING SDR (Performance)</h2>
+      <table id="tableSDRs">
+        <thead>
+          <tr>
+            <th>SDR</th>
+            <th>Agendamentos</th>
+            <th>Reuniões</th>
+            <th>Reagendamentos</th>
+            <th>No-Show</th>
+            <th>Ganhos</th>
+            <th>Valor Total</th>
+          </tr>
+        </thead>
+        <tbody id="sdrsBody">
+          <tr><td colspan="7" class="loading">Carregando...</td></tr>
         </tbody>
       </table>
     </div>
@@ -1711,15 +1731,16 @@
 
       let html = '';
       Object.values(closerData).sort((a, b) => b.valor - a.valor).slice(0, 10).forEach(item => {
-        const taxa = item.agendamentos > 0 ? ((item.reunioes / item.agendamentos) * 100).toFixed(1) : '0';
+        const taxaConversao = item.reunioes > 0 ? ((item.ganhos / item.reunioes) * 100).toFixed(1) : '0';
+        const ticketMedio = item.ganhos > 0 ? (item.valor / item.ganhos).toFixed(0) : '0';
         html += `
           <tr>
             <td><strong>${item.nome}</strong></td>
-            <td class="number">${item.agendamentos}</td>
             <td class="number">${item.reunioes}</td>
-            <td class="percentage">${taxa}%</td>
             <td class="number">${item.ganhos}</td>
+            <td class="percentage">${taxaConversao}%</td>
             <td class="number">R$ ${item.valor.toFixed(0)}</td>
+            <td class="number">R$ ${ticketMedio}</td>
           </tr>
         `;
       });
@@ -1742,17 +1763,99 @@
 
       html = '';
       Object.values(origemData).sort((a, b) => b.valor - a.valor).slice(0, 10).forEach(item => {
-        const media = item.ganhos > 0 ? (item.valor / item.ganhos).toFixed(0) : '0';
+        const ticketMedio = item.ganhos > 0 ? (item.valor / item.ganhos).toFixed(0) : '0';
         html += `
           <tr>
             <td><strong>${item.nome}</strong></td>
             <td class="number">${item.ganhos}</td>
             <td class="number">R$ ${item.valor.toFixed(0)}</td>
-            <td class="number">R$ ${media}</td>
+            <td class="number">R$ ${ticketMedio}</td>
           </tr>
         `;
       });
       document.getElementById('origensBody').innerHTML = html || '<tr><td colspan="4" class="loading">Nenhum dado</td></tr>';
+
+      // Tabela SDRs
+      const sdrData = {};
+      movimentosFiltrados.forEach(m => {
+        // Agendamentos
+        if (Array.isArray(m.agendamentos)) {
+          m.agendamentos.forEach(a => {
+            const sdr = sdrs.find(s => s.id == a.sdr_id);
+            if (sdr) {
+              if (!sdrData[sdr.id]) {
+                sdrData[sdr.id] = { nome: sdr.name, agendamentos: 0, reunioes: 0, reagendamentos: 0, noshows: 0, ganhos: 0, valor: 0 };
+              }
+              sdrData[sdr.id].agendamentos += a.quantidade || 0;
+            }
+          });
+        }
+        // Reuniões
+        if (Array.isArray(m.reunioes)) {
+          m.reunioes.forEach(r => {
+            const sdr = sdrs.find(s => s.id == r.sdr_id);
+            if (sdr) {
+              if (!sdrData[sdr.id]) {
+                sdrData[sdr.id] = { nome: sdr.name, agendamentos: 0, reunioes: 0, reagendamentos: 0, noshows: 0, ganhos: 0, valor: 0 };
+              }
+              sdrData[sdr.id].reunioes += r.quantidade || 0;
+            }
+          });
+        }
+        // Reagendamentos
+        if (Array.isArray(m.reagendamentos)) {
+          m.reagendamentos.forEach(rg => {
+            const sdr = sdrs.find(s => s.id == rg.sdr_id);
+            if (sdr) {
+              if (!sdrData[sdr.id]) {
+                sdrData[sdr.id] = { nome: sdr.name, agendamentos: 0, reunioes: 0, reagendamentos: 0, noshows: 0, ganhos: 0, valor: 0 };
+              }
+              sdrData[sdr.id].reagendamentos += rg.quantidade || 0;
+            }
+          });
+        }
+        // No-Shows
+        if (Array.isArray(m.noshows)) {
+          m.noshows.forEach(ns => {
+            const sdr = sdrs.find(s => s.id == ns.sdr_id);
+            if (sdr) {
+              if (!sdrData[sdr.id]) {
+                sdrData[sdr.id] = { nome: sdr.name, agendamentos: 0, reunioes: 0, reagendamentos: 0, noshows: 0, ganhos: 0, valor: 0 };
+              }
+              sdrData[sdr.id].noshows += ns.quantidade || 0;
+            }
+          });
+        }
+        // Ganhos
+        if (Array.isArray(m.ganhos)) {
+          m.ganhos.forEach(g => {
+            const sdr = sdrs.find(s => s.id == g.sdr_id);
+            if (sdr) {
+              if (!sdrData[sdr.id]) {
+                sdrData[sdr.id] = { nome: sdr.name, agendamentos: 0, reunioes: 0, reagendamentos: 0, noshows: 0, ganhos: 0, valor: 0 };
+              }
+              sdrData[sdr.id].ganhos++;
+              sdrData[sdr.id].valor += g.valor || 0;
+            }
+          });
+        }
+      });
+
+      html = '';
+      Object.values(sdrData).sort((a, b) => b.valor - a.valor).slice(0, 10).forEach(item => {
+        html += `
+          <tr>
+            <td><strong>${item.nome}</strong></td>
+            <td class="number">${item.agendamentos}</td>
+            <td class="number">${item.reunioes}</td>
+            <td class="number">${item.reagendamentos}</td>
+            <td class="number">${item.noshows}</td>
+            <td class="number">${item.ganhos}</td>
+            <td class="number">R$ ${item.valor.toFixed(0)}</td>
+          </tr>
+        `;
+      });
+      document.getElementById('sdrsBody').innerHTML = html || '<tr><td colspan="7" class="loading">Nenhum dado</td></tr>';
     }
 
     function showSyncStatus(show) {
