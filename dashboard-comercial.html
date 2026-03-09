@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Comercial - Comando Zape</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
   <style>
     * {
       margin: 0;
@@ -19,7 +20,7 @@
     }
 
     .container {
-      max-width: 1400px;
+      max-width: 1600px;
       margin: 0 auto;
     }
 
@@ -40,6 +41,7 @@
       font-size: 12px;
       color: #B2FF00;
       display: none;
+      z-index: 999;
     }
 
     .sync-status.active {
@@ -49,8 +51,8 @@
     /* ===== KPI GRID ===== */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
       margin-bottom: 40px;
     }
 
@@ -58,31 +60,102 @@
       background: #2A2A2A;
       border: 1px solid #383838;
       border-radius: 8px;
-      padding: 20px;
+      padding: 15px;
       text-align: center;
     }
 
     .kpi-label {
       color: #999;
-      font-size: 12px;
-      margin-bottom: 10px;
+      font-size: 11px;
+      margin-bottom: 8px;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
 
     .kpi-value {
       color: #B2FF00;
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 700;
-      margin-bottom: 8px;
+      margin-bottom: 5px;
     }
 
     .kpi-subtext {
       color: #666;
-      font-size: 11px;
+      font-size: 10px;
     }
 
-    /* ===== SECTIONS ===== */
+    /* ===== GRID DE GRÁFICOS ===== */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .chart-container {
+      background: #2A2A2A;
+      border: 1px solid #383838;
+      border-radius: 8px;
+      padding: 20px;
+      position: relative;
+      min-height: 400px;
+    }
+
+    .chart-title {
+      color: #B2FF00;
+      font-size: 16px;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+
+    canvas {
+      max-height: 350px;
+    }
+
+    /* ===== FUNIL ===== */
+    .funnel-container {
+      background: #2A2A2A;
+      border: 1px solid #383838;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    .funnel-title {
+      color: #B2FF00;
+      font-size: 16px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .funnel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .funnel-stage {
+      background: linear-gradient(90deg, #B2FF00 var(--percentage), #383838 var(--percentage));
+      border-radius: 4px;
+      padding: 12px 15px;
+      color: #2A2A2A;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .funnel-stage-label {
+      color: #B2FF00;
+    }
+
+    .funnel-stage-value {
+      color: #B2FF00;
+      font-weight: 700;
+    }
+
+    /* ===== TABELAS ===== */
     .section {
       margin-bottom: 50px;
     }
@@ -95,7 +168,6 @@
       border-bottom: 1px solid #383838;
     }
 
-    /* ===== TABLES ===== */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -138,24 +210,6 @@
       color: #4CAF50;
     }
 
-    .percentage.negative {
-      color: #FF6B6B;
-    }
-
-    /* ===== LAYOUT ===== */
-    .two-column {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 30px;
-      margin-bottom: 40px;
-    }
-
-    @media (max-width: 1024px) {
-      .two-column {
-        grid-template-columns: 1fr;
-      }
-    }
-
     .loading {
       text-align: center;
       color: #B2FF00;
@@ -169,122 +223,140 @@
       margin-top: 20px;
       text-align: right;
     }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 768px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-container {
+        min-height: 300px;
+      }
+
+      canvas {
+        max-height: 250px;
+      }
+
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
   </style>
-  <link rel="stylesheet" href="mobile-ux.css">
 </head>
 <body>
   <div class="container">
-    <h1>📊 Dashboard Comercial</h1>
+    <h1>Dashboard Comercial</h1>
 
-    <!-- SYNC STATUS -->
     <div class="sync-status" id="syncStatus">
-      🔄 Sincronizando com Supabase...
+      Sincronizando com Supabase...
     </div>
 
-    <!-- MAIN KPIs -->
+    <!-- KPI CARDS -->
     <div class="kpi-grid" id="mainKPIs">
-      <div class="loading">Carregando dados...</div>
+      <div class="loading">Carregando KPIs...</div>
     </div>
 
-    <!-- HISTÓRICO POR CLOSER -->
+    <!-- FUNIL DE VENDAS -->
+    <div class="funnel-container">
+      <div class="funnel-title">Funil de Vendas (Conversão)</div>
+      <div class="funnel" id="funnelChart">
+        <div class="loading">Carregando...</div>
+      </div>
+    </div>
+
+    <!-- GRÁFICOS -->
+    <div class="charts-grid">
+      <!-- Pizza: Distribuição por Origem -->
+      <div class="chart-container">
+        <div class="chart-title">Distribuição por Origem</div>
+        <canvas id="chartOrigemPizza"></canvas>
+      </div>
+
+      <!-- Pizza: Distribuição por Serviço -->
+      <div class="chart-container">
+        <div class="chart-title">Distribuição por Serviço</div>
+        <canvas id="chartServicoPizza"></canvas>
+      </div>
+
+      <!-- Pizza: Distribuição por SDR -->
+      <div class="chart-container">
+        <div class="chart-title">Distribuição por SDR</div>
+        <canvas id="chartSDRPizza"></canvas>
+      </div>
+
+      <!-- Barras: Ganhos por Origem -->
+      <div class="chart-container">
+        <div class="chart-title">Ganhos (R$) por Origem</div>
+        <canvas id="chartGanhosOrigem"></canvas>
+      </div>
+
+      <!-- Barras: Performance por Closer -->
+      <div class="chart-container">
+        <div class="chart-title">Agendamentos por Closer</div>
+        <canvas id="chartCloserAgendamentos"></canvas>
+      </div>
+
+      <!-- Barras: Ganhos por Serviço (Valor) -->
+      <div class="chart-container">
+        <div class="chart-title">Ganhos (R$) por Serviço</div>
+        <canvas id="chartGanhosServico"></canvas>
+      </div>
+
+      <!-- Donut: Taxa de Conversão -->
+      <div class="chart-container">
+        <div class="chart-title">Taxa de Conversão (Agend → Reunião)</div>
+        <canvas id="chartConversao"></canvas>
+      </div>
+
+      <!-- Barras: Ganhos por SDR (Valor) -->
+      <div class="chart-container">
+        <div class="chart-title">Ganhos (R$) por SDR</div>
+        <canvas id="chartGanhosSDR"></canvas>
+      </div>
+    </div>
+
+    <!-- TABELAS -->
     <div class="section">
-      <h2 class="section-title">Performance por Closer</h2>
+      <h2 class="section-title">Top 10 - Closers (Performance)</h2>
       <table id="tableClosers">
         <thead>
           <tr>
             <th>Closer</th>
             <th>Agendamentos</th>
             <th>Reuniões</th>
-            <th>Taxa Conversão</th>
+            <th>Taxa Conv.</th>
             <th>Ganhos</th>
             <th>Valor Total</th>
-            <th>Ticket Médio</th>
           </tr>
         </thead>
         <tbody id="closersBody">
-          <tr><td colspan="7" class="loading">Carregando...</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- HISTÓRICO POR ORIGEM -->
-    <div class="section">
-      <h2 class="section-title">Performance por Origem</h2>
-      <table id="tableOrigens">
-        <thead>
-          <tr>
-            <th>Origem</th>
-            <th>Agendamentos</th>
-            <th>Reuniões</th>
-            <th>Taxa Conversão</th>
-            <th>Ganhos</th>
-            <th>Valor Total</th>
-          </tr>
-        </thead>
-        <tbody id="origensBody">
           <tr><td colspan="6" class="loading">Carregando...</td></tr>
         </tbody>
       </table>
     </div>
 
-    <!-- HISTÓRICO POR SERVIÇO -->
     <div class="section">
-      <h2 class="section-title">Performance por Serviço</h2>
-      <table id="tableServicos">
+      <h2 class="section-title">Top 10 - Origens (Geração de Valor)</h2>
+      <table id="tableOrigens">
         <thead>
           <tr>
-            <th>Serviço</th>
-            <th>Quantidade de Ganhos</th>
+            <th>Origem</th>
+            <th>Ganhos</th>
             <th>Valor Total</th>
             <th>Valor Médio</th>
           </tr>
         </thead>
-        <tbody id="servicosBody">
+        <tbody id="origensBody">
           <tr><td colspan="4" class="loading">Carregando...</td></tr>
         </tbody>
       </table>
     </div>
 
-    <!-- HISTÓRICO POR SDR -->
-    <div class="section">
-      <h2 class="section-title">Performance por SDR</h2>
-      <table id="tableSDRs">
-        <thead>
-          <tr>
-            <th>SDR</th>
-            <th>Agendamentos</th>
-            <th>Reuniões</th>
-            <th>Taxa Conversão</th>
-            <th>Ganhos Gerados</th>
-            <th>Valor Total Gerado</th>
-          </tr>
-        </thead>
-        <tbody id="sdrsBody">
-          <tr><td colspan="6" class="loading">Carregando...</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- ÚLTIMOS 10 LANÇAMENTOS -->
-    <div class="section">
-      <h2 class="section-title">Últimos Lançamentos</h2>
-      <table id="tableUltimos">
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Closer</th>
-            <th>Agendamentos</th>
-            <th>Reuniões</th>
-            <th>Ganhos</th>
-            <th>Valor</th>
-          </tr>
-        </thead>
-        <tbody id="ultimosBody">
-          <tr><td colspan="6" class="loading">Carregando...</td></tr>
-        </tbody>
-      </table>
-      <div class="last-sync" id="lastSync"></div>
-    </div>
+    <div class="last-sync" id="lastSync"></div>
   </div>
 
   <script>
@@ -296,6 +368,7 @@
     let sdrs = [];
     let origens = [];
     let servicos = [];
+    let charts = {};
 
     async function supabaseFetch(path) {
       try {
@@ -313,26 +386,16 @@
     }
 
     async function loadData() {
-      console.log('🔄 [DASHBOARD] Carregando dados do Supabase...');
+      console.log('🔄 [DASHBOARD] Carregando dados...');
       showSyncStatus(true);
 
-      // Carregar tabelas base
       closers = await supabaseFetch('closers?order=name') || [];
       sdrs = await supabaseFetch('sdrs?order=name') || [];
       origens = await supabaseFetch('origens?order=name') || [];
       servicos = await supabaseFetch('servicos?order=name') || [];
-
-      // Carregar movimentos (source of truth)
       movements = await supabaseFetch('movements?order=id.desc') || [];
-      
-      console.log('✅ [DASHBOARD] Dados carregados:', {
-        movements: movements.length,
-        closers: closers.length,
-        sdrs: sdrs.length,
-        origens: origens.length,
-        servicos: servicos.length
-      });
 
+      console.log('✅ Dados carregados:', movements.length);
       renderDashboard();
       showSyncStatus(false);
       updateLastSync();
@@ -340,11 +403,9 @@
 
     function renderDashboard() {
       renderMainKPIs();
-      renderClosersTable();
-      renderOrigensTable();
-      renderServicosTable();
-      renderSDRsTable();
-      renderUltimosLancamentos();
+      renderFunnel();
+      renderCharts();
+      renderTables();
     }
 
     function renderMainKPIs() {
@@ -353,7 +414,7 @@
         <div class="kpi-card">
           <div class="kpi-label">Total Agendamentos</div>
           <div class="kpi-value">${stats.totalAgendamentos}</div>
-          <div class="kpi-subtext">${stats.totalMovimentos} lançamentos</div>
+          <div class="kpi-subtext">${stats.totalMovimentos} movimentos</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">Total Reuniões</div>
@@ -361,24 +422,14 @@
           <div class="kpi-subtext">Taxa: ${stats.taxaConversao.toFixed(1)}%</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Total Reagendamentos</div>
-          <div class="kpi-value">${stats.totalReagendamentos}</div>
-          <div class="kpi-subtext">-</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Total No-Shows</div>
-          <div class="kpi-value">${stats.totalNoShows}</div>
-          <div class="kpi-subtext">-</div>
-        </div>
-        <div class="kpi-card">
           <div class="kpi-label">Total Ganhos</div>
           <div class="kpi-value">${stats.totalGanhos}</div>
           <div class="kpi-subtext">Ticket: R$ ${stats.ticketMedio.toFixed(0)}</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Valor Total Ganho</div>
+          <div class="kpi-label">Valor Total</div>
           <div class="kpi-value">R$ ${stats.valorTotalGanho.toFixed(0)}</div>
-          <div class="kpi-subtext">Última semana</div>
+          <div class="kpi-subtext">-</div>
         </div>
       `;
       document.getElementById('mainKPIs').innerHTML = html;
@@ -387,29 +438,16 @@
     function calculateStats() {
       let totalAgendamentos = 0;
       let totalReunioes = 0;
-      let totalReagendamentos = 0;
-      let totalNoShows = 0;
       let totalGanhos = 0;
       let valorTotalGanho = 0;
 
       movements.forEach(m => {
-        // Agendamentos
         if (Array.isArray(m.agendamentos)) {
           totalAgendamentos += m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0);
         }
-        // Reuniões
         if (Array.isArray(m.reunioes)) {
           totalReunioes += m.reunioes.reduce((sum, r) => sum + (r.quantidade || 0), 0);
         }
-        // Reagendamentos
-        if (Array.isArray(m.reagendamentos)) {
-          totalReagendamentos += m.reagendamentos.reduce((sum, r) => sum + (r.quantidade || 0), 0);
-        }
-        // No-Shows
-        if (Array.isArray(m.noshows)) {
-          totalNoShows += m.noshows.reduce((sum, n) => sum + (n.quantidade || 0), 0);
-        }
-        // Ganhos
         if (Array.isArray(m.ganhos)) {
           totalGanhos += m.ganhos.length;
           valorTotalGanho += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
@@ -423,8 +461,6 @@
         totalMovimentos: movements.length,
         totalAgendamentos,
         totalReunioes,
-        totalReagendamentos,
-        totalNoShows,
         totalGanhos,
         valorTotalGanho,
         taxaConversao,
@@ -432,40 +468,384 @@
       };
     }
 
-    function renderClosersTable() {
-      const data = {};
-      
+    function renderFunnel() {
+      const stats = calculateStats();
+      const funnelData = [
+        { label: 'Agendamentos', value: stats.totalAgendamentos, percentage: 100 },
+        { label: 'Reuniões', value: stats.totalReunioes, percentage: stats.totalAgendamentos > 0 ? (stats.totalReunioes / stats.totalAgendamentos) * 100 : 0 },
+        { label: 'Ganhos', value: stats.totalGanhos, percentage: stats.totalAgendamentos > 0 ? (stats.totalGanhos / stats.totalAgendamentos) * 100 : 0 }
+      ];
+
+      let html = '';
+      funnelData.forEach(stage => {
+        html += `
+          <div class="funnel-stage" style="--percentage: ${stage.percentage}%;">
+            <span class="funnel-stage-label">${stage.label}</span>
+            <span class="funnel-stage-value">${stage.value} (${stage.percentage.toFixed(1)}%)</span>
+          </div>
+        `;
+      });
+
+      document.getElementById('funnelChart').innerHTML = html;
+    }
+
+    function renderCharts() {
+      const chartConfig = getChartConfigs();
+
+      // Destruir gráficos antigos
+      Object.values(charts).forEach(chart => {
+        if (chart && chart.destroy) chart.destroy();
+      });
+      charts = {};
+
+      // Pizza: Origem
+      if (chartConfig.origemPizza) {
+        const ctx = document.getElementById('chartOrigemPizza').getContext('2d');
+        charts.origemPizza = new Chart(ctx, {
+          type: 'doughnut',
+          data: chartConfig.origemPizza,
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { position: 'bottom', labels: { color: '#999', font: { size: 11 } } } }
+          }
+        });
+      }
+
+      // Pizza: Serviço
+      if (chartConfig.servicoPizza) {
+        const ctx = document.getElementById('chartServicoPizza').getContext('2d');
+        charts.servicoPizza = new Chart(ctx, {
+          type: 'doughnut',
+          data: chartConfig.servicoPizza,
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { position: 'bottom', labels: { color: '#999', font: { size: 11 } } } }
+          }
+        });
+      }
+
+      // Pizza: SDR
+      if (chartConfig.sdrPizza) {
+        const ctx = document.getElementById('chartSDRPizza').getContext('2d');
+        charts.sdrPizza = new Chart(ctx, {
+          type: 'doughnut',
+          data: chartConfig.sdrPizza,
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { position: 'bottom', labels: { color: '#999', font: { size: 11 } } } }
+          }
+        });
+      }
+
+      // Barras: Ganhos por Origem
+      if (chartConfig.ganhosOrigem) {
+        const ctx = document.getElementById('chartGanhosOrigem').getContext('2d');
+        charts.ganhosOrigem = new Chart(ctx, {
+          type: 'bar',
+          data: chartConfig.ganhosOrigem,
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: '#383838' }, ticks: { color: '#999' } },
+              y: { grid: { display: false }, ticks: { color: '#999' } }
+            }
+          }
+        });
+      }
+
+      // Barras: Agendamentos por Closer
+      if (chartConfig.closerAgendamentos) {
+        const ctx = document.getElementById('chartCloserAgendamentos').getContext('2d');
+        charts.closerAgendamentos = new Chart(ctx, {
+          type: 'bar',
+          data: chartConfig.closerAgendamentos,
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: '#383838' }, ticks: { color: '#999' } },
+              y: { grid: { color: '#383838' }, ticks: { color: '#999' } }
+            }
+          }
+        });
+      }
+
+      // Barras: Ganhos por Serviço
+      if (chartConfig.ganhosServico) {
+        const ctx = document.getElementById('chartGanhosServico').getContext('2d');
+        charts.ganhosServico = new Chart(ctx, {
+          type: 'bar',
+          data: chartConfig.ganhosServico,
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: '#383838' }, ticks: { color: '#999' } },
+              y: { grid: { display: false }, ticks: { color: '#999' } }
+            }
+          }
+        });
+      }
+
+      // Donut: Conversão
+      if (chartConfig.conversao) {
+        const ctx = document.getElementById('chartConversao').getContext('2d');
+        charts.conversao = new Chart(ctx, {
+          type: 'doughnut',
+          data: chartConfig.conversao,
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { position: 'bottom', labels: { color: '#999', font: { size: 11 } } } }
+          }
+        });
+      }
+
+      // Barras: Ganhos por SDR
+      if (chartConfig.ganhosSDR) {
+        const ctx = document.getElementById('chartGanhosSDR').getContext('2d');
+        charts.ganhosSDR = new Chart(ctx, {
+          type: 'bar',
+          data: chartConfig.ganhosSDR,
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: '#383838' }, ticks: { color: '#999' } },
+              y: { grid: { display: false }, ticks: { color: '#999' } }
+            }
+          }
+        });
+      }
+    }
+
+    function getChartConfigs() {
+      const stats = calculateStats();
+      const colors = ['#B2FF00', '#4CAF50', '#FF9800', '#E91E63', '#2196F3', '#00BCD4', '#673AB7', '#FFC107'];
+
+      // Pizza: Origem
+      const origemData = {};
+      movements.forEach(m => {
+        if (Array.isArray(m.ganhos)) {
+          m.ganhos.forEach(g => {
+            const origem = origens.find(o => o.id == g.origem_id);
+            if (origem) {
+              origemData[origem.name] = (origemData[origem.name] || 0) + 1;
+            }
+          });
+        }
+      });
+      const origemLabels = Object.keys(origemData);
+      const origemPizza = {
+        labels: origemLabels,
+        datasets: [{
+          data: origemLabels.map(l => origemData[l]),
+          backgroundColor: colors.slice(0, origemLabels.length),
+          borderColor: '#1a1a1a',
+          borderWidth: 2
+        }]
+      };
+
+      // Pizza: Serviço
+      const servicoData = {};
+      movements.forEach(m => {
+        if (Array.isArray(m.ganhos)) {
+          m.ganhos.forEach(g => {
+            const servico = servicos.find(s => s.id == g.servico_id);
+            if (servico) {
+              servicoData[servico.name] = (servicoData[servico.name] || 0) + 1;
+            }
+          });
+        }
+      });
+      const servicoLabels = Object.keys(servicoData);
+      const servicoPizza = {
+        labels: servicoLabels,
+        datasets: [{
+          data: servicoLabels.map(l => servicoData[l]),
+          backgroundColor: colors.slice(0, servicoLabels.length),
+          borderColor: '#1a1a1a',
+          borderWidth: 2
+        }]
+      };
+
+      // Pizza: SDR
+      const sdrData = {};
+      movements.forEach(m => {
+        if (Array.isArray(m.ganhos)) {
+          m.ganhos.forEach(g => {
+            const sdr = sdrs.find(s => s.id == g.sdr_id);
+            if (sdr) {
+              sdrData[sdr.name] = (sdrData[sdr.name] || 0) + 1;
+            }
+          });
+        }
+      });
+      const sdrLabels = Object.keys(sdrData).sort((a, b) => sdrData[b] - sdrData[a]);
+      const sdrPizza = {
+        labels: sdrLabels,
+        datasets: [{
+          data: sdrLabels.map(l => sdrData[l]),
+          backgroundColor: colors.slice(0, sdrLabels.length),
+          borderColor: '#1a1a1a',
+          borderWidth: 2
+        }]
+      };
+
+      // Barras: Ganhos por Origem (Valor)
+      const ganhosOrigemData = {};
+      movements.forEach(m => {
+        if (Array.isArray(m.ganhos)) {
+          m.ganhos.forEach(g => {
+            const origem = origens.find(o => o.id == g.origem_id);
+            if (origem) {
+              ganhosOrigemData[origem.name] = (ganhosOrigemData[origem.name] || 0) + (g.valor || 0);
+            }
+          });
+        }
+      });
+      const ganhosOrigemLabels = Object.keys(ganhosOrigemData).sort((a, b) => ganhosOrigemData[b] - ganhosOrigemData[a]);
+      const ganhosOrigem = {
+        labels: ganhosOrigemLabels,
+        datasets: [{
+          label: 'Valor (R$)',
+          data: ganhosOrigemLabels.map(l => ganhosOrigemData[l]),
+          backgroundColor: '#B2FF00',
+          borderColor: '#B2FF00',
+          borderWidth: 1
+        }]
+      };
+
+      // Barras: Agendamentos por Closer
+      const closerData = {};
       movements.forEach(m => {
         const closer = closers.find(c => c.id == m.closer_id);
         if (!closer) return;
-        
-        if (!data[closer.id]) {
-          data[closer.id] = {
-            nome: closer.name,
-            agendamentos: 0,
-            reunioes: 0,
-            ganhos: 0,
-            valor: 0
-          };
-        }
-        
+        if (!closerData[closer.name]) closerData[closer.name] = 0;
         if (Array.isArray(m.agendamentos)) {
-          data[closer.id].agendamentos += m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0);
+          closerData[closer.name] += m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0);
+        }
+      });
+      const closerLabels = Object.keys(closerData).sort((a, b) => closerData[b] - closerData[a]).slice(0, 8);
+      const closerAgendamentos = {
+        labels: closerLabels,
+        datasets: [{
+          label: 'Agendamentos',
+          data: closerLabels.map(l => closerData[l]),
+          backgroundColor: '#B2FF00',
+          borderColor: '#B2FF00',
+          borderWidth: 1
+        }]
+      };
+
+      // Barras: Ganhos por Serviço (Valor)
+      const ganhosServicoData = {};
+      movements.forEach(m => {
+        if (Array.isArray(m.ganhos)) {
+          m.ganhos.forEach(g => {
+            const servico = servicos.find(s => s.id == g.servico_id);
+            if (servico) {
+              ganhosServicoData[servico.name] = (ganhosServicoData[servico.name] || 0) + (g.valor || 0);
+            }
+          });
+        }
+      });
+      const ganhosServicoLabels = Object.keys(ganhosServicoData).sort((a, b) => ganhosServicoData[b] - ganhosServicoData[a]);
+      const ganhosServico = {
+        labels: ganhosServicoLabels,
+        datasets: [{
+          label: 'Valor (R$)',
+          data: ganhosServicoLabels.map(l => ganhosServicoData[l]),
+          backgroundColor: '#B2FF00',
+          borderColor: '#B2FF00',
+          borderWidth: 1
+        }]
+      };
+
+      // Donut: Conversão (Agendamentos → Reuniões)
+      const conversaoReunioes = stats.totalAgendamentos > 0 ? (stats.totalReunioes / stats.totalAgendamentos) * 100 : 0;
+      const conversaoPerda = 100 - conversaoReunioes;
+      const conversao = {
+        labels: [`Convertidas (${conversaoReunioes.toFixed(1)}%)`, `Não convertidas (${conversaoPerda.toFixed(1)}%)`],
+        datasets: [{
+          data: [conversaoReunioes, conversaoPerda],
+          backgroundColor: ['#B2FF00', '#383838'],
+          borderColor: '#1a1a1a',
+          borderWidth: 2
+        }]
+      };
+
+      // Barras: Ganhos por SDR (Valor)
+      const ganhosSdrData = {};
+      movements.forEach(m => {
+        if (Array.isArray(m.ganhos)) {
+          m.ganhos.forEach(g => {
+            const sdr = sdrs.find(s => s.id == g.sdr_id);
+            if (sdr) {
+              ganhosSdrData[sdr.name] = (ganhosSdrData[sdr.name] || 0) + (g.valor || 0);
+            }
+          });
+        }
+      });
+      const ganhosSdrLabels = Object.keys(ganhosSdrData).sort((a, b) => ganhosSdrData[b] - ganhosSdrData[a]);
+      const ganhosSDR = {
+        labels: ganhosSdrLabels,
+        datasets: [{
+          label: 'Valor (R$)',
+          data: ganhosSdrLabels.map(l => ganhosSdrData[l]),
+          backgroundColor: '#B2FF00',
+          borderColor: '#B2FF00',
+          borderWidth: 1
+        }]
+      };
+
+      return {
+        origemPizza: origemLabels.length > 0 ? origemPizza : null,
+        servicoPizza: servicoLabels.length > 0 ? servicoPizza : null,
+        sdrPizza: sdrLabels.length > 0 ? sdrPizza : null,
+        ganhosOrigem: ganhosOrigemLabels.length > 0 ? ganhosOrigem : null,
+        closerAgendamentos: closerLabels.length > 0 ? closerAgendamentos : null,
+        ganhosServico: ganhosServicoLabels.length > 0 ? ganhosServico : null,
+        conversao: conversao,
+        ganhosSDR: ganhosSdrLabels.length > 0 ? ganhosSDR : null
+      };
+    }
+
+    function renderTables() {
+      // Tabela Closers
+      const closerData = {};
+      movements.forEach(m => {
+        const closer = closers.find(c => c.id == m.closer_id);
+        if (!closer) return;
+        if (!closerData[closer.id]) {
+          closerData[closer.id] = { nome: closer.name, agendamentos: 0, reunioes: 0, ganhos: 0, valor: 0 };
+        }
+        if (Array.isArray(m.agendamentos)) {
+          closerData[closer.id].agendamentos += m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0);
         }
         if (Array.isArray(m.reunioes)) {
-          data[closer.id].reunioes += m.reunioes.reduce((sum, r) => sum + (r.quantidade || 0), 0);
+          closerData[closer.id].reunioes += m.reunioes.reduce((sum, r) => sum + (r.quantidade || 0), 0);
         }
         if (Array.isArray(m.ganhos)) {
-          data[closer.id].ganhos += m.ganhos.length;
-          data[closer.id].valor += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
+          closerData[closer.id].ganhos += m.ganhos.length;
+          closerData[closer.id].valor += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
         }
       });
 
       let html = '';
-      Object.values(data).forEach(item => {
+      Object.values(closerData).sort((a, b) => b.valor - a.valor).slice(0, 10).forEach(item => {
         const taxa = item.agendamentos > 0 ? ((item.reunioes / item.agendamentos) * 100).toFixed(1) : '0';
-        const ticket = item.ganhos > 0 ? (item.valor / item.ganhos).toFixed(0) : '0';
-        
         html += `
           <tr>
             <td><strong>${item.nome}</strong></td>
@@ -474,180 +854,39 @@
             <td class="percentage">${taxa}%</td>
             <td class="number">${item.ganhos}</td>
             <td class="number">R$ ${item.valor.toFixed(0)}</td>
-            <td class="number">R$ ${ticket}</td>
           </tr>
         `;
       });
-      
-      document.getElementById('closersBody').innerHTML = html || '<tr><td colspan="7" class="loading">Nenhum dado</td></tr>';
-    }
+      document.getElementById('closersBody').innerHTML = html || '<tr><td colspan="6" class="loading">Nenhum dado</td></tr>';
 
-    function renderOrigensTable() {
-      const data = {};
-      
+      // Tabela Origens
+      const origemData = {};
       movements.forEach(m => {
         if (!Array.isArray(m.ganhos)) return;
-        
         m.ganhos.forEach(g => {
           const origem = origens.find(o => o.id == g.origem_id);
           if (!origem) return;
-          
-          if (!data[origem.id]) {
-            data[origem.id] = {
-              nome: origem.name,
-              agendamentos: 0,
-              reunioes: 0,
-              ganhos: 0,
-              valor: 0
-            };
+          if (!origemData[origem.id]) {
+            origemData[origem.id] = { nome: origem.name, ganhos: 0, valor: 0 };
           }
-          
-          if (Array.isArray(m.agendamentos)) {
-            data[origem.id].agendamentos += m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0);
-          }
-          if (Array.isArray(m.reunioes)) {
-            data[origem.id].reunioes += m.reunioes.reduce((sum, r) => sum + (r.quantidade || 0), 0);
-          }
-          data[origem.id].ganhos++;
-          data[origem.id].valor += g.valor || 0;
+          origemData[origem.id].ganhos++;
+          origemData[origem.id].valor += g.valor || 0;
         });
       });
 
-      let html = '';
-      Object.values(data).sort((a, b) => b.valor - a.valor).forEach(item => {
-        const taxa = item.agendamentos > 0 ? ((item.reunioes / item.agendamentos) * 100).toFixed(1) : '0';
-        
+      html = '';
+      Object.values(origemData).sort((a, b) => b.valor - a.valor).slice(0, 10).forEach(item => {
+        const media = item.ganhos > 0 ? (item.valor / item.ganhos).toFixed(0) : '0';
         html += `
           <tr>
             <td><strong>${item.nome}</strong></td>
-            <td class="number">${item.agendamentos}</td>
-            <td class="number">${item.reunioes}</td>
-            <td class="percentage">${taxa}%</td>
             <td class="number">${item.ganhos}</td>
-            <td class="number">R$ ${item.valor.toFixed(0)}</td>
-          </tr>
-        `;
-      });
-      
-      document.getElementById('origensBody').innerHTML = html || '<tr><td colspan="6" class="loading">Nenhum dado</td></tr>';
-    }
-
-    function renderServicosTable() {
-      const data = {};
-      
-      movements.forEach(m => {
-        if (!Array.isArray(m.ganhos)) return;
-        
-        m.ganhos.forEach(g => {
-          const servico = servicos.find(s => s.id == g.servico_id);
-          if (!servico) return;
-          
-          if (!data[servico.id]) {
-            data[servico.id] = {
-              nome: servico.name,
-              quantidade: 0,
-              valor: 0
-            };
-          }
-          
-          data[servico.id].quantidade++;
-          data[servico.id].valor += g.valor || 0;
-        });
-      });
-
-      let html = '';
-      Object.values(data).sort((a, b) => b.valor - a.valor).forEach(item => {
-        const media = item.quantidade > 0 ? (item.valor / item.quantidade).toFixed(0) : '0';
-        
-        html += `
-          <tr>
-            <td><strong>${item.nome}</strong></td>
-            <td class="number">${item.quantidade}</td>
             <td class="number">R$ ${item.valor.toFixed(0)}</td>
             <td class="number">R$ ${media}</td>
           </tr>
         `;
       });
-      
-      document.getElementById('servicosBody').innerHTML = html || '<tr><td colspan="4" class="loading">Nenhum dado</td></tr>';
-    }
-
-    function renderSDRsTable() {
-      const data = {};
-      
-      movements.forEach(m => {
-        if (Array.isArray(m.agendamentos)) {
-          m.agendamentos.forEach(a => {
-            const sdr = sdrs.find(s => s.id == a.sdr_id);
-            if (!sdr) return;
-            if (!data[sdr.id]) data[sdr.id] = { nome: sdr.name, agendamentos: 0, reunioes: 0, ganhos: 0, valor: 0 };
-            data[sdr.id].agendamentos += a.quantidade || 0;
-          });
-        }
-        
-        if (Array.isArray(m.reunioes)) {
-          m.reunioes.forEach(r => {
-            const sdr = sdrs.find(s => s.id == r.sdr_id);
-            if (!sdr) return;
-            if (!data[sdr.id]) data[sdr.id] = { nome: sdr.name, agendamentos: 0, reunioes: 0, ganhos: 0, valor: 0 };
-            data[sdr.id].reunioes += r.quantidade || 0;
-          });
-        }
-        
-        if (Array.isArray(m.ganhos)) {
-          m.ganhos.forEach(g => {
-            const sdr = sdrs.find(s => s.id == g.sdr_id);
-            if (!sdr) return;
-            if (!data[sdr.id]) data[sdr.id] = { nome: sdr.name, agendamentos: 0, reunioes: 0, ganhos: 0, valor: 0 };
-            data[sdr.id].ganhos++;
-            data[sdr.id].valor += g.valor || 0;
-          });
-        }
-      });
-
-      let html = '';
-      Object.values(data).sort((a, b) => b.valor - a.valor).forEach(item => {
-        const taxa = item.agendamentos > 0 ? ((item.reunioes / item.agendamentos) * 100).toFixed(1) : '0';
-        
-        html += `
-          <tr>
-            <td><strong>${item.nome}</strong></td>
-            <td class="number">${item.agendamentos}</td>
-            <td class="number">${item.reunioes}</td>
-            <td class="percentage">${taxa}%</td>
-            <td class="number">${item.ganhos}</td>
-            <td class="number">R$ ${item.valor.toFixed(0)}</td>
-          </tr>
-        `;
-      });
-      
-      document.getElementById('sdrsBody').innerHTML = html || '<tr><td colspan="6" class="loading">Nenhum dado</td></tr>';
-    }
-
-    function renderUltimosLancamentos() {
-      const ultimos = movements.slice(0, 10);
-      
-      let html = '';
-      ultimos.forEach(m => {
-        const closer = closers.find(c => c.id == m.closer_id);
-        const agend = Array.isArray(m.agendamentos) ? m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0) : 0;
-        const reun = Array.isArray(m.reunioes) ? m.reunioes.reduce((sum, r) => sum + (r.quantidade || 0), 0) : 0;
-        const ganhos = Array.isArray(m.ganhos) ? m.ganhos.length : 0;
-        const valor = Array.isArray(m.ganhos) ? m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0) : 0;
-        
-        html += `
-          <tr>
-            <td>${m.data || 'N/A'}</td>
-            <td><strong>${closer ? closer.name : 'N/A'}</strong></td>
-            <td class="number">${agend}</td>
-            <td class="number">${reun}</td>
-            <td class="number">${ganhos}</td>
-            <td class="number">R$ ${valor.toFixed(0)}</td>
-          </tr>
-        `;
-      });
-      
-      document.getElementById('ultimosBody').innerHTML = html || '<tr><td colspan="6" class="loading">Nenhum dado</td></tr>';
+      document.getElementById('origensBody').innerHTML = html || '<tr><td colspan="4" class="loading">Nenhum dado</td></tr>';
     }
 
     function showSyncStatus(show) {
@@ -669,7 +908,6 @@
 
     // Sincronizar a cada 30 segundos
     setInterval(() => {
-      console.log('🔄 [DASHBOARD] Auto-sync...');
       loadData();
     }, 30000);
   </script>
