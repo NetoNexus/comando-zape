@@ -207,18 +207,18 @@
       box-shadow: 0 0 8px rgba(178, 255, 0, 0.2);
     }
 
-    /* Layout horizontal: funil esquerda + métricas direita */
+    /* Layout vertical: funil em cima, métricas em linha abaixo */
     .funnel-wrapper {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
+      display: flex;
+      flex-direction: column;
       gap: 25px;
-      align-items: stretch;
     }
 
     .funnel {
       display: flex;
       flex-direction: column;
       gap: 18px;
+      width: 100%;
     }
 
     .funnel-stage {
@@ -321,20 +321,21 @@
     /* Métricas ao lado do funil */
     .funnel-metrics {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(5, 1fr);
       gap: 14px;
+      width: 100%;
     }
 
     .funnel-metric-card {
       background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
       border: 2px solid #383838;
       border-radius: 8px;
-      padding: 20px 16px;
+      padding: 16px 12px;
       text-align: center;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
-      min-height: 120px;
+      min-height: 100px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -695,13 +696,13 @@
       }
 
       .funnel-metrics {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(3, 1fr);
         gap: 10px;
       }
 
       .funnel-metric-card {
-        padding: 14px 10px;
-        min-height: 100px;
+        padding: 12px 10px;
+        min-height: 90px;
       }
 
       .funnel-metric-label {
