@@ -1495,6 +1495,14 @@
       const stats = calculateStats();
       const colors = ['#B2FF00', '#4CAF50', '#FF9800', '#E91E63', '#2196F3', '#00BCD4', '#673AB7', '#FFC107'];
       const movimentosFiltrados = getMovementsFiltrados();
+      
+      console.log('🔍 DEBUG getChartConfigs:', {
+        totalMovimentos: movements.length,
+        movimentosFiltrados: movimentosFiltrados.length,
+        filtroDataInicio,
+        filtroDataFim,
+        primeiros3: movimentosFiltrados.slice(0, 3).map(m => ({ id: m.id, data_raw: m.data_raw, ganhos: m.ganhos?.length || 0 }))
+      });
 
       // Pizza: Origem (QUANTIDADE DE GANHOS POR ORIGEM)
       const origemData = {};
@@ -1600,6 +1608,13 @@
         }
       });
       const closerLabels = Object.keys(closerData).sort((a, b) => closerData[b] - closerData[a]).slice(0, 8);
+      
+      console.log('📞 Agendamentos por Closer:', {
+        total: Object.values(closerData).reduce((a, b) => a + b, 0),
+        detalhes: closerData,
+        labels: closerLabels
+      });
+      
       const closerAgendamentos = {
         labels: closerLabels,
         datasets: [{
@@ -1624,6 +1639,13 @@
         }
       });
       const ganhosServicoLabels = Object.keys(ganhosServicoData).sort((a, b) => ganhosServicoData[b] - ganhosServicoData[a]);
+      
+      console.log('💰 Ganhos por Serviço:', {
+        total: Object.values(ganhosServicoData).reduce((a, b) => a + b, 0),
+        detalhes: ganhosServicoData,
+        labels: ganhosServicoLabels
+      });
+      
       const ganhosServico = {
         labels: ganhosServicoLabels,
         datasets: [{
