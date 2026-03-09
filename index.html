@@ -285,121 +285,119 @@
 
         <!-- Modal de Registrar Meta - COM CLOSERS E SDRS -->
         <div id="registrar-meta-modal" class="modal">
-          <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+          <div class="modal-content" style="max-width: 750px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
-              <h2 style="font-size: 24px; font-weight: 900;">Registrar Metas do Mês</h2>
+              <h2>Registrar Metas do Mês</h2>
               <button class="modal-close" onclick="fecharModalRegistrarMeta()">×</button>
             </div>
             <form onsubmit="salvarNovaMetaMes(event)">
               <!-- Seleção de Mês -->
-              <div style="background: #383838; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label style="font-weight: 700;">Selecione o Mês</label>
-                  <select id="registrar-mes" required onchange="atualizarDiasUteis()" style="margin-bottom: 8px;">
-                    <option value="">Escolha um mês</option>
-                  </select>
-                </div>
-                <div style="font-size: 12px; color: #B2FF00; font-weight: 600;">
-                  📅 Dias úteis (seg-sex): <span id="dias-uteis-info" style="font-weight: 900;">-</span>
-                </div>
+              <div class="form-group">
+                <label>Mês</label>
+                <select id="registrar-mes" required onchange="atualizarDiasUteis()">
+                  <option value="">Selecione um mês</option>
+                </select>
+              </div>
+              <div style="font-size: 11px; color: #B2FF00; margin-bottom: 32px; font-weight: 600;">
+                Dias úteis (seg-sex): <span id="dias-uteis-info">-</span>
               </div>
 
               <!-- MÍNIMA -->
-              <div style="background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-                <h4 style="color: #B2FF00; font-size: 16px; font-weight: 900; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 2px;">💰 MÍNIMA</h4>
+              <div style="background: #2A2A2A; border: 1px solid #383838; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                <h4 style="color: #B2FF00; font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px;">MÍNIMA</h4>
                 
                 <!-- Meta Geral -->
-                <div style="background: #383838; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
-                  <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700;">Meta Geral Mensal</label>
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
-                    <input type="number" class="nivel-meta-mensal" data-nivel="minima" placeholder="R$ 0,00" step="0.01" onchange="calcularMetaDiaria('minima')" style="font-weight: 600; font-size: 14px;">
-                    <input type="text" class="nivel-meta-diaria-display" data-nivel="minima" readonly placeholder="Diária: R$ -" style="background: #1a1a1a; color: #B2FF00; font-weight: 700; font-size: 13px;">
+                <div style="margin-bottom: 16px;">
+                  <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block;">Meta Geral (Mensal / Diária)</label>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <input type="number" class="nivel-meta-mensal" data-nivel="minima" placeholder="R$ 0,00" step="0.01" onchange="calcularMetaDiaria('minima')">
+                    <input type="text" class="nivel-meta-diaria-display" data-nivel="minima" readonly placeholder="R$ 0,00" style="color: #B2FF00; font-weight: 700;">
                   </div>
                 </div>
 
                 <!-- Closers -->
-                <div style="margin-bottom: 16px;">
-                  <label style="font-size: 11px; color: #B2FF00; font-weight: 700; text-transform: uppercase;">👤 Closers (Venda)</label>
-                  <div id="closers-container-minima" data-nivel="minima" style="margin-top: 8px; background: #1F1F1F; padding: 12px; border-radius: 6px;"></div>
+                <div style="margin-bottom: 16px; padding-top: 16px; border-top: 1px solid #383838;">
+                  <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block;">Closers - Venda</label>
+                  <div id="closers-container-minima" data-nivel="minima"></div>
                 </div>
 
                 <!-- SDRs -->
-                <div>
-                  <label style="font-size: 11px; color: #B2FF00; font-weight: 700; text-transform: uppercase;">📞 SDRs (Reunião Agendada)</label>
-                  <div id="sdrs-container-minima" data-nivel="minima" style="margin-top: 8px; background: #1F1F1F; padding: 12px; border-radius: 6px;"></div>
+                <div style="padding-top: 16px; border-top: 1px solid #383838;">
+                  <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block;">SDRs - Reunião Agendada</label>
+                  <div id="sdrs-container-minima" data-nivel="minima"></div>
                 </div>
               </div>
 
               <!-- SUPER -->
-              <div style="background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-                <h4 style="color: #B2FF00; font-size: 16px; font-weight: 900; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 2px;">⭐ SUPER</h4>
+              <div style="background: #2A2A2A; border: 1px solid #383838; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                <h4 style="color: #B2FF00; font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px;">SUPER</h4>
                 
-                <div style="background: #383838; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
-                  <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700;">Meta Geral Mensal</label>
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
-                    <input type="number" class="nivel-meta-mensal" data-nivel="super" placeholder="R$ 0,00" step="0.01" onchange="calcularMetaDiaria('super')" style="font-weight: 600; font-size: 14px;">
-                    <input type="text" class="nivel-meta-diaria-display" data-nivel="super" readonly placeholder="Diária: R$ -" style="background: #1a1a1a; color: #B2FF00; font-weight: 700; font-size: 13px;">
+                <div style="margin-bottom: 16px;">
+                  <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block;">Meta Geral (Mensal / Diária)</label>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <input type="number" class="nivel-meta-mensal" data-nivel="super" placeholder="R$ 0,00" step="0.01" onchange="calcularMetaDiaria('super')">
+                    <input type="text" class="nivel-meta-diaria-display" data-nivel="super" readonly placeholder="R$ 0,00" style="color: #B2FF00; font-weight: 700;">
                   </div>
                 </div>
 
-                <div style="margin-bottom: 16px;">
-                  <label style="font-size: 11px; color: #B2FF00; font-weight: 700; text-transform: uppercase;">👤 Closers (Venda)</label>
-                  <div id="closers-container-super" data-nivel="super" style="margin-top: 8px; background: #1F1F1F; padding: 12px; border-radius: 6px;"></div>
+                <div style="margin-bottom: 16px; padding-top: 16px; border-top: 1px solid #383838;">
+                  <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block;">Closers - Venda</label>
+                  <div id="closers-container-super" data-nivel="super"></div>
                 </div>
 
-                <div>
-                  <label style="font-size: 11px; color: #B2FF00; font-weight: 700; text-transform: uppercase;">📞 SDRs (Reunião Agendada)</label>
-                  <div id="sdrs-container-super" data-nivel="super" style="margin-top: 8px; background: #1F1F1F; padding: 12px; border-radius: 6px;"></div>
+                <div style="padding-top: 16px; border-top: 1px solid #383838;">
+                  <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block;">SDRs - Reunião Agendada</label>
+                  <div id="sdrs-container-super" data-nivel="super"></div>
                 </div>
               </div>
 
               <!-- ULTRA -->
-              <div style="background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-                <h4 style="color: #B2FF00; font-size: 16px; font-weight: 900; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 2px;">🚀 ULTRA</h4>
+              <div style="background: #2A2A2A; border: 1px solid #383838; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                <h4 style="color: #B2FF00; font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px;">ULTRA</h4>
                 
-                <div style="background: #383838; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
-                  <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700;">Meta Geral Mensal</label>
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
-                    <input type="number" class="nivel-meta-mensal" data-nivel="ultra" placeholder="R$ 0,00" step="0.01" onchange="calcularMetaDiaria('ultra')" style="font-weight: 600; font-size: 14px;">
-                    <input type="text" class="nivel-meta-diaria-display" data-nivel="ultra" readonly placeholder="Diária: R$ -" style="background: #1a1a1a; color: #B2FF00; font-weight: 700; font-size: 13px;">
+                <div style="margin-bottom: 16px;">
+                  <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block;">Meta Geral (Mensal / Diária)</label>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <input type="number" class="nivel-meta-mensal" data-nivel="ultra" placeholder="R$ 0,00" step="0.01" onchange="calcularMetaDiaria('ultra')">
+                    <input type="text" class="nivel-meta-diaria-display" data-nivel="ultra" readonly placeholder="R$ 0,00" style="color: #B2FF00; font-weight: 700;">
                   </div>
                 </div>
 
-                <div style="margin-bottom: 16px;">
-                  <label style="font-size: 11px; color: #B2FF00; font-weight: 700; text-transform: uppercase;">👤 Closers (Venda)</label>
-                  <div id="closers-container-ultra" data-nivel="ultra" style="margin-top: 8px; background: #1F1F1F; padding: 12px; border-radius: 6px;"></div>
+                <div style="margin-bottom: 16px; padding-top: 16px; border-top: 1px solid #383838;">
+                  <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block;">Closers - Venda</label>
+                  <div id="closers-container-ultra" data-nivel="ultra"></div>
                 </div>
 
-                <div>
-                  <label style="font-size: 11px; color: #B2FF00; font-weight: 700; text-transform: uppercase;">📞 SDRs (Reunião Agendada)</label>
-                  <div id="sdrs-container-ultra" data-nivel="ultra" style="margin-top: 8px; background: #1F1F1F; padding: 12px; border-radius: 6px;"></div>
+                <div style="padding-top: 16px; border-top: 1px solid #383838;">
+                  <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block;">SDRs - Reunião Agendada</label>
+                  <div id="sdrs-container-ultra" data-nivel="ultra"></div>
                 </div>
               </div>
 
               <!-- BLACK -->
-              <div style="background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-                <h4 style="color: #B2FF00; font-size: 16px; font-weight: 900; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 2px;">👑 BLACK</h4>
+              <div style="background: #2A2A2A; border: 1px solid #383838; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                <h4 style="color: #B2FF00; font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px;">BLACK</h4>
                 
-                <div style="background: #383838; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
-                  <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700;">Meta Geral Mensal</label>
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
-                    <input type="number" class="nivel-meta-mensal" data-nivel="black" placeholder="R$ 0,00" step="0.01" onchange="calcularMetaDiaria('black')" style="font-weight: 600; font-size: 14px;">
-                    <input type="text" class="nivel-meta-diaria-display" data-nivel="black" readonly placeholder="Diária: R$ -" style="background: #1a1a1a; color: #B2FF00; font-weight: 700; font-size: 13px;">
+                <div style="margin-bottom: 16px;">
+                  <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block;">Meta Geral (Mensal / Diária)</label>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <input type="number" class="nivel-meta-mensal" data-nivel="black" placeholder="R$ 0,00" step="0.01" onchange="calcularMetaDiaria('black')">
+                    <input type="text" class="nivel-meta-diaria-display" data-nivel="black" readonly placeholder="R$ 0,00" style="color: #B2FF00; font-weight: 700;">
                   </div>
                 </div>
 
-                <div style="margin-bottom: 16px;">
-                  <label style="font-size: 11px; color: #B2FF00; font-weight: 700; text-transform: uppercase;">👤 Closers (Venda)</label>
-                  <div id="closers-container-black" data-nivel="black" style="margin-top: 8px; background: #1F1F1F; padding: 12px; border-radius: 6px;"></div>
+                <div style="margin-bottom: 16px; padding-top: 16px; border-top: 1px solid #383838;">
+                  <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block;">Closers - Venda</label>
+                  <div id="closers-container-black" data-nivel="black"></div>
                 </div>
 
-                <div>
-                  <label style="font-size: 11px; color: #B2FF00; font-weight: 700; text-transform: uppercase;">📞 SDRs (Reunião Agendada)</label>
-                  <div id="sdrs-container-black" data-nivel="black" style="margin-top: 8px; background: #1F1F1F; padding: 12px; border-radius: 6px;"></div>
+                <div style="padding-top: 16px; border-top: 1px solid #383838;">
+                  <label style="font-size: 11px; color: #999; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block;">SDRs - Reunião Agendada</label>
+                  <div id="sdrs-container-black" data-nivel="black"></div>
                 </div>
               </div>
 
-              <button type="submit" class="btn" style="width: 100%; margin-top: 24px; font-size: 16px; padding: 14px; background: #B2FF00; color: #1A1A1A; font-weight: 900;">✅ Salvar Todas as Metas</button>
+              <button type="submit" class="btn" style="width: 100%; margin-top: 32px;">Salvar Todas as Metas</button>
             </form>
           </div>
         </div>
@@ -1230,22 +1228,26 @@
       const closersContainer = document.getElementById(`closers-container-${nivel}`);
       if (closersContainer && closers && closers.length > 0) {
         closersContainer.innerHTML = closers.map(c => `
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-            <input type="number" class="closer-meta-mensal" data-nivel="${nivel}" data-closer-id="${c.id}" placeholder="Meta ${c.name}" step="0.01" onchange="calcularCloserMetaDiaria('${nivel}', '${c.id}', ${diasUteis})">
-            <input type="text" class="closer-meta-diaria" data-nivel="${nivel}" data-closer-id="${c.id}" readonly placeholder="Diária: R$ -" style="background: #383838; font-size: 10px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px; align-items: center;">
+            <input type="number" class="closer-meta-mensal" data-nivel="${nivel}" data-closer-id="${c.id}" placeholder="${c.name}" step="0.01" onchange="calcularCloserMetaDiaria('${nivel}', '${c.id}', ${diasUteis})" style="margin-bottom: 0;">
+            <input type="text" class="closer-meta-diaria" data-nivel="${nivel}" data-closer-id="${c.id}" readonly placeholder="R$ -" style="margin-bottom: 0; color: #B2FF00; font-weight: 600;">
           </div>
         `).join('');
+      } else if (closersContainer) {
+        closersContainer.innerHTML = '<div style="font-size: 11px; color: #999;">Nenhum closer cadastrado</div>';
       }
 
       // SDRs
       const sdrsContainer = document.getElementById(`sdrs-container-${nivel}`);
       if (sdrsContainer && sdrs && sdrs.length > 0) {
         sdrsContainer.innerHTML = sdrs.map(s => `
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-            <input type="number" class="sdr-meta-mensal" data-nivel="${nivel}" data-sdr-id="${s.id}" placeholder="Meta ${s.name}" step="1" onchange="calcularSDRMetaDiaria('${nivel}', '${s.id}', ${diasUteis})">
-            <input type="text" class="sdr-meta-diaria" data-nivel="${nivel}" data-sdr-id="${s.id}" readonly placeholder="Diária: -" style="background: #383838; font-size: 10px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px; align-items: center;">
+            <input type="number" class="sdr-meta-mensal" data-nivel="${nivel}" data-sdr-id="${s.id}" placeholder="${s.name}" step="1" onchange="calcularSDRMetaDiaria('${nivel}', '${s.id}', ${diasUteis})" style="margin-bottom: 0;">
+            <input type="text" class="sdr-meta-diaria" data-nivel="${nivel}" data-sdr-id="${s.id}" readonly placeholder="-" style="margin-bottom: 0; color: #B2FF00; font-weight: 600;">
           </div>
         `).join('');
+      } else if (sdrsContainer) {
+        sdrsContainer.innerHTML = '<div style="font-size: 11px; color: #999;">Nenhum SDR cadastrado</div>';
       }
     }
 
