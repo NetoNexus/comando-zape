@@ -1070,6 +1070,14 @@
     let mesSelecionado = null;
     let metaTemplates = {}; // { 'minima': {...}, 'super': {...}, ... }
     let nivelSelecionado = null;
+    
+    // Guardar valores digitados por nível (sessão atual)
+    let metasDigitadas = {
+      minima: { meta_mensal: 0, closers: {}, sdrs: {} },
+      super: { meta_mensal: 0, closers: {}, sdrs: {} },
+      ultra: { meta_mensal: 0, closers: {}, sdrs: {} },
+      black: { meta_mensal: 0, closers: {}, sdrs: {} }
+    };
 
     // Gerar lista de meses disponíveis
     function preencherDropdownMeses() {
@@ -1119,13 +1127,26 @@
     }
 
     function selecionarNivel(nivel, el) {
-      nivelSelecionado = nivel;
-      const template = metaTemplates[nivel];
-      
-      if (!template) {
-        alert('Template não encontrado');
-        return;
+      // SALVAR valores do nível anterior
+      if (nivelSelecionado) {
+        metasDigitadas[nivelSelecionado].meta_mensal = parseFloat(document.getElementById('registrar-meta-mensal').value) || 0;
+        
+        const closersValores = {};
+        document.querySelectorAll('.closer-meta-mensal').forEach(input => {
+          closersValores[input.dataset.closerId] = parseFloat(input.value) || 0;
+        });
+        metasDigitadas[nivelSelecionado].closers = closersValores;
+
+        const sdrsValores = {};
+        document.querySelectorAll('.sdr-meta-mensal').forEach(input => {
+          sdrsValores[input.dataset.sdrId] = parseInt(input.value) || 0;
+        });
+        metasDigitadas[nivelSelecionado].sdrs = sdrsValores;
       }
+
+      // SELECIONAR novo nível
+      nivelSelecionado = nivel;
+      const valoresNivel = metasDigitadas[nivel];
 
       // Highlight do card selecionado
       document.querySelectorAll('.nivel-card').forEach(card => {
@@ -1137,56 +1158,46 @@
         el.style.background = '#2A2A2A';
       }
       
-      // SALVAR VALORES ATUAIS ANTES DE RECONSTRUIR
-      const closersValores = {};
-      document.querySelectorAll('.closer-meta-mensal').forEach(input => {
-        const id = input.dataset.closerId;
-        closersValores[id] = parseFloat(input.value) || 0;
-      });
+      // Carregar meta geral do nível (ZERADA se não houver)
+      document.getElementById('registrar-meta-mensal').value = valoresNivel.meta_mensal || '';
+      document.getElementById('registrar-meta-diaria').value = '';
+      if (valoresNivel.meta_mensal > 0) {
+        calcularMetaDiaria();
+      }
 
-      const sdrsValores = {};
-      document.querySelectorAll('.sdr-meta-mensal').forEach(input => {
-        const id = input.dataset.sdrId;
-        sdrsValores[id] = parseInt(input.value) || 0;
-      });
-
-      // Pré-preencher meta geral
-      document.getElementById('registrar-meta-mensal').value = template.meta_vendas_mensal;
-      calcularMetaDiaria();
-
-      // Pré-preencher closers (usando valores salvos se existirem)
+      // Carregar closers com valores salvos pra esse nível (ZERADOS se não houver)
       const closersFields = document.getElementById('registrar-closers-fields');
       closersFields.innerHTML = closers.map(c => {
-        const valorMensal = closersValores[c.id] > 0 ? closersValores[c.id] : template.meta_closer_mensal;
-        const valorDiaria = (valorMensal / 22).toFixed(2);
+        const valorMensal = valoresNivel.closers[c.id] || 0;
+        const valorDiaria = valorMensal > 0 ? (valorMensal / 22).toFixed(2) : 0;
         return `
           <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
             <div>
               <label>${c.name} - Meta Mensal (R$)</label>
-              <input type="number" class="closer-meta-mensal" data-closer-id="${c.id}" value="${valorMensal}" placeholder="0">
+              <input type="number" class="closer-meta-mensal" data-closer-id="${c.id}" value="${valorMensal || ''}" placeholder="0">
             </div>
             <div>
               <label>${c.name} - Meta Diária (R$)</label>
-              <input type="number" class="closer-meta-diaria" data-closer-id="${c.id}" value="${valorDiaria}" placeholder="0" readonly style="background: #383838;">
+              <input type="number" class="closer-meta-diaria" data-closer-id="${c.id}" value="${valorDiaria || ''}" placeholder="0" readonly style="background: #383838;">
             </div>
           </div>
         `;
       }).join('');
 
-      // Pré-preencher SDRs (usando valores salvos se existirem)
+      // Carregar SDRs com valores salvos pra esse nível (ZERADOS se não houver)
       const sdrsFields = document.getElementById('registrar-sdrs-fields');
       sdrsFields.innerHTML = sdrs.map(s => {
-        const valorMensal = sdrsValores[s.id] > 0 ? sdrsValores[s.id] : template.meta_sdr_mensal;
-        const valorDiaria = (valorMensal / 22).toFixed(0);
+        const valorMensal = valoresNivel.sdrs[s.id] || 0;
+        const valorDiaria = valorMensal > 0 ? (valorMensal / 22).toFixed(0) : 0;
         return `
           <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
             <div>
               <label>${s.name} - Meta Mensal (Agend.)</label>
-              <input type="number" class="sdr-meta-mensal" data-sdr-id="${s.id}" value="${valorMensal}" placeholder="0">
+              <input type="number" class="sdr-meta-mensal" data-sdr-id="${s.id}" value="${valorMensal || ''}" placeholder="0">
             </div>
             <div>
               <label>${s.name} - Meta Diária (Agend.)</label>
-              <input type="number" class="sdr-meta-diaria" data-sdr-id="${s.id}" value="${valorDiaria}" placeholder="0" readonly style="background: #383838;">
+              <input type="number" class="sdr-meta-diaria" data-sdr-id="${s.id}" value="${valorDiaria || ''}" placeholder="0" readonly style="background: #383838;">
             </div>
           </div>
         `;
@@ -1214,6 +1225,14 @@
     }
 
     function abrirModalRegistrarMeta() {
+      // Resetar valores digitados para uma nova sessão
+      metasDigitadas = {
+        minima: { meta_mensal: 0, closers: {}, sdrs: {} },
+        super: { meta_mensal: 0, closers: {}, sdrs: {} },
+        ultra: { meta_mensal: 0, closers: {}, sdrs: {} },
+        black: { meta_mensal: 0, closers: {}, sdrs: {} }
+      };
+      
       nivelSelecionado = null;
       document.getElementById('registrar-meta-mensal').value = '';
       document.getElementById('registrar-meta-diaria').value = '';
@@ -1283,14 +1302,20 @@
           metaMensalId = resultMeta[0].id;
         }
 
-        // 2. Coletar metas de closers e inserir
+        // 2. Salvar valores do nível atual ANTES de coletar
+        metasDigitadas[nivelSelecionado].meta_mensal = metaMensal;
+        document.querySelectorAll('.closer-meta-mensal').forEach(input => {
+          metasDigitadas[nivelSelecionado].closers[input.dataset.closerId] = parseFloat(input.value) || 0;
+        });
+        document.querySelectorAll('.sdr-meta-mensal').forEach(input => {
+          metasDigitadas[nivelSelecionado].sdrs[input.dataset.sdrId] = parseInt(input.value) || 0;
+        });
+
+        // 3. Coletar metas de closers e inserir
         const closersData = {};
         for (const closer of closers) {
-          const inputMensal = document.querySelector(`.closer-meta-mensal[data-closer-id="${closer.id}"]`);
-          const inputDiaria = document.querySelector(`.closer-meta-diaria[data-closer-id="${closer.id}"]`);
-          
-          const mensal = inputMensal ? (parseFloat(inputMensal.value) || 0) : 0;
-          const diaria = inputDiaria ? (parseFloat(inputDiaria.value) || 0) : 0;
+          const mensal = metasDigitadas[nivelSelecionado].closers[closer.id] || 0;
+          const diaria = mensal > 0 ? (mensal / 22).toFixed(2) : 0;
           
           console.log(`Closer ${closer.id}: Mensal=${mensal}, Diária=${diaria}`);
           
@@ -1307,14 +1332,11 @@
           }
         }
 
-        // 3. Coletar metas de SDRs e inserir
+        // 4. Coletar metas de SDRs e inserir
         const sdrsData = {};
         for (const sdr of sdrs) {
-          const inputMensal = document.querySelector(`.sdr-meta-mensal[data-sdr-id="${sdr.id}"]`);
-          const inputDiaria = document.querySelector(`.sdr-meta-diaria[data-sdr-id="${sdr.id}"]`);
-          
-          const mensal = inputMensal ? (parseInt(inputMensal.value) || 0) : 0;
-          const diaria = inputDiaria ? (parseInt(inputDiaria.value) || 0) : 0;
+          const mensal = metasDigitadas[nivelSelecionado].sdrs[sdr.id] || 0;
+          const diaria = mensal > 0 ? (mensal / 22).toFixed(0) : 0;
           
           console.log(`SDR ${sdr.id}: Mensal=${mensal}, Diária=${diaria}`);
           
@@ -1331,7 +1353,7 @@
           }
         }
 
-        // 4. Salvar histórico
+        // 5. Salvar histórico
         await supabaseFetch('meta_historico', 'POST', {
           mes: mes,
           nivel: nivel,
