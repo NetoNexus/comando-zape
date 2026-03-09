@@ -1588,19 +1588,17 @@
         }
         if (!closerData[closer.name]) closerData[closer.name] = 0;
         
-        // Contar Reuniões (não agendamentos)
+        // Contar TOTAL de Reuniões para este Closer
         if (Array.isArray(m.reunioes)) {
-          m.reunioes.forEach(r => {
-            const qty = r.quantidade || 0;
-            closerData[closer.name] += qty;
-            agendamentosDetalhes.push({
-              closer: closer.name,
-              sdr: r.sdr_id,
-              quantidade: qty,
-              movimento: m.id,
-              data: m.data_raw,
-              reuniao_raw: r
-            });
+          const totalReunioes = m.reunioes.reduce((sum, r) => sum + (r.quantidade || 0), 0);
+          closerData[closer.name] += totalReunioes;
+          
+          // Log detalhe
+          agendamentosDetalhes.push({
+            closer: closer.name,
+            totalReunioes: totalReunioes,
+            movimento: m.id,
+            data: m.data_raw
           });
         }
       });
