@@ -35,10 +35,11 @@
 
     aside { width: 240px; background: linear-gradient(180deg, #242424 0%, #1F1F1F 100%); border-right: 1px solid #383838; padding: 24px 0; position: fixed; height: 100vh; overflow-y: auto; }
     .sidebar-logo { padding: 0 20px; margin-bottom: 30px; font-size: 16px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #B2FF00; display: flex; justify-content: space-between; align-items: center; }
-    .sidebar-toggle { cursor: pointer; font-size: 16px; color: #B2FF00; padding: 4px 8px; border-radius: 4px; transition: all 0.3s; user-select: none; }
+    .sidebar-toggle { cursor: pointer; font-size: 18px; color: #B2FF00; padding: 6px 8px; border-radius: 4px; transition: all 0.3s; user-select: none; display: flex; flex-direction: column; gap: 4px; width: 24px; justify-content: center; transform: rotate(0deg); }
+    .sidebar-toggle span { width: 18px; height: 2px; background: #B2FF00; display: block; transition: all 0.3s; }
     .sidebar-toggle:hover { background: rgba(178,255,0,0.1); }
-    aside.minimized .sidebar-toggle::before { content: '▶'; }
-    aside.minimized .sidebar-toggle:not(::before) { display: none; }
+    .sidebar-toggle:hover span { background: #B2FF00; }
+    aside.minimized .sidebar-toggle { transform: rotate(90deg); }
     aside.minimized .sidebar-logo span { display: none; }
     aside.minimized { width: 60px; }
     aside.minimized .sidebar-menu { padding: 0 6px; }
@@ -157,7 +158,11 @@
     <aside id="sidebar">
       <div class="sidebar-logo">
         <span>ZAPE</span>
-        <div class="sidebar-toggle" onclick="toggleSidebar()">◀</div>
+        <div class="sidebar-toggle" onclick="toggleSidebar()">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
       <div class="sidebar-menu">
         <div class="menu-item active" onclick="goToPage('painel')">Painel</div>
