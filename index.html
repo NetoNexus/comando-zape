@@ -190,7 +190,6 @@
             <select id="meta-mes-filtro" onchange="filtrarPorMes()" style="padding: 8px 12px; background: #2A2A2A; color: #fff; border: 1px solid #383838; border-radius: 4px; font-size: 14px;">
               <option value="">Selecione um mês</option>
             </select>
-            <button class="btn" style="margin: 0;" onclick="sincronizarSupabase()">🔄 Sincronizar</button>
             <button class="btn" style="margin: 0;" onclick="abrirModalRegistrarMeta()">+ Registrar Meta</button>
           </div>
         </header>
@@ -1440,23 +1439,18 @@
       }
     }
 
-    async function sincronizarSupabase() {
-      try {
-        await carregarMetasDoSupabase();
-        filtrarPorMes();
-        alert('✅ Dados sincronizados com Supabase!');
-      } catch (e) {
-        alert('❌ Erro ao sincronizar: ' + e.message);
-      }
-    }
-
     async function carregarMetasDoSupabase() {
       try {
-        // Carregar metas_mensais
+        // Carregar metas_mensais - TODAS, pois agora pode haver múltiplas por mês
         const metasResult = await supabaseFetch('metas_mensais?order=mes.desc');
         if (Array.isArray(metasResult)) {
           for (const meta of metasResult) {
-            metasMeses[meta.mes] = {
+            // Criar estrutura por mes + nivel
+            if (!metasMeses[meta.mes]) {
+              metasMeses[meta.mes] = {};
+            }
+            
+            metasMeses[meta.mes][meta.nivel] = {
               id: meta.id,
               nivel: meta.nivel,
               meta_mensal: meta.meta_mensal_vendas,
@@ -1465,12 +1459,12 @@
               sdrs: {}
             };
 
-            // Carregar closers deste mês
+            // Carregar closers deste nível
             const closersResult = await supabaseFetch(`metas_closers?mes_id=eq.${meta.id}`);
             if (Array.isArray(closersResult)) {
               for (const closer of closersResult) {
                 const closerObj = closers.find(c => c.id == closer.closer_id);
-                metasMeses[meta.mes].closers[closer.closer_id] = {
+                metasMeses[meta.mes][meta.nivel].closers[closer.closer_id] = {
                   nome: closerObj ? closerObj.name : 'Desconhecido',
                   meta_mensal: closer.meta_mensal,
                   meta_diaria: closer.meta_diaria
@@ -1478,12 +1472,12 @@
               }
             }
 
-            // Carregar SDRs deste mês
+            // Carregar SDRs deste nível
             const sdrsResult = await supabaseFetch(`metas_sdrs?mes_id=eq.${meta.id}`);
             if (Array.isArray(sdrsResult)) {
               for (const sdr of sdrsResult) {
                 const sdrObj = sdrs.find(s => s.id == sdr.sdr_id);
-                metasMeses[meta.mes].sdrs[sdr.sdr_id] = {
+                metasMeses[meta.mes][meta.nivel].sdrs[sdr.sdr_id] = {
                   nome: sdrObj ? sdrObj.name : 'Desconhecido',
                   meta_mensal: sdr.meta_mensal,
                   meta_diaria: sdr.meta_diaria
@@ -1509,7 +1503,7 @@
       }
 
       mesSelecionado = mes;
-      const metaMes = metasMeses[mes];
+      const metasMesAno = metasMeses[mes];
 
       // Calcular realizado total
       let totalRealizado = 0;
@@ -1519,7 +1513,7 @@
         }
       });
 
-      if (!metaMes) {
+      if (!metasMesAno || Object.keys(metasMesAno).length === 0) {
         const [ano, mês] = mes.split('-');
         const mesNome = new Date(parseInt(ano), parseInt(mês) - 1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase();
         document.getElementById('meta-geral-titulo').textContent = `Meta Geral - ${mesNome} (Sem dados)`;
@@ -1535,12 +1529,18 @@
         return;
       }
 
-      // Renderizar resumo dos 4 níveis
+      // Renderizar resumo dos 4 níveis - CADA UM COM SUA META
       ['minima', 'super', 'ultra', 'black'].forEach(nivel => {
-        const perc = metaMes.meta_mensal > 0 ? (totalRealizado / metaMes.meta_mensal * 100) : 0;
+        const metaNivel = metasMesAno[nivel];
+        if (!metaNivel) {
+          document.getElementById(`resumo-${nivel}`).innerHTML = '<div style="color: #999; font-size: 11px;">Sem meta</div>';
+          return;
+        }
+        
+        const perc = metaNivel.meta_mensal > 0 ? (totalRealizado / metaNivel.meta_mensal * 100) : 0;
         const html = `
           <div style="font-size: 11px; line-height: 1.5;">
-            <div style="color: #B2FF00; font-weight: 600; margin-bottom: 4px;">R$ ${metaMes.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
+            <div style="color: #B2FF00; font-weight: 600; margin-bottom: 4px;">R$ ${metaNivel.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
             <div style="color: #999; margin-bottom: 4px;">Realizado:</div>
             <div style="color: #B2FF00; font-weight: 600;">R$ ${totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
             <div style="color: #999; margin-top: 4px;">${perc.toFixed(1)}%</div>
@@ -1549,20 +1549,21 @@
         document.getElementById(`resumo-${nivel}`).innerHTML = html;
       });
 
-      // Renderizar meta geral
+      // Renderizar meta geral - pega a PRIMEIRA meta do mês pra mostrar
       const [ano, mês] = mes.split('-');
       const dataLabel = new Date(parseInt(ano), parseInt(mês) - 1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase();
-      document.getElementById('meta-geral-titulo').textContent = `Meta Geral - ${dataLabel} (${metaMes.nivel.toUpperCase()})`;
+      const metaMesAtiva = metasMesAno[Object.keys(metasMesAno)[0]];
+      document.getElementById('meta-geral-titulo').textContent = `Meta Geral - ${dataLabel} (${metaMesAtiva.nivel.toUpperCase()})`;
 
-      const percentual = metaMes.meta_mensal > 0 ? (totalRealizado / metaMes.meta_mensal * 100) : 0;
+      const percentual = metaMesAtiva.meta_mensal > 0 ? (totalRealizado / metaMesAtiva.meta_mensal * 100) : 0;
       document.getElementById('meta-geral-content').innerHTML = `
         <div class="meta-card">
           <div class="meta-label">Meta Mensal (R$)</div>
-          <div class="meta-value">R$ ${metaMes.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
+          <div class="meta-value">R$ ${metaMesAtiva.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
         </div>
         <div class="meta-card">
           <div class="meta-label">Meta Diária (R$)</div>
-          <div class="meta-value">R$ ${metaMes.meta_diaria}</div>
+          <div class="meta-value">R$ ${metaMesAtiva.meta_diaria}</div>
         </div>
         <div class="meta-card">
           <div class="meta-label">Realizado (R$)</div>
@@ -1576,7 +1577,7 @@
 
       // Renderizar closers
       const closersHtml = closers.map(closer => {
-        const metaCloser = metaMes.closers[closer.id] || { meta_mensal: 0, meta_diaria: 0 };
+        const metaCloser = metaMesAtiva.closers[closer.id] || { meta_mensal: 0, meta_diaria: 0 };
         let totalRealizado = 0;
         movements.forEach(m => {
           if (m.closer_id == closer.id && Array.isArray(m.ganhos)) {
@@ -1597,7 +1598,7 @@
 
       // Renderizar SDRs
       const sdrsHtml = sdrs.map(sdr => {
-        const metaSdr = metaMes.sdrs[sdr.id] || { meta_mensal: 0, meta_diaria: 0 };
+        const metaSdr = metaMesAtiva.sdrs[sdr.id] || { meta_mensal: 0, meta_diaria: 0 };
         let totalRealizado = 0;
         movements.forEach(m => {
           if (Array.isArray(m.agendamentos)) {
