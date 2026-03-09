@@ -1784,8 +1784,7 @@
         return;
       }
 
-      const nivelDisplay = metaMesAtiva.nivel ? metaMesAtiva.nivel.toUpperCase() : 'DESCONHECIDO';
-      document.getElementById('meta-geral-titulo').textContent = `Meta Geral - ${dataLabel} (${nivelDisplay})`;
+      document.getElementById('meta-geral-titulo').textContent = `Meta Geral - ${dataLabel}`;
 
       const percentual = metaMesAtiva.meta_mensal > 0 ? (totalRealizado / metaMesAtiva.meta_mensal * 100) : 0;
       document.getElementById('meta-geral-content').innerHTML = `
