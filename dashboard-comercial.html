@@ -452,17 +452,28 @@
       background: #1a1a1a;
       color: #B2FF00;
       padding: 12px;
-      text-align: left;
+      text-align: center;
       font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
       border-bottom: 1px solid #383838;
     }
 
+    th:first-child {
+      text-align: left;
+    }
+
     td {
       padding: 12px;
       border-bottom: 1px solid #383838;
       font-size: 13px;
+      text-align: center;
+    }
+
+    td:first-child {
+      text-align: left;
+      color: #FFF;
+      font-weight: 600;
     }
 
     tr:last-child td {
@@ -476,10 +487,12 @@
     .number {
       color: #B2FF00;
       font-weight: 600;
+      text-align: center;
     }
 
     .percentage {
       color: #4CAF50;
+      text-align: center;
     }
 
     .loading {
