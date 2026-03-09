@@ -190,6 +190,7 @@
             <select id="meta-mes-filtro" onchange="filtrarPorMes()" style="padding: 8px 12px; background: #2A2A2A; color: #fff; border: 1px solid #383838; border-radius: 4px; font-size: 14px;">
               <option value="">Selecione um mês</option>
             </select>
+            <button class="btn" style="margin: 0;" onclick="sincronizarSupabase()">🔄 Sincronizar</button>
             <button class="btn" style="margin: 0;" onclick="abrirModalRegistrarMeta()">+ Registrar Meta</button>
           </div>
         </header>
@@ -1436,6 +1437,16 @@
       } catch (e) {
         console.log('Erro ao carregar histórico:', e);
         document.getElementById('historico-metas-body').innerHTML = '<tr><td colspan="6" style="text-align:center; color: #999;">Erro ao carregar</td></tr>';
+      }
+    }
+
+    async function sincronizarSupabase() {
+      try {
+        await carregarMetasDoSupabase();
+        filtrarPorMes();
+        alert('✅ Dados sincronizados com Supabase!');
+      } catch (e) {
+        alert('❌ Erro ao sincronizar: ' + e.message);
       }
     }
 
