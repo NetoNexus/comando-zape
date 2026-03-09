@@ -596,64 +596,75 @@
     }
 
     .filter-section-centered {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 30px;
-      width: 100%;
-    }
-
-    .filter-container {
       background: #2A2A2A;
       border: 1px solid #383838;
       border-radius: 8px;
-      padding: 25px;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 15px;
+      align-items: flex-end;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: 30px;
+    }
+
+    .filter-section-centered .filter-group {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      align-items: center;
-      max-width: 650px;
-      width: 100%;
     }
 
-    .filter-container .filter-group {
-      width: 100%;
+    .filter-section-centered .filter-group label {
+      color: #B2FF00;
+      font-size: 12px;
+      margin-bottom: 8px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
-    .filter-container .filter-group label {
-      text-align: center;
+    .filter-section-centered .filter-group input {
+      padding: 10px;
+      background: #1a1a1a;
+      border: 1px solid #383838;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 14px;
     }
 
-    .filter-container .filter-group input {
-      width: 100%;
-      text-align: center;
+    .filter-section-centered .filter-group input:focus {
+      outline: none;
+      border-color: #B2FF00;
+      box-shadow: 0 0 5px rgba(178, 255, 0, 0.3);
     }
 
     .filter-buttons {
       display: flex;
-      gap: 15px;
-      width: 100%;
-      justify-content: center;
-      margin-top: 8px;
+      gap: 10px;
     }
 
     .filter-buttons button {
-      flex: 1;
-      max-width: 140px;
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
     }
 
     @media (max-width: 768px) {
-      .filter-container {
+      .filter-section-centered {
+        grid-template-columns: 1fr;
         padding: 15px;
       }
 
       .filter-buttons {
-        flex-direction: column;
+        grid-column: 1;
         gap: 10px;
       }
 
       .filter-buttons button {
-        max-width: 100%;
-        width: 100%;
+        flex: 1;
       }
 
       .kpi-grid-row1 {
@@ -829,19 +840,17 @@
 
     <!-- FILTRO DE PERÍODO -->
     <div class="filter-section-centered">
-      <div class="filter-container">
-        <div class="filter-group">
-          <label for="filterDataInicio">Data Início</label>
-          <input type="date" id="filterDataInicio">
-        </div>
-        <div class="filter-group">
-          <label for="filterDataFim">Data Fim</label>
-          <input type="date" id="filterDataFim">
-        </div>
-        <div class="filter-buttons">
-          <button class="btn-filter" onclick="aplicarFiltro()">Aplicar</button>
-          <button class="btn-filter-reset" onclick="limparFiltro()">Limpar</button>
-        </div>
+      <div class="filter-group">
+        <label for="filterDataInicio">Data Início</label>
+        <input type="date" id="filterDataInicio">
+      </div>
+      <div class="filter-group">
+        <label for="filterDataFim">Data Fim</label>
+        <input type="date" id="filterDataFim">
+      </div>
+      <div class="filter-buttons">
+        <button class="btn-filter" onclick="aplicarFiltro()">Aplicar</button>
+        <button class="btn-filter-reset" onclick="limparFiltro()">Limpar</button>
       </div>
     </div>
 
