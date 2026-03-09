@@ -1621,28 +1621,40 @@
       // Barras: Agendamentos por Closer
       const closerData = {};
       const agendamentosDetalhes = [];
+      
       movimentosFiltrados.forEach(m => {
         const closer = closers.find(c => c.id == m.closer_id);
-        if (!closer) return;
+        if (!closer) {
+          console.log('❌ Closer não encontrado para ID:', m.closer_id);
+          return;
+        }
         if (!closerData[closer.name]) closerData[closer.name] = 0;
+        
         if (Array.isArray(m.agendamentos)) {
-          const qty = m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0);
-          closerData[closer.name] += qty;
-          agendamentosDetalhes.push({
-            closer: closer.name,
-            quantidade: qty,
-            movimento: m.id,
-            data: m.data_raw
+          m.agendamentos.forEach(a => {
+            const qty = a.quantidade || 0;
+            closerData[closer.name] += qty;
+            agendamentosDetalhes.push({
+              closer: closer.name,
+              sdr: a.sdr_id,
+              quantidade: qty,
+              movimento: m.id,
+              data: m.data_raw,
+              agendamento_raw: a
+            });
           });
         }
       });
+      
       const closerLabels = Object.keys(closerData).sort((a, b) => closerData[b] - closerData[a]).slice(0, 8);
       
-      console.log('📞 Agendamentos por Closer - DETALHADO:', {
+      console.log('📞 AGENDAMENTOS DETALHADO - COMPLETO:', {
         totalAgendamentos: Object.values(closerData).reduce((a, b) => a + b, 0),
         quantidadeMovimentos: agendamentosDetalhes.length,
         porCloser: closerData,
-        primeiros10: agendamentosDetalhes.slice(0, 10)
+        todasAsEntradas: agendamentosDetalhes,
+        closersNoGrafico: closerLabels,
+        dadosDoGrafico: closerLabels.map(l => ({ closer: l, agendamentos: closerData[l] }))
       });
       
       const closerAgendamentos = {
