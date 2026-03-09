@@ -1593,7 +1593,7 @@
           // Sem meta
           document.getElementById(`barra-${nivel}`).style.width = '0%';
           document.getElementById(`percentual-${nivel}`).textContent = '0%';
-          document.getElementById(`info-${nivel}`).textContent = 'Sem meta';
+          document.getElementById(`info-${nivel}`).innerHTML = '<div style="color: #999; font-size: 12px;">Sem meta</div>';
           document.getElementById(`barra-${nivel}`).style.background = '#F44336';
           return;
         }
@@ -1606,12 +1606,12 @@
 
         let percentualRealizado = 0;
         let metaEsperada = 0;
+        let diasUteisPasados = 0;
 
         if (anoAtual === ano && mesAtual === mês) {
           // Mês atual - calcular % até hoje
           const primeiroDia = new Date(parseInt(ano), parseInt(mês) - 1, 1);
           const ultimoDia = hoje;
-          let diasUteisPasados = 0;
 
           for (let d = new Date(primeiroDia); d <= ultimoDia; d.setDate(d.getDate() + 1)) {
             const dia = d.getDay();
@@ -1628,12 +1628,15 @@
           percentualRealizado = metaEsperada > 0 ? (totalRealizado / metaEsperada * 100) : 0;
         }
 
-        // Determinar cor da barra baseado no percentual da meta do período
+        // Determinar cor da barra e do realizado baseado no percentual da meta do período
         let corBarra = '#F44336'; // Vermelho por padrão (abaixo de 90%)
+        let corRealizado = '#F44336';
         if (percentualRealizado >= 91 && percentualRealizado <= 100) {
           corBarra = '#FFC107'; // Amarelo (91-100%)
+          corRealizado = '#FFC107';
         } else if (percentualRealizado > 100) {
           corBarra = '#4CAF50'; // Verde (acima de 100%)
+          corRealizado = '#4CAF50';
         }
 
         // Limitar largura visual a 100% (mas mantém percentual real)
@@ -1644,10 +1647,18 @@
         document.getElementById(`barra-${nivel}`).style.background = corBarra;
         document.getElementById(`percentual-${nivel}`).textContent = `${Math.round(percentualRealizado)}%`;
         
-        // Info: Meta Mínima R$ (Valor) - Realizado (Valor)
+        // Info: Meta (Valor) - Deveria Estar (Valor) - Realizado (Valor)
         const metaFormatada = metaNivel.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        const deveriaEstarFormatado = Math.round(metaEsperada).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         const realizadoFormatado = totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        document.getElementById(`info-${nivel}`).innerHTML = `Meta R$ ${metaFormatada} - Realizado R$ ${realizadoFormatado}`;
+        
+        document.getElementById(`info-${nivel}`).innerHTML = `
+          <div style="display: flex; gap: 16px; font-weight: 700; font-size: 13px;">
+            <div>Meta <span style="color: #B2FF00;">R$ ${metaFormatada}</span></div>
+            <div>Deveria <span style="color: #fff;">R$ ${deveriaEstarFormatado}</span></div>
+            <div>Realizado <span style="color: ${corRealizado}; font-weight: 900;">R$ ${realizadoFormatado}</span></div>
+          </div>
+        `;
       });
     }
 
