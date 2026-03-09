@@ -194,6 +194,26 @@
           </div>
         </header>
 
+        <!-- Resumo dos 4 Níveis de Meta -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 24px;">
+          <div style="padding: 16px; background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px;">
+            <div style="color: #B2FF00; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; font-size: 11px;">MÍNIMA</div>
+            <div id="resumo-minima" style="color: #999; font-size: 11px; line-height: 1.5;">Selecione um mês</div>
+          </div>
+          <div style="padding: 16px; background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px;">
+            <div style="color: #B2FF00; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; font-size: 11px;">SUPER</div>
+            <div id="resumo-super" style="color: #999; font-size: 11px; line-height: 1.5;">Selecione um mês</div>
+          </div>
+          <div style="padding: 16px; background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px;">
+            <div style="color: #B2FF00; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; font-size: 11px;">ULTRA</div>
+            <div id="resumo-ultra" style="color: #999; font-size: 11px; line-height: 1.5;">Selecione um mês</div>
+          </div>
+          <div style="padding: 16px; background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px;">
+            <div style="color: #B2FF00; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; font-size: 11px;">BLACK</div>
+            <div id="resumo-black" style="color: #999; font-size: 11px; line-height: 1.5;">Selecione um mês</div>
+          </div>
+        </div>
+
         <!-- Meta Geral do Mês -->
         <div class="card">
           <div class="card-title" id="meta-geral-titulo">Meta Geral - Selecione um mês</div>
@@ -1480,6 +1500,14 @@
       mesSelecionado = mes;
       const metaMes = metasMeses[mes];
 
+      // Calcular realizado total
+      let totalRealizado = 0;
+      movements.forEach(m => {
+        if (Array.isArray(m.ganhos)) {
+          totalRealizado += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
+        }
+      });
+
       if (!metaMes) {
         const [ano, mês] = mes.split('-');
         const mesNome = new Date(parseInt(ano), parseInt(mês) - 1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase();
@@ -1487,20 +1515,33 @@
         document.getElementById('meta-geral-content').innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">Nenhuma meta registrada para este mês. <button class="btn" style="margin: 12px auto 0;" onclick="abrirModalRegistrarMeta()">Registrar Meta</button></div>';
         document.getElementById('meta-closers-body').innerHTML = '<tr><td colspan="6" style="text-align:center; color: #999;">Sem dados</td></tr>';
         document.getElementById('meta-sdrs-body').innerHTML = '<tr><td colspan="6" style="text-align:center; color: #999;">Sem dados</td></tr>';
+        
+        // Limpar resumos dos 4 níveis
+        ['minima', 'super', 'ultra', 'black'].forEach(nivel => {
+          document.getElementById(`resumo-${nivel}`).innerHTML = '<div style="color: #999; font-size: 11px;">Sem meta</div>';
+        });
+        
         return;
       }
+
+      // Renderizar resumo dos 4 níveis
+      ['minima', 'super', 'ultra', 'black'].forEach(nivel => {
+        const perc = metaMes.meta_mensal > 0 ? (totalRealizado / metaMes.meta_mensal * 100) : 0;
+        const html = `
+          <div style="font-size: 11px; line-height: 1.5;">
+            <div style="color: #B2FF00; font-weight: 600; margin-bottom: 4px;">R$ ${metaMes.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
+            <div style="color: #999; margin-bottom: 4px;">Realizado:</div>
+            <div style="color: #B2FF00; font-weight: 600;">R$ ${totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
+            <div style="color: #999; margin-top: 4px;">${perc.toFixed(1)}%</div>
+          </div>
+        `;
+        document.getElementById(`resumo-${nivel}`).innerHTML = html;
+      });
 
       // Renderizar meta geral
       const [ano, mês] = mes.split('-');
       const dataLabel = new Date(parseInt(ano), parseInt(mês) - 1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase();
       document.getElementById('meta-geral-titulo').textContent = `Meta Geral - ${dataLabel} (${metaMes.nivel.toUpperCase()})`;
-
-      let totalRealizado = 0;
-      movements.forEach(m => {
-        if (Array.isArray(m.ganhos)) {
-          totalRealizado += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
-        }
-      });
 
       const percentual = metaMes.meta_mensal > 0 ? (totalRealizado / metaMes.meta_mensal * 100) : 0;
       document.getElementById('meta-geral-content').innerHTML = `
