@@ -1841,46 +1841,6 @@
         return;
       }
 
-      // Renderizar closers
-      const closersHtml = closers.map(closer => {
-        const metaCloser = metaMesAtiva.closers[closer.id] || { meta_mensal: 0, meta_diaria: 0 };
-        let totalRealizado = 0;
-        movements.forEach(m => {
-          if (m.closer_id == closer.id && Array.isArray(m.ganhos)) {
-            totalRealizado += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
-          }
-        });
-        const perc = metaCloser.meta_mensal > 0 ? (totalRealizado / metaCloser.meta_mensal * 100) : 0;
-        return `<tr>
-          <td>${closer.name}</td>
-          <td>R$ ${metaCloser.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-          <td>R$ ${metaCloser.meta_diaria}</td>
-          <td>R$ ${totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-          <td><div style="display: flex; align-items: center; gap: 8px;"><div style="flex: 1; height: 6px; background: #383838; border-radius: 3px; overflow: hidden;"><div style="height: 100%; background: #B2FF00; width: ${Math.min(perc, 100)}%;"></div></div>${perc.toFixed(1)}%</div></td>
-        </tr>`;
-      }).join('');
-      document.getElementById('meta-closers-body').innerHTML = closersHtml || '<tr><td colspan="6">Sem closers</td></tr>';
-
-      // Renderizar SDRs
-      const sdrsHtml = sdrs.map(sdr => {
-        const metaSdr = metaMesAtiva.sdrs[sdr.id] || { meta_mensal: 0, meta_diaria: 0 };
-        let totalRealizado = 0;
-        movements.forEach(m => {
-          if (Array.isArray(m.agendamentos)) {
-            m.agendamentos.forEach(a => {
-              if (a.sdr_id == sdr.id) totalRealizado += a.quantidade || 0;
-            });
-          }
-        });
-        const perc = metaSdr.meta_mensal > 0 ? (totalRealizado / metaSdr.meta_mensal * 100) : 0;
-        return `<tr>
-          <td>${sdr.name}</td>
-          <td>${metaSdr.meta_mensal}</td>
-          <td>${metaSdr.meta_diaria}</td>
-          <td>${totalRealizado}</td>
-          <td><div style="display: flex; align-items: center; gap: 8px;"><div style="flex: 1; height: 6px; background: #383838; border-radius: 3px; overflow: hidden;"><div style="height: 100%; background: #B2FF00; width: ${Math.min(perc, 100)}%;"></div></div>${perc.toFixed(1)}%</div></td>
-        </tr>`;
-      }).join('');
       // Renderizar KPI Cards dos Closers e SDRs
       renderClosersKPICards();
       renderSDRsKPICards();
