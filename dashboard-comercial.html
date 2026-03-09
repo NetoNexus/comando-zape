@@ -1634,7 +1634,7 @@
         }]
       };
 
-      // Barras: Reuniões por Closer
+      // Barras: Reuniões Agendadas por Closer (EXATAMENTE IGUAL A AGENDAMENTOS)
       const reunioesCloserLabels = Object.keys(closerData).sort((a, b) => closerData[b] - closerData[a]).slice(0, 8);
       const reunioesPorCloser = {
         labels: reunioesCloserLabels,
@@ -1646,17 +1646,6 @@
           borderWidth: 1
         }]
       };
-      
-      // DEBUG: Mostrar exatamente cada movimento
-      console.log('🔍 DETALHADO - Reuniões por Closer:');
-      movimentosFiltrados.forEach(m => {
-        const closer = closers.find(c => c.id == m.closer_id);
-        if (closer && m.reunioes && m.reunioes.length > 0) {
-          const total = m.reunioes.reduce((sum, r) => sum + (r.quantidade || 0), 0);
-          console.log(`  Movimento ${m.id} - Closer: ${closer.name} - Reuniões: ${total} - Array:`, m.reunioes);
-        }
-      });
-      console.log('Final closerData:', closerData);
       console.log('DEBUG Reuniões por Closer:', { closerData, reunioesCloserLabels, dados: reunioesCloserLabels.map(l => ({ closer: l, reunioes: closerData[l] })) });
 
       return {
