@@ -398,9 +398,9 @@
     function openEditModal(id, name, type) {
       editingItem = id;
       editingType = type;
-      document.getElementById('modal-title').textContent = `Editar ${type.charAt(0).toUpperCase() + type.slice(1)}`;
-      document.getElementById('modal-name').value = name;
-      document.getElementById('editModal').classList.add('show');
+      document.getElementById('edit-modal-title').textContent = `Editar ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+      document.getElementById('edit-name').value = name;
+      document.getElementById('edit-modal').classList.add('show');
     }
 
     function openEditModalOrigem(id, type) {
@@ -414,8 +414,8 @@
       const sub_origem_str = origem.sub_origem;
       editingItem = id;
       editingType = type;
-      document.getElementById('modal-title').textContent = `Editar ${type}`;
-      document.getElementById('modal-name').value = name;
+      document.getElementById('edit-modal-title').textContent = `Editar ${type}`;
+      document.getElementById('edit-name').value = name;
       
       // Parse sub-origens
       let subOrigens = [];
@@ -426,7 +426,7 @@
       }
       
       // Popular campos dinâmicos
-      const container = document.getElementById('modal-sub-origens');
+      const container = document.getElementById('edit-sub-origens');
       if (container) {
         container.innerHTML = '';
         if (subOrigens.length > 0) {
@@ -450,8 +450,8 @@
         }
       }
       
-      document.getElementById('modal-sub-origens').parentElement.style.display = 'block';
-      document.getElementById('editModal').classList.add('show');
+      document.getElementById('edit-sub-origens-group').style.display = 'block';
+      document.getElementById('edit-modal').classList.add('show');
     }
 
     function removeModalSubOrigem(button) {
@@ -470,15 +470,15 @@
     }
 
     function closeModal() {
-      document.getElementById('editModal').classList.remove('show');
-      document.getElementById('modal-sub-origem').parentElement.style.display = 'none';
+      document.getElementById('edit-modal').classList.remove('show');
+      document.getElementById('edit-sub-origens-group').style.display = 'none';
       editingItem = null;
       editingType = null;
     }
 
     async function saveEdit(e) {
       e.preventDefault();
-      const newName = document.getElementById('modal-name').value.trim();
+      const newName = document.getElementById('edit-name').value.trim();
       if (!newName) return alert('Nome obrigatório');
 
       const typeLC = editingType.toLowerCase();
