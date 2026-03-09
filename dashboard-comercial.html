@@ -49,9 +49,26 @@
     }
 
     /* ===== KPI GRID ===== */
-    .kpi-grid {
+    /* KPI Row 1: 4 colunas */
+    .kpi-grid-row1 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    /* KPI Row 2: 3 colunas */
+    .kpi-grid-row2 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    /* KPI Row 3: 2 colunas (maiores) */
+    .kpi-grid-row3 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
       gap: 15px;
       margin-bottom: 40px;
     }
@@ -62,6 +79,16 @@
       border-radius: 8px;
       padding: 15px;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* KPI cards maiores (última linha) */
+    .kpi-card.large {
+      padding: 25px;
+      min-height: 140px;
+      justify-content: center;
     }
 
     .kpi-label {
@@ -79,9 +106,17 @@
       margin-bottom: 5px;
     }
 
+    .kpi-card.large .kpi-value {
+      font-size: 36px;
+    }
+
     .kpi-subtext {
       color: #666;
       font-size: 10px;
+    }
+
+    .kpi-card.large .kpi-subtext {
+      font-size: 11px;
     }
 
     /* ===== GRID DE GRÁFICOS ===== */
@@ -310,6 +345,20 @@
       text-align: center;
     }
 
+    @media (max-width: 1024px) {
+      .kpi-grid-row1 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .kpi-grid-row2 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .kpi-grid-row3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (max-width: 768px) {
       .charts-grid {
         grid-template-columns: 1fr;
@@ -323,8 +372,32 @@
         max-height: 250px;
       }
 
-      .kpi-grid {
-        grid-template-columns: repeat(2, 1fr);
+      .kpi-grid-row1,
+      .kpi-grid-row2 {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .kpi-grid-row3 {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .kpi-card {
+        padding: 12px;
+      }
+
+      .kpi-card.large {
+        padding: 15px;
+        min-height: 100px;
+      }
+
+      .kpi-value {
+        font-size: 24px;
+      }
+
+      .kpi-card.large .kpi-value {
+        font-size: 28px;
       }
     }
   </style>
@@ -515,45 +588,61 @@
     function renderMainKPIs() {
       const stats = calculateStats();
       const html = `
-        <div class="kpi-card">
-          <div class="kpi-label">Total Agendamentos</div>
-          <div class="kpi-value">${stats.totalAgendamentos}</div>
-          <div class="kpi-subtext">${stats.totalMovimentos} movimentos</div>
+        <!-- LINHA 1: Agendamentos, Reuniões, Ganhos, Taxa Conversão -->
+        <div class="kpi-grid-row1">
+          <div class="kpi-card">
+            <div class="kpi-label">Total Agendamentos</div>
+            <div class="kpi-value">${stats.totalAgendamentos}</div>
+            <div class="kpi-subtext">${stats.totalMovimentos} movimentos</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Total Reuniões</div>
+            <div class="kpi-value">${stats.totalReunioes}</div>
+            <div class="kpi-subtext">Comparecidas</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Total Ganhos</div>
+            <div class="kpi-value">${stats.totalGanhos}</div>
+            <div class="kpi-subtext">Quantidade</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Taxa de Conversão</div>
+            <div class="kpi-value">${stats.taxaConversao.toFixed(1)}%</div>
+            <div class="kpi-subtext">Ganhos / Reuniões</div>
+          </div>
         </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Total Reuniões</div>
-          <div class="kpi-value">${stats.totalReunioes}</div>
-          <div class="kpi-subtext">Comparecidas</div>
+
+        <!-- LINHA 2: Reagendamentos, No-Shows, Valor Total -->
+        <div class="kpi-grid-row2">
+          <div class="kpi-card">
+            <div class="kpi-label">Total Reagendamentos</div>
+            <div class="kpi-value">${stats.totalReagendamentos}</div>
+            <div class="kpi-subtext">Taxa: ${stats.taxaReagendamento.toFixed(1)}%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Total No-Shows</div>
+            <div class="kpi-value">${stats.totalNoShows}</div>
+            <div class="kpi-subtext">Taxa: ${stats.percNoShow.toFixed(1)}%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Valor Total</div>
+            <div class="kpi-value">R$ ${stats.valorTotalGanho.toFixed(0)}</div>
+            <div class="kpi-subtext">Ganho total</div>
+          </div>
         </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Total No-Shows</div>
-          <div class="kpi-value">${stats.totalNoShows}</div>
-          <div class="kpi-subtext">${stats.percNoShow.toFixed(1)}% dos agendamentos</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Total Reagendamentos</div>
-          <div class="kpi-value">${stats.totalReagendamentos}</div>
-          <div class="kpi-subtext">Remarc. feitos</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Taxa de Conversão</div>
-          <div class="kpi-value">${stats.taxaConversao.toFixed(1)}%</div>
-          <div class="kpi-subtext">Ganhos / Reuniões</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Total Ganhos</div>
-          <div class="kpi-value">${stats.totalGanhos}</div>
-          <div class="kpi-subtext">Quantidade</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Ticket Médio</div>
-          <div class="kpi-value">R$ ${stats.ticketMedio.toFixed(0)}</div>
-          <div class="kpi-subtext">Valor Total / Qtd Ganhos</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Valor Total</div>
-          <div class="kpi-value">R$ ${stats.valorTotalGanho.toFixed(0)}</div>
-          <div class="kpi-subtext">Ganho total</div>
+
+        <!-- LINHA 3: Valor Total + Ticket Médio (MAIORES) -->
+        <div class="kpi-grid-row3">
+          <div class="kpi-card large">
+            <div class="kpi-label">Valor Total</div>
+            <div class="kpi-value">R$ ${stats.valorTotalGanho.toFixed(0)}</div>
+            <div class="kpi-subtext">Ganho acumulado</div>
+          </div>
+          <div class="kpi-card large">
+            <div class="kpi-label">Ticket Médio</div>
+            <div class="kpi-value">R$ ${stats.ticketMedio.toFixed(0)}</div>
+            <div class="kpi-subtext">Valor Total / Qtd Ganhos</div>
+          </div>
         </div>
       `;
       document.getElementById('mainKPIs').innerHTML = html;
@@ -592,6 +681,7 @@
       const taxaConversao = totalReunioes > 0 ? (totalGanhos / totalReunioes * 100) : 0;
       const ticketMedio = totalGanhos > 0 ? (valorTotalGanho / totalGanhos) : 0;
       const percNoShow = totalAgendamentos > 0 ? (totalNoShows / totalAgendamentos * 100) : 0;
+      const taxaReagendamento = totalAgendamentos > 0 ? (totalReagendamentos / totalAgendamentos * 100) : 0;
 
       return {
         totalMovimentos: movimentosFiltrados.length,
@@ -603,7 +693,8 @@
         totalReagendamentos,
         taxaConversao, // Ganhos / Reuniões
         ticketMedio,
-        percNoShow // % NoShows vs Agendamentos
+        percNoShow, // % NoShows vs Agendamentos
+        taxaReagendamento // % Reagendamentos vs Agendamentos
       };
     }
 
