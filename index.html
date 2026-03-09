@@ -191,7 +191,6 @@
               <option value="">Selecione um mês</option>
             </select>
             <button class="btn" style="margin: 0;" onclick="abrirModalRegistrarMeta()">+ Registrar Meta</button>
-            <button class="remove-btn" style="margin: 0; padding: 12px 16px; font-size: 12px;" onclick="deletarMetasDeMarco()">Limpar Metas Março</button>
           </div>
         </header>
 
@@ -1295,38 +1294,6 @@
 
     function fecharModalRegistrarMeta() {
       document.getElementById('registrar-meta-modal').classList.remove('show');
-    }
-
-    async function deletarMetasDeMarco() {
-      if (!confirm('Tem certeza que quer deletar TODAS as metas de março?')) {
-        return;
-      }
-
-      try {
-        // Deletar metas de março (2026-03)
-        const metasMarco = await supabaseFetch('metas_mensais?mes=like.2026-03*');
-        
-        if (metasMarco && metasMarco.length > 0) {
-          for (const meta of metasMarco) {
-            await supabaseFetch(`metas_closers?mes_id=eq.${meta.id}`, 'DELETE').catch(() => {});
-            await supabaseFetch(`metas_sdrs?mes_id=eq.${meta.id}`, 'DELETE').catch(() => {});
-            await supabaseFetch(`metas_mensais?id=eq.${meta.id}`, 'DELETE').catch(() => {});
-          }
-        }
-
-        // Deletar histórico de março
-        await supabaseFetch(`meta_historico?mes=like.2026-03*`, 'DELETE').catch(() => {});
-
-        alert('✅ Metas de março deletadas com sucesso!');
-        
-        // Recarregar
-        await carregarMetasDoSupabase();
-        await renderizarHistoricoMetas();
-        filtrarPorMes();
-      } catch (error) {
-        console.error('Erro ao deletar:', error);
-        alert('❌ Erro ao deletar metas');
-      }
     }
 
     async function salvarNovaMetaMes(e) {
