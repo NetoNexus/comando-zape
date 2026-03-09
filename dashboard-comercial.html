@@ -1648,14 +1648,14 @@
       
       const closerLabels = Object.keys(closerData).sort((a, b) => closerData[b] - closerData[a]).slice(0, 8);
       
-      console.log('📞 AGENDAMENTOS DETALHADO - COMPLETO:', {
-        totalAgendamentos: Object.values(closerData).reduce((a, b) => a + b, 0),
-        quantidadeMovimentos: agendamentosDetalhes.length,
-        porCloser: closerData,
-        todasAsEntradas: agendamentosDetalhes,
-        closersNoGrafico: closerLabels,
-        dadosDoGrafico: closerLabels.map(l => ({ closer: l, agendamentos: closerData[l] }))
-      });
+      // Log com dados expandidos e legíveis
+      console.log('%c📞 AGENDAMENTOS POR CLOSER - RESUMO FINAL', 'color: #00FF00; font-weight: bold; font-size: 14px');
+      console.log('Total de agendamentos:', Object.values(closerData).reduce((a, b) => a + b, 0));
+      console.log('Quantidade de movimentos processados:', agendamentosDetalhes.length);
+      console.log('Breakdown por Closer:', closerData);
+      console.log('Closers que entram no gráfico:', closerLabels);
+      console.log('Dados que vão para o gráfico:', closerLabels.map(l => ({ closer: l, agendamentos: closerData[l] })));
+      console.log('Todas as entradas processadas:', agendamentosDetalhes);
       
       const closerAgendamentos = {
         labels: closerLabels,
