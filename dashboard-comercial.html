@@ -228,6 +228,88 @@
       grid-column: 1 / -1;
     }
 
+    /* ===== FILTRO DE PERÍODO ===== */
+    .filter-section {
+      background: #2A2A2A;
+      border: 1px solid #383838;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 15px;
+      align-items: flex-end;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .filter-group label {
+      color: #B2FF00;
+      font-size: 12px;
+      margin-bottom: 8px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .filter-group input {
+      padding: 10px;
+      background: #1a1a1a;
+      border: 1px solid #383838;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .filter-group input:focus {
+      outline: none;
+      border-color: #B2FF00;
+      box-shadow: 0 0 5px rgba(178, 255, 0, 0.3);
+    }
+
+    .btn-filter {
+      padding: 10px 20px;
+      background: #B2FF00;
+      color: #2A2A2A;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    .btn-filter:hover {
+      background: #a8ff00;
+    }
+
+    .btn-filter-reset {
+      padding: 10px 15px;
+      background: #383838;
+      color: #B2FF00;
+      border: 1px solid #B2FF00;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .btn-filter-reset:hover {
+      background: #383838;
+      border-color: #fff;
+      color: #fff;
+    }
+
+    .filter-info {
+      color: #999;
+      font-size: 11px;
+      margin-top: 5px;
+      text-align: center;
+    }
+
     @media (max-width: 768px) {
       .charts-grid {
         grid-template-columns: 1fr;
@@ -253,6 +335,24 @@
 
     <div class="sync-status" id="syncStatus">
       Sincronizando com Supabase...
+    </div>
+
+    <!-- FILTRO DE PERÍODO -->
+    <div class="filter-section">
+      <div class="filter-group">
+        <label for="filterDataInicio">Data Início</label>
+        <input type="date" id="filterDataInicio">
+        <div class="filter-info">Ex: 2026-01-01</div>
+      </div>
+      <div class="filter-group">
+        <label for="filterDataFim">Data Fim</label>
+        <input type="date" id="filterDataFim">
+        <div class="filter-info">Ex: 2026-03-31</div>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-filter" onclick="aplicarFiltro()">Aplicar</button>
+        <button class="btn-filter-reset" onclick="limparFiltro()">Limpar</button>
+      </div>
     </div>
 
     <!-- KPI CARDS -->
@@ -369,6 +469,10 @@
     let origens = [];
     let servicos = [];
     let charts = {};
+    
+    // Filtro de período
+    let filtroDataInicio = null;
+    let filtroDataFim = null;
 
     async function supabaseFetch(path) {
       try {
@@ -446,7 +550,9 @@
       let totalGanhos = 0;
       let valorTotalGanho = 0;
 
-      movements.forEach(m => {
+      const movimentosFiltrados = getMovementsFiltrados();
+
+      movimentosFiltrados.forEach(m => {
         if (Array.isArray(m.agendamentos)) {
           totalAgendamentos += m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0);
         }
@@ -464,7 +570,7 @@
       const ticketMedio = totalGanhos > 0 ? (valorTotalGanho / totalGanhos) : 0;
 
       return {
-        totalMovimentos: movements.length,
+        totalMovimentos: movimentosFiltrados.length,
         totalAgendamentos,
         totalReunioes,
         totalGanhos,
@@ -642,10 +748,11 @@
     function getChartConfigs() {
       const stats = calculateStats();
       const colors = ['#B2FF00', '#4CAF50', '#FF9800', '#E91E63', '#2196F3', '#00BCD4', '#673AB7', '#FFC107'];
+      const movimentosFiltrados = getMovementsFiltrados();
 
       // Pizza: Origem
       const origemData = {};
-      movements.forEach(m => {
+      movimentosFiltrados.forEach(m => {
         if (Array.isArray(m.ganhos)) {
           m.ganhos.forEach(g => {
             const origem = origens.find(o => o.id == g.origem_id);
@@ -668,7 +775,7 @@
 
       // Pizza: Serviço
       const servicoData = {};
-      movements.forEach(m => {
+      movimentosFiltrados.forEach(m => {
         if (Array.isArray(m.ganhos)) {
           m.ganhos.forEach(g => {
             const servico = servicos.find(s => s.id == g.servico_id);
@@ -691,7 +798,7 @@
 
       // Pizza: SDR
       const sdrData = {};
-      movements.forEach(m => {
+      movimentosFiltrados.forEach(m => {
         if (Array.isArray(m.ganhos)) {
           m.ganhos.forEach(g => {
             const sdr = sdrs.find(s => s.id == g.sdr_id);
@@ -714,7 +821,7 @@
 
       // Barras: Ganhos por Origem (Valor)
       const ganhosOrigemData = {};
-      movements.forEach(m => {
+      movimentosFiltrados.forEach(m => {
         if (Array.isArray(m.ganhos)) {
           m.ganhos.forEach(g => {
             const origem = origens.find(o => o.id == g.origem_id);
@@ -738,7 +845,7 @@
 
       // Barras: Agendamentos por Closer
       const closerData = {};
-      movements.forEach(m => {
+      movimentosFiltrados.forEach(m => {
         const closer = closers.find(c => c.id == m.closer_id);
         if (!closer) return;
         if (!closerData[closer.name]) closerData[closer.name] = 0;
@@ -760,7 +867,7 @@
 
       // Barras: Ganhos por Serviço (Valor)
       const ganhosServicoData = {};
-      movements.forEach(m => {
+      movimentosFiltrados.forEach(m => {
         if (Array.isArray(m.ganhos)) {
           m.ganhos.forEach(g => {
             const servico = servicos.find(s => s.id == g.servico_id);
@@ -797,7 +904,7 @@
 
       // Barras: Ganhos por SDR (Valor)
       const ganhosSdrData = {};
-      movements.forEach(m => {
+      movimentosFiltrados.forEach(m => {
         if (Array.isArray(m.ganhos)) {
           m.ganhos.forEach(g => {
             const sdr = sdrs.find(s => s.id == g.sdr_id);
@@ -832,9 +939,11 @@
     }
 
     function renderTables() {
+      const movimentosFiltrados = getMovementsFiltrados();
+      
       // Tabela Closers
       const closerData = {};
-      movements.forEach(m => {
+      movimentosFiltrados.forEach(m => {
         const closer = closers.find(c => c.id == m.closer_id);
         if (!closer) return;
         if (!closerData[closer.id]) {
@@ -870,7 +979,7 @@
 
       // Tabela Origens
       const origemData = {};
-      movements.forEach(m => {
+      movimentosFiltrados.forEach(m => {
         if (!Array.isArray(m.ganhos)) return;
         m.ganhos.forEach(g => {
           const origem = origens.find(o => o.id == g.origem_id);
@@ -910,6 +1019,58 @@
     function updateLastSync() {
       const now = new Date().toLocaleString('pt-BR');
       document.getElementById('lastSync').textContent = `Última sincronização: ${now}`;
+    }
+
+    // ===== FILTRO DE PERÍODO =====
+    function getMovementsFiltrados() {
+      if (!filtroDataInicio && !filtroDataFim) {
+        return movements; // Sem filtro, retorna tudo
+      }
+
+      return movements.filter(m => {
+        const dataMovimento = m.data_raw; // YYYY-MM-DD
+        
+        if (filtroDataInicio && dataMovimento < filtroDataInicio) {
+          return false;
+        }
+        
+        if (filtroDataFim && dataMovimento > filtroDataFim) {
+          return false;
+        }
+        
+        return true;
+      });
+    }
+
+    function aplicarFiltro() {
+      const dataInicio = document.getElementById('filterDataInicio').value;
+      const dataFim = document.getElementById('filterDataFim').value;
+
+      if (!dataInicio || !dataFim) {
+        alert('Preencha data inicial e final');
+        return;
+      }
+
+      if (dataInicio > dataFim) {
+        alert('Data inicial não pode ser maior que data final');
+        return;
+      }
+
+      filtroDataInicio = dataInicio;
+      filtroDataFim = dataFim;
+
+      console.log(`🔍 Filtro aplicado: ${dataInicio} a ${dataFim}`);
+      renderDashboard();
+    }
+
+    function limparFiltro() {
+      filtroDataInicio = null;
+      filtroDataFim = null;
+      document.getElementById('filterDataInicio').value = '';
+      document.getElementById('filterDataFim').value = '';
+      
+      console.log('🔄 Filtro limpo - mostrando todos os dados');
+      renderDashboard();
     }
 
     // Carregar dados ao iniciar
