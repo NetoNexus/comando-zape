@@ -526,6 +526,16 @@
           <div class="kpi-subtext">Comparecidas</div>
         </div>
         <div class="kpi-card">
+          <div class="kpi-label">Total No-Shows</div>
+          <div class="kpi-value">${stats.totalNoShows}</div>
+          <div class="kpi-subtext">${stats.percNoShow.toFixed(1)}% dos agendamentos</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total Reagendamentos</div>
+          <div class="kpi-value">${stats.totalReagendamentos}</div>
+          <div class="kpi-subtext">Remarc. feitos</div>
+        </div>
+        <div class="kpi-card">
           <div class="kpi-label">Taxa de Conversão</div>
           <div class="kpi-value">${stats.taxaConversao.toFixed(1)}%</div>
           <div class="kpi-subtext">Ganhos / Reuniões</div>
@@ -538,7 +548,7 @@
         <div class="kpi-card">
           <div class="kpi-label">Valor Total</div>
           <div class="kpi-value">R$ ${stats.valorTotalGanho.toFixed(0)}</div>
-          <div class="kpi-subtext">-</div>
+          <div class="kpi-subtext">Ganho total</div>
         </div>
       `;
       document.getElementById('mainKPIs').innerHTML = html;
@@ -549,6 +559,8 @@
       let totalReunioes = 0;
       let totalGanhos = 0;
       let valorTotalGanho = 0;
+      let totalNoShows = 0;
+      let totalReagendamentos = 0;
 
       const movimentosFiltrados = getMovementsFiltrados();
 
@@ -563,11 +575,18 @@
           totalGanhos += m.ganhos.length;
           valorTotalGanho += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
         }
+        if (Array.isArray(m.noshows)) {
+          totalNoShows += m.noshows.reduce((sum, n) => sum + (n.quantidade || 0), 0);
+        }
+        if (Array.isArray(m.reagendamentos)) {
+          totalReagendamentos += m.reagendamentos.reduce((sum, r) => sum + (r.quantidade || 0), 0);
+        }
       });
 
       // Taxa de Conversão = Ganhos / Reuniões (%)
       const taxaConversao = totalReunioes > 0 ? (totalGanhos / totalReunioes * 100) : 0;
       const ticketMedio = totalGanhos > 0 ? (valorTotalGanho / totalGanhos) : 0;
+      const percNoShow = totalAgendamentos > 0 ? (totalNoShows / totalAgendamentos * 100) : 0;
 
       return {
         totalMovimentos: movimentosFiltrados.length,
@@ -575,20 +594,28 @@
         totalReunioes,
         totalGanhos,
         valorTotalGanho,
+        totalNoShows,
+        totalReagendamentos,
         taxaConversao, // Ganhos / Reuniões
-        ticketMedio
+        ticketMedio,
+        percNoShow // % NoShows vs Agendamentos
       };
     }
 
     function renderFunnel() {
       const stats = calculateStats();
-      // Funil: Agendamentos → Reuniões (% de agendamentos) → Ganhos (% de reuniões)
+      // Funil: Agendamentos → Reuniões (% agend) → Ganhos (% reun) + No-Shows + Reagendamentos
       const percentualReunioes = stats.totalAgendamentos > 0 ? (stats.totalReunioes / stats.totalAgendamentos) * 100 : 0;
-      const percentualGanhos = stats.totalReunioes > 0 ? (stats.totalGanhos / stats.totalReunioes) * 100 : 0; // Taxa de conversão
+      const percentualGanhos = stats.totalReunioes > 0 ? (stats.totalGanhos / stats.totalReunioes) * 100 : 0;
+      const percentualNoShows = stats.totalAgendamentos > 0 ? (stats.totalNoShows / stats.totalAgendamentos) * 100 : 0;
+      const percentualReagendamentos = stats.totalAgendamentos > 0 ? (stats.totalReagendamentos / stats.totalAgendamentos) * 100 : 0;
+      
       const funnelData = [
         { label: 'Agendamentos', value: stats.totalAgendamentos, percentage: 100 },
         { label: 'Reuniões', value: stats.totalReunioes, percentage: percentualReunioes },
-        { label: 'Ganhos', value: stats.totalGanhos, percentage: percentualGanhos }
+        { label: 'Ganhos', value: stats.totalGanhos, percentage: percentualGanhos },
+        { label: 'No-Shows', value: stats.totalNoShows, percentage: percentualNoShows },
+        { label: 'Reagendamentos', value: stats.totalReagendamentos, percentage: percentualReagendamentos }
       ];
 
       let html = '';
