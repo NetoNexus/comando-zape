@@ -945,7 +945,28 @@
       servicos = await supabaseFetch('servicos?order=name') || [];
       movements = await supabaseFetch('movements?order=id.desc') || [];
 
-      console.log('✅ Dados carregados:', movements.length);
+      // DEBUG: Resumo de dados carregados
+      let totalGanhos = 0;
+      let totalAgendamentos = 0;
+      movements.forEach(m => {
+        if (Array.isArray(m.ganhos)) {
+          totalGanhos += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
+        }
+        if (Array.isArray(m.agendamentos)) {
+          totalAgendamentos += m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0);
+        }
+      });
+
+      console.log('✅ DADOS CARREGADOS:', {
+        movimentos: movements.length,
+        closers: closers.length,
+        sdrs: sdrs.length,
+        origens: origens.length,
+        servicos: servicos.length,
+        totalGanhosValor: `R$ ${totalGanhos.toFixed(0)}`,
+        totalAgendamentos: totalAgendamentos
+      });
+      
       renderDashboard();
       showSyncStatus(false);
       updateLastSync();
@@ -1599,20 +1620,29 @@
 
       // Barras: Agendamentos por Closer
       const closerData = {};
+      const agendamentosDetalhes = [];
       movimentosFiltrados.forEach(m => {
         const closer = closers.find(c => c.id == m.closer_id);
         if (!closer) return;
         if (!closerData[closer.name]) closerData[closer.name] = 0;
         if (Array.isArray(m.agendamentos)) {
-          closerData[closer.name] += m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0);
+          const qty = m.agendamentos.reduce((sum, a) => sum + (a.quantidade || 0), 0);
+          closerData[closer.name] += qty;
+          agendamentosDetalhes.push({
+            closer: closer.name,
+            quantidade: qty,
+            movimento: m.id,
+            data: m.data_raw
+          });
         }
       });
       const closerLabels = Object.keys(closerData).sort((a, b) => closerData[b] - closerData[a]).slice(0, 8);
       
-      console.log('📞 Agendamentos por Closer:', {
-        total: Object.values(closerData).reduce((a, b) => a + b, 0),
-        detalhes: closerData,
-        labels: closerLabels
+      console.log('📞 Agendamentos por Closer - DETALHADO:', {
+        totalAgendamentos: Object.values(closerData).reduce((a, b) => a + b, 0),
+        quantidadeMovimentos: agendamentosDetalhes.length,
+        porCloser: closerData,
+        primeiros10: agendamentosDetalhes.slice(0, 10)
       });
       
       const closerAgendamentos = {
@@ -1628,22 +1658,29 @@
 
       // Barras: Ganhos por Serviço (Valor)
       const ganhosServicoData = {};
+      const ganhosDetalhes = [];
       movimentosFiltrados.forEach(m => {
         if (Array.isArray(m.ganhos)) {
           m.ganhos.forEach(g => {
             const servico = servicos.find(s => s.id == g.servico_id);
             if (servico) {
               ganhosServicoData[servico.name] = (ganhosServicoData[servico.name] || 0) + (g.valor || 0);
+              ganhosDetalhes.push({
+                servico: servico.name,
+                valor: g.valor,
+                movimento: m.id
+              });
             }
           });
         }
       });
       const ganhosServicoLabels = Object.keys(ganhosServicoData).sort((a, b) => ganhosServicoData[b] - ganhosServicoData[a]);
       
-      console.log('💰 Ganhos por Serviço:', {
-        total: Object.values(ganhosServicoData).reduce((a, b) => a + b, 0),
-        detalhes: ganhosServicoData,
-        labels: ganhosServicoLabels
+      console.log('💰 Ganhos por Serviço - DETALHADO:', {
+        totalGanhos: Object.values(ganhosServicoData).reduce((a, b) => a + b, 0),
+        quantidadeGanhos: ganhosDetalhes.length,
+        porServico: ganhosServicoData,
+        primeiros10Ganhos: ganhosDetalhes.slice(0, 10)
       });
       
       const ganhosServico = {
@@ -1871,7 +1908,10 @@
       filtroDataInicio = dataInicio;
       filtroDataFim = dataFim;
 
-      console.log(`🔍 Filtro aplicado: ${dataInicio} a ${dataFim}`);
+      const movimentosFiltrados = getMovementsFiltrados();
+      console.log(`✅ FILTRO APLICADO: ${dataInicio} a ${dataFim}`);
+      console.log(`   Total de movimentos: ${movements.length}`);
+      console.log(`   Movimentos no período: ${movimentosFiltrados.length}`);
       renderDashboard();
     }
 
@@ -1881,7 +1921,8 @@
       document.getElementById('filterDataInicio').value = '';
       document.getElementById('filterDataFim').value = '';
       
-      console.log('🔄 Filtro limpo - mostrando todos os dados');
+      console.log(`🔄 FILTRO LIMPO`);
+      console.log(`   Mostrando TODOS os ${movements.length} movimentos`);
       renderDashboard();
     }
 
