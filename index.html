@@ -1522,7 +1522,7 @@
           return `<tr>
             <td>${dataLabel}</td>
             <td style="text-transform: uppercase; font-weight: 700; color: #B2FF00;">${nivelDisplay}</td>
-            <td>R$ ${parseFloat(h.meta_mensal_vendas || 0).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+            <td>R$ ${parseFloat(h.meta_mensal_vendas || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
             <td>${h.total_closers || 0}</td>
             <td>${h.total_sdrs || 0}</td>
             <td style="font-size: 11px; color: #999;">${dataCriacao}</td>
@@ -1713,9 +1713,9 @@
         document.getElementById(`percentual-mes-${nivel}`).textContent = `${Math.round(percentualMes)}%`;
         
         // Info: Meta (Valor) - Deveria Estar (Valor) - Realizado (Valor)
-        const metaFormatada = metaNivel.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        const deveriaEstarFormatado = Math.round(metaEsperada).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        const realizadoFormatado = totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        const metaFormatada = metaNivel.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const deveriaEstarFormatado = Math.round(metaEsperada).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const realizadoFormatado = totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         
         document.getElementById(`info-${nivel}`).innerHTML = `
           <div style="display: flex; gap: 16px; font-weight: 700; font-size: 13px;">
@@ -1791,7 +1791,7 @@
       document.getElementById('meta-geral-content').innerHTML = `
         <div class="meta-card">
           <div class="meta-label">Meta Mensal (R$)</div>
-          <div class="meta-value">R$ ${metaMesAtiva.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
+          <div class="meta-value">R$ ${metaMesAtiva.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
         </div>
         <div class="meta-card">
           <div class="meta-label">Meta Diária (R$)</div>
@@ -1799,7 +1799,7 @@
         </div>
         <div class="meta-card">
           <div class="meta-label">Realizado (R$)</div>
-          <div class="meta-value">R$ ${totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
+          <div class="meta-value">R$ ${totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           <div class="meta-progress" style="margin-top: 12px;">
             <div class="progress-bar" style="width: ${Math.min(percentual, 100)}%;"></div>
           </div>
@@ -1819,9 +1819,9 @@
         const perc = metaCloser.meta_mensal > 0 ? (totalRealizado / metaCloser.meta_mensal * 100) : 0;
         return `<tr>
           <td>${closer.name}</td>
-          <td>R$ ${metaCloser.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+          <td>R$ ${metaCloser.meta_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
           <td>R$ ${metaCloser.meta_diaria}</td>
-          <td>R$ ${totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+          <td>R$ ${totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
           <td><div style="display: flex; align-items: center; gap: 8px;"><div style="flex: 1; height: 6px; background: #383838; border-radius: 3px; overflow: hidden;"><div style="height: 100%; background: #B2FF00; width: ${Math.min(perc, 100)}%;"></div></div>${perc.toFixed(1)}%</div></td>
         </tr>`;
       }).join('');
