@@ -194,23 +194,54 @@
           </div>
         </header>
 
-        <!-- Resumo dos 4 Níveis de Meta -->
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 24px;">
-          <div style="padding: 16px; background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px;">
-            <div style="color: #B2FF00; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; font-size: 11px;">MÍNIMA</div>
-            <div id="resumo-minima" style="color: #999; font-size: 11px; line-height: 1.5;">Selecione um mês</div>
+        <!-- KPI Cards - 2 fileiras -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 32px;">
+          <!-- MÍNIMA -->
+          <div style="background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+              <div>
+                <div style="color: #B2FF00; font-weight: 900; text-transform: uppercase; font-size: 14px; letter-spacing: 1px;">MÍNIMA</div>
+                <div style="color: #999; font-size: 10px; margin-top: 4px;">Meta de Vendas</div>
+              </div>
+              <div id="semaforo-minima" style="width: 24px; height: 24px; border-radius: 50%; background: #383838;"></div>
+            </div>
+            <div id="resumo-minima" style="color: #999; font-size: 12px; line-height: 1.6;">Selecione um mês</div>
           </div>
-          <div style="padding: 16px; background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px;">
-            <div style="color: #B2FF00; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; font-size: 11px;">SUPER</div>
-            <div id="resumo-super" style="color: #999; font-size: 11px; line-height: 1.5;">Selecione um mês</div>
+
+          <!-- SUPER -->
+          <div style="background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+              <div>
+                <div style="color: #B2FF00; font-weight: 900; text-transform: uppercase; font-size: 14px; letter-spacing: 1px;">SUPER</div>
+                <div style="color: #999; font-size: 10px; margin-top: 4px;">Meta de Vendas</div>
+              </div>
+              <div id="semaforo-super" style="width: 24px; height: 24px; border-radius: 50%; background: #383838;"></div>
+            </div>
+            <div id="resumo-super" style="color: #999; font-size: 12px; line-height: 1.6;">Selecione um mês</div>
           </div>
-          <div style="padding: 16px; background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px;">
-            <div style="color: #B2FF00; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; font-size: 11px;">ULTRA</div>
-            <div id="resumo-ultra" style="color: #999; font-size: 11px; line-height: 1.5;">Selecione um mês</div>
+
+          <!-- ULTRA -->
+          <div style="background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+              <div>
+                <div style="color: #B2FF00; font-weight: 900; text-transform: uppercase; font-size: 14px; letter-spacing: 1px;">ULTRA</div>
+                <div style="color: #999; font-size: 10px; margin-top: 4px;">Meta de Vendas</div>
+              </div>
+              <div id="semaforo-ultra" style="width: 24px; height: 24px; border-radius: 50%; background: #383838;"></div>
+            </div>
+            <div id="resumo-ultra" style="color: #999; font-size: 12px; line-height: 1.6;">Selecione um mês</div>
           </div>
-          <div style="padding: 16px; background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px;">
-            <div style="color: #B2FF00; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; font-size: 11px;">BLACK</div>
-            <div id="resumo-black" style="color: #999; font-size: 11px; line-height: 1.5;">Selecione um mês</div>
+
+          <!-- BLACK -->
+          <div style="background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; border-radius: 8px; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+              <div>
+                <div style="color: #B2FF00; font-weight: 900; text-transform: uppercase; font-size: 14px; letter-spacing: 1px;">BLACK</div>
+                <div style="color: #999; font-size: 10px; margin-top: 4px;">Meta de Vendas</div>
+              </div>
+              <div id="semaforo-black" style="width: 24px; height: 24px; border-radius: 50%; background: #383838;"></div>
+            </div>
+            <div id="resumo-black" style="color: #999; font-size: 12px; line-height: 1.6;">Selecione um mês</div>
           </div>
         </div>
 
@@ -1502,6 +1533,69 @@
       }
     }
 
+    function calcularStatusDia(mes, metaNivel, realizadoTotal) {
+      // Calcula se estamos abaixo, dentro ou acima da meta do dia
+      const [ano, mês] = mes.split('-');
+      const hoje = new Date();
+      const mesAtual = String(hoje.getMonth() + 1).padStart(2, '0');
+      const anoAtual = String(hoje.getFullYear());
+      
+      // Se não é o mês atual, não calcular status de hoje
+      if (anoAtual !== ano || mesAtual !== mês) {
+        return 'neutro'; // Cinza
+      }
+
+      // Calcular dias úteis até hoje
+      const primeiroDia = new Date(parseInt(ano), parseInt(mês) - 1, 1);
+      const ultimoDia = hoje;
+      let diasUteisPasados = 0;
+
+      for (let d = new Date(primeiroDia); d <= ultimoDia; d.setDate(d.getDate() + 1)) {
+        const dia = d.getDay();
+        if (dia >= 1 && dia <= 5) {
+          diasUteisPasados++;
+        }
+      }
+
+      const metaEsperada = parseFloat(metaNivel.meta_diaria) * diasUteisPasados;
+      const percentualRealizado = metaEsperada > 0 ? (realizadoTotal / metaEsperada * 100) : 0;
+
+      // Semáforo: vermelho < 90%, amarelo 90-110%, verde > 110%
+      if (percentualRealizado < 90) {
+        return 'vermelho';
+      } else if (percentualRealizado <= 110) {
+        return 'amarelo';
+      } else {
+        return 'verde';
+      }
+    }
+
+    function atualizarSemaforo(mes, metasMesAno) {
+      const cores = {
+        vermelho: '#F44336',
+        amarelo: '#FFC107',
+        verde: '#4CAF50',
+        neutro: '#383838'
+      };
+
+      let totalRealizado = 0;
+      movements.forEach(m => {
+        if (Array.isArray(m.ganhos)) {
+          totalRealizado += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
+        }
+      });
+
+      ['minima', 'super', 'ultra', 'black'].forEach(nivel => {
+        const metaNivel = metasMesAno[nivel];
+        const status = metaNivel ? calcularStatusDia(mes, metaNivel, totalRealizado) : 'neutro';
+        const elemento = document.getElementById(`semaforo-${nivel}`);
+        if (elemento) {
+          elemento.style.background = cores[status];
+          elemento.style.boxShadow = `0 0 12px ${cores[status]}`;
+        }
+      });
+    }
+
     function filtrarPorMes() {
       const mes = document.getElementById('meta-mes-filtro').value;
       if (!mes) {
@@ -1509,6 +1603,10 @@
         document.getElementById('meta-closers-body').innerHTML = '<tr><td colspan="6" style="text-align:center; color: #999;">Selecione um mês</td></tr>';
         document.getElementById('meta-sdrs-body').innerHTML = '<tr><td colspan="6" style="text-align:center; color: #999;">Selecione um mês</td></tr>';
         mesSelecionado = null;
+        ['minima', 'super', 'ultra', 'black'].forEach(nivel => {
+          document.getElementById(`semaforo-${nivel}`).style.background = '#383838';
+          document.getElementById(`semaforo-${nivel}`).style.boxShadow = 'none';
+        });
         return;
       }
 
@@ -1637,6 +1735,9 @@
         </tr>`;
       }).join('');
       document.getElementById('meta-sdrs-body').innerHTML = sdrsHtml || '<tr><td colspan="6">Sem SDRs</td></tr>';
+
+      // Atualizar semáforos
+      atualizarSemaforo(mes, metasMesAno);
     }
 
     async function abrirMetaParaEditar(mes) {
