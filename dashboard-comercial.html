@@ -833,6 +833,12 @@
         <div class="chart-title">Ganhos (R$) por Serviço</div>
         <canvas id="chartGanhosServico"></canvas>
       </div>
+
+      <!-- Barras: Reuniões por Closer -->
+      <div class="chart-container">
+        <div class="chart-title">Reuniões Agendadas por Closer</div>
+        <canvas id="chartReunioesPorCloser"></canvas>
+      </div>
     </div>
 
     <!-- TABELAS -->
@@ -1440,6 +1446,24 @@
         });
       }
 
+      // Barras: Reuniões por Closer
+      if (chartConfig.reunioesPorCloser) {
+        const ctx = document.getElementById('chartReunioesPorCloser').getContext('2d');
+        charts.reunioesPorCloser = new Chart(ctx, {
+          type: 'bar',
+          data: chartConfig.reunioesPorCloser,
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: false }, tooltip: getDefaultTooltipConfig() },
+            scales: {
+              x: { grid: { color: '#383838' }, ticks: { color: '#999' } },
+              y: { grid: { color: '#383838' }, ticks: { color: '#999' } }
+            }
+          }
+        });
+      }
+
     }
 
     function getChartConfigs() {
@@ -1551,17 +1575,18 @@
         }
         if (!closerData[closer.name]) closerData[closer.name] = 0;
         
-        if (Array.isArray(m.agendamentos)) {
-          m.agendamentos.forEach(a => {
-            const qty = a.quantidade || 0;
+        // Contar Reuniões (não agendamentos)
+        if (Array.isArray(m.reunioes)) {
+          m.reunioes.forEach(r => {
+            const qty = r.quantidade || 0;
             closerData[closer.name] += qty;
             agendamentosDetalhes.push({
               closer: closer.name,
-              sdr: a.sdr_id,
+              sdr: r.sdr_id,
               quantidade: qty,
               movimento: m.id,
               data: m.data_raw,
-              agendamento_raw: a
+              reuniao_raw: r
             });
           });
         }
@@ -1598,12 +1623,26 @@
         }]
       };
 
+      // Barras: Reuniões por Closer
+      const reunioesCloserLabels = Object.keys(closerData).sort((a, b) => closerData[b] - closerData[a]).slice(0, 8);
+      const reunioesPorCloser = {
+        labels: reunioesCloserLabels,
+        datasets: [{
+          label: 'Reuniões',
+          data: reunioesCloserLabels.map(l => closerData[l]),
+          backgroundColor: '#B2FF00',
+          borderColor: '#B2FF00',
+          borderWidth: 1
+        }]
+      };
+
       return {
         origemPizza: origemLabels.length > 0 ? origemPizza : null,
         servicoPizza: servicoLabels.length > 0 ? servicoPizza : null,
         sdrPizza: sdrLabels.length > 0 ? sdrPizza : null,
         ganhosOrigem: ganhosOrigemLabels.length > 0 ? ganhosOrigem : null,
-        ganhosServico: ganhosServicoLabels.length > 0 ? ganhosServico : null
+        ganhosServico: ganhosServicoLabels.length > 0 ? ganhosServico : null,
+        reunioesPorCloser: reunioesCloserLabels.length > 0 ? reunioesPorCloser : null
       };
     }
 
