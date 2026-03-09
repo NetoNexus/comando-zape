@@ -96,6 +96,16 @@
     .kpi-card:hover { border-color: #B2FF00; box-shadow: 0 0 12px rgba(178,255,0,0.1); transform: translateY(-2px); }
     .kpi-label { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
     .kpi-value { font-size: 32px; font-weight: 900; color: #B2FF00; }
+
+    /* ===== META CARDS ===== */
+    .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 16px; }
+    .meta-card { background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%); border: 1px solid #383838; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .meta-card:hover { border-color: #B2FF00; box-shadow: 0 4px 12px rgba(178,255,0,0.15); }
+    .meta-label { color: #999; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .meta-value { font-size: 28px; font-weight: 900; color: #B2FF00; margin: 12px 0; }
+    .meta-percentage { font-size: 14px; font-weight: 700; color: #B2FF00; margin-top: 8px; }
+    .meta-progress { width: 100%; height: 8px; background: #383838; border-radius: 4px; overflow: hidden; margin: 12px 0; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, #B2FF00, #9AE700); border-radius: 4px; transition: width 0.3s; }
   </style>
   <link rel="stylesheet" href="mobile-ux.css">
 </head>
@@ -137,6 +147,7 @@
         <div class="menu-item expandable" onclick="toggleSubmenu('comercial-menu')">Comercial</div>
         <div id="comercial-menu" class="submenu">
           <div class="menu-item" onclick="goToPage('dash-comercial')">Dash Comercial</div>
+          <div class="menu-item" onclick="goToPage('acompanhamento-meta')">Acompanhamento de Meta</div>
           <div class="menu-item" onclick="window.location.href('/comando-zape/lancamentocomercial')">Lançamento de Dados</div>
           <div class="menu-item expandable" onclick="toggleSubmenu('gerenciamento-menu')" style="padding-left: 20px;">Gerenciamento</div>
           <div id="gerenciamento-menu" class="submenu">
@@ -169,6 +180,86 @@
       <!-- DASH COMERCIAL -->
       <div id="dash-comercial" class="page">
         <iframe src="dashboard-comercial.html" style="width: 100%; height: 100vh; border: none; background: #1a1a1a;"></iframe>
+      </div>
+
+      <!-- ACOMPANHAMENTO DE META -->
+      <div id="acompanhamento-meta" class="page">
+        <header><h1>Acompanhamento de Meta</h1></header>
+        
+        <!-- Meta Geral de Vendas -->
+        <div class="card">
+          <div class="card-title">Meta de Vendas (Total)</div>
+          <div class="meta-grid">
+            <div class="meta-card">
+              <div class="meta-label">Meta Total (R$)</div>
+              <input type="number" id="meta-vendas-total" placeholder="Digite a meta" style="width: 100%; padding: 8px; margin-top: 8px; border: 1px solid #383838; background: #2A2A2A; color: #fff; border-radius: 4px;">
+              <button class="btn" style="margin-top: 12px; width: 100%;" onclick="salvarMetaVendas()">Salvar Meta</button>
+            </div>
+            <div class="meta-card">
+              <div class="meta-label">Realizado (R$)</div>
+              <div class="meta-value" id="realizado-total">R$ 0</div>
+              <div class="meta-progress">
+                <div class="progress-bar" id="progress-total" style="width: 0%"></div>
+              </div>
+              <div class="meta-percentage" id="percent-total">0%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meta por Closer -->
+        <div class="card">
+          <div class="card-title">Meta por Closer</div>
+          <table id="meta-closers-table">
+            <thead>
+              <tr>
+                <th>Closer</th>
+                <th>Meta (R$)</th>
+                <th>Realizado (R$)</th>
+                <th>% Atingido</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="meta-closers-body">
+              <tr><td colspan="5" style="text-align:center; color: #999;">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Meta por SDR -->
+        <div class="card">
+          <div class="card-title">Meta por SDR</div>
+          <table id="meta-sdrs-table">
+            <thead>
+              <tr>
+                <th>SDR</th>
+                <th>Meta (Agendamentos)</th>
+                <th>Realizado</th>
+                <th>% Atingido</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="meta-sdrs-body">
+              <tr><td colspan="5" style="text-align:center; color: #999;">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Modal de Edição de Meta -->
+        <div id="meta-modal" class="modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 id="meta-modal-title">Editar Meta</h2>
+              <button class="modal-close" onclick="closeMetaModal()">×</button>
+            </div>
+            <form onsubmit="salvarMetaItem(event)">
+              <div class="form-group">
+                <label>Meta</label>
+                <input type="number" id="meta-modal-value" required>
+              </div>
+              <button type="submit" class="btn">Salvar</button>
+            </form>
+          </div>
+        </div>
       </div>
 
       <!-- CADASTRO CLOSERS -->
@@ -887,6 +978,188 @@
       const modal = document.getElementById('editModal');
       if (e.target === modal) closeModal();
     });
+
+    // ========== META DE VENDAS ==========
+    let metas = {};
+    let editingMeta = null;
+
+    async function carregarMetas() {
+      // Carregar metas do Supabase (tabela: metas)
+      try {
+        const result = await supabaseFetch('metas?order=id');
+        if (Array.isArray(result)) {
+          result.forEach(m => {
+            metas[`${m.tipo}_${m.id_pessoa}`] = m;
+          });
+        }
+      } catch (e) {
+        console.log('Nota: tabela de metas não existe ainda (criar depois)');
+      }
+      renderMetasClosers();
+      renderMetasSDRs();
+      atualizarMetaGeral();
+    }
+
+    function atualizarMetaGeral() {
+      let totalMeta = 0;
+      let totalRealizado = 0;
+
+      // Calcular total de metas de closers
+      closers.forEach(closer => {
+        const metaKey = `closer_${closer.id}`;
+        const meta = metas[metaKey];
+        if (meta && meta.meta_valor) totalMeta += parseFloat(meta.meta_valor) || 0;
+      });
+
+      // Calcular ganhos reais
+      movements.forEach(m => {
+        if (Array.isArray(m.ganhos)) {
+          totalRealizado += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
+        }
+      });
+
+      document.getElementById('realizado-total').textContent = `R$ ${totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+      
+      const percentual = totalMeta > 0 ? (totalRealizado / totalMeta * 100) : 0;
+      document.getElementById('progress-total').style.width = Math.min(percentual, 100) + '%';
+      document.getElementById('percent-total').textContent = percentual.toFixed(1) + '%';
+    }
+
+    function renderMetasClosers() {
+      const tbody = document.getElementById('meta-closers-body');
+      if (!closers.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhum closer cadastrado</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = closers.map(closer => {
+        const metaKey = `closer_${closer.id}`;
+        const meta = metas[metaKey] || { meta_valor: 0 };
+        
+        let totalRealizado = 0;
+        movements.forEach(m => {
+          if (m.closer_id == closer.id && Array.isArray(m.ganhos)) {
+            totalRealizado += m.ganhos.reduce((sum, g) => sum + (g.valor || 0), 0);
+          }
+        });
+
+        const metaValor = parseFloat(meta.meta_valor) || 0;
+        const percentual = metaValor > 0 ? (totalRealizado / metaValor * 100) : 0;
+
+        return `<tr>
+          <td>${closer.name}</td>
+          <td>R$ ${metaValor.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+          <td>R$ ${totalRealizado.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="flex: 1; height: 6px; background: #383838; border-radius: 3px; overflow: hidden;">
+                <div style="height: 100%; background: #B2FF00; width: ${Math.min(percentual, 100)}%;"></div>
+              </div>
+              ${percentual.toFixed(1)}%
+            </div>
+          </td>
+          <td><button class="edit-btn" onclick="abrirMetaCloser(${closer.id}, '${closer.name}', ${metaValor})">Editar</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function renderMetasSDRs() {
+      const tbody = document.getElementById('meta-sdrs-body');
+      if (!sdrs.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhuma SDR cadastrada</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = sdrs.map(sdr => {
+        const metaKey = `sdr_${sdr.id}`;
+        const meta = metas[metaKey] || { meta_valor: 0 };
+        
+        let totalRealizado = 0;
+        movements.forEach(m => {
+          if (Array.isArray(m.agendamentos)) {
+            m.agendamentos.forEach(a => {
+              if (a.sdr_id == sdr.id) totalRealizado += a.quantidade || 0;
+            });
+          }
+        });
+
+        const metaValor = parseFloat(meta.meta_valor) || 0;
+        const percentual = metaValor > 0 ? (totalRealizado / metaValor * 100) : 0;
+
+        return `<tr>
+          <td>${sdr.name}</td>
+          <td>${metaValor}</td>
+          <td>${totalRealizado}</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="flex: 1; height: 6px; background: #383838; border-radius: 3px; overflow: hidden;">
+                <div style="height: 100%; background: #B2FF00; width: ${Math.min(percentual, 100)}%;"></div>
+              </div>
+              ${percentual.toFixed(1)}%
+            </div>
+          </td>
+          <td><button class="edit-btn" onclick="abrirMetaSDR(${sdr.id}, '${sdr.name}', ${metaValor})">Editar</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function abrirMetaCloser(id, nome, metaAtual) {
+      editingMeta = { tipo: 'closer', id: id, nome: nome };
+      document.getElementById('meta-modal-title').textContent = `Editar Meta - ${nome}`;
+      document.getElementById('meta-modal-value').value = metaAtual;
+      document.getElementById('meta-modal').classList.add('show');
+    }
+
+    function abrirMetaSDR(id, nome, metaAtual) {
+      editingMeta = { tipo: 'sdr', id: id, nome: nome };
+      document.getElementById('meta-modal-title').textContent = `Editar Meta - ${nome}`;
+      document.getElementById('meta-modal-value').value = metaAtual;
+      document.getElementById('meta-modal').classList.add('show');
+    }
+
+    function closeMetaModal() {
+      document.getElementById('meta-modal').classList.remove('show');
+      editingMeta = null;
+    }
+
+    async function salvarMetaItem(e) {
+      e.preventDefault();
+      if (!editingMeta) return;
+
+      const novaMetaValor = document.getElementById('meta-modal-value').value;
+      const metaKey = `${editingMeta.tipo}_${editingMeta.id}`;
+
+      // Salvar na memória por enquanto (depois conectar com Supabase)
+      metas[metaKey] = { tipo: editingMeta.tipo, id_pessoa: editingMeta.id, meta_valor: novaMetaValor };
+
+      // TODO: Salvar no Supabase quando tabela de metas for criada
+      // await supabaseFetch('metas', 'POST', { tipo: editingMeta.tipo, id_pessoa: editingMeta.id, meta_valor: novaMetaValor });
+
+      closeMetaModal();
+      renderMetasClosers();
+      renderMetasSDRs();
+      atualizarMetaGeral();
+    }
+
+    function salvarMetaVendas() {
+      const novaMetaVendas = document.getElementById('meta-vendas-total').value;
+      if (novaMetaVendas && novaMetaVendas > 0) {
+        metas['vendas_total'] = { meta_valor: novaMetaVendas };
+        atualizarMetaGeral();
+        alert('Meta de vendas atualizada!');
+      } else {
+        alert('Digite um valor válido');
+      }
+    }
+
+    // Carregar metas quando a página de acompanhamento for aberta
+    const originalGoToPage = goToPage;
+    goToPage = function(page) {
+      originalGoToPage(page);
+      if (page === 'acompanhamento-meta') {
+        carregarMetas();
+      }
+    };
   </script>
 </body>
 </html>
