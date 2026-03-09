@@ -254,10 +254,11 @@
                 <th>Total Closers</th>
                 <th>Total SDRs</th>
                 <th>Data</th>
+                <th>Ação</th>
               </tr>
             </thead>
             <tbody id="historico-metas-body">
-              <tr><td colspan="6" style="text-align:center; color: #999;">Nenhum histórico</td></tr>
+              <tr><td colspan="7" style="text-align:center; color: #999;">Nenhum histórico</td></tr>
             </tbody>
           </table>
         </div>
@@ -555,6 +556,7 @@
     let closers = [];
     let sdrs = [];
     let origens = [];
+    let movements = [];
     let editingItem = null;
     let editingType = null;
 
@@ -1036,6 +1038,17 @@
       await loadClosers();
       await loadSDRs();
       await loadOrigens();
+      await loadMovements();
+    }
+
+    async function loadMovements() {
+      try {
+        movements = await supabaseFetch('movements?order=id.desc&limit=500') || [];
+        console.log('✅ Movements carregados:', movements.length);
+      } catch (e) {
+        console.log('Erro ao carregar movements:', e);
+        movements = [];
+      }
     }
 
     window.addEventListener('load', function() {
@@ -1324,6 +1337,10 @@
             <td>${h.total_closers || 0}</td>
             <td>${h.total_sdrs || 0}</td>
             <td style="font-size: 11px; color: #999;">${dataCriacao}</td>
+            <td>
+              <button class="edit-btn" onclick="abrirMetaParaEditar('${h.mes}')">Editar</button>
+              <button class="remove-btn" onclick="deletarMeta('${h.mes}')" style="margin-left: 4px;">Deletar</button>
+            </td>
           </tr>`;
         }).join('');
       } catch (e) {
@@ -1475,6 +1492,74 @@
         </tr>`;
       }).join('');
       document.getElementById('meta-sdrs-body').innerHTML = sdrsHtml || '<tr><td colspan="6">Sem SDRs</td></tr>';
+    }
+
+    async function abrirMetaParaEditar(mes) {
+      // Carregar meta existente e abrir modal para editar
+      try {
+        const metasResult = await supabaseFetch(`metas_mensais?mes=eq.${mes}`);
+        if (!metasResult || metasResult.length === 0) {
+          alert('Meta não encontrada');
+          return;
+        }
+
+        const metaMensal = metasResult[0];
+        
+        // Pré-preencher modal
+        document.getElementById('registrar-mes').value = mes;
+        document.getElementById('registrar-meta-mensal').value = metaMensal.meta_mensal_vendas;
+        document.getElementById('registrar-meta-diaria').value = metaMensal.meta_diaria_vendas;
+        
+        // Encontrar qual template corresponde
+        const closersResult = await supabaseFetch(`metas_closers?mes_id=eq.${metaMensal.id}&limit=1`);
+        if (closersResult && closersResult.length > 0) {
+          const template = Object.values(metaTemplates).find(t => t.meta_closer_mensal == closersResult[0].meta_mensal);
+          if (template) {
+            selecionarNivel(template.nivel);
+          }
+        }
+
+        abrirModalRegistrarMeta();
+      } catch (e) {
+        alert('Erro ao abrir meta: ' + e.message);
+      }
+    }
+
+    async function deletarMeta(mes) {
+      if (!confirm(`Tem certeza que quer deletar a meta de ${new Date(`${mes}-01`).toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}?`)) {
+        return;
+      }
+
+      try {
+        // Buscar meta mensal
+        const metasResult = await supabaseFetch(`metas_mensais?mes=eq.${mes}`);
+        if (!metasResult || metasResult.length === 0) {
+          alert('Meta não encontrada');
+          return;
+        }
+
+        const metaMensal = metasResult[0];
+
+        // Deletar metas de closers e SDRs
+        await supabaseFetch(`metas_closers?mes_id=eq.${metaMensal.id}`, 'DELETE');
+        await supabaseFetch(`metas_sdrs?mes_id=eq.${metaMensal.id}`, 'DELETE');
+
+        // Deletar meta mensal
+        await supabaseFetch(`metas_mensais?id=eq.${metaMensal.id}`, 'DELETE');
+
+        // Deletar do histórico
+        await supabaseFetch(`meta_historico?mes=eq.${mes}`, 'DELETE');
+
+        alert('Meta deletada com sucesso!');
+        
+        // Recarregar
+        await carregarMetasDoSupabase();
+        await renderizarHistoricoMetas();
+        document.getElementById('meta-mes-filtro').value = '';
+        filtrarPorMes();
+      } catch (e) {
+        alert('Erro ao deletar meta: ' + e.message);
+      }
     }
 
     // Inicializar quando página de acompanhamento for aberta
