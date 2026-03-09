@@ -1123,20 +1123,40 @@
       }
 
       try {
-        // 1. Inserir em metas_mensais
-        const resultMeta = await supabaseFetch('metas_mensais', 'POST', {
-          mes: mes,
-          nivel: nivel,
-          meta_mensal_vendas: metaMensal,
-          meta_diaria_vendas: metaDiaria
-        });
+        // 1. Verificar se meta do mês já existe
+        const checkMeta = await supabaseFetch(`metas_mensais?mes=eq.${mes}`);
+        let metaMensalId = null;
 
-        if (!resultMeta || !resultMeta[0]) {
-          alert('Erro ao criar meta mensal');
-          return;
+        if (checkMeta && checkMeta.length > 0) {
+          // Atualizar meta existente
+          const metaExistente = checkMeta[0];
+          metaMensalId = metaExistente.id;
+          
+          await supabaseFetch(`metas_mensais?id=eq.${metaMensalId}`, 'PATCH', {
+            nivel: nivel,
+            meta_mensal_vendas: metaMensal,
+            meta_diaria_vendas: metaDiaria
+          });
+
+          // Deletar metas antigas de closers e SDRs pra recriar
+          await supabaseFetch(`metas_closers?mes_id=eq.${metaMensalId}`, 'DELETE');
+          await supabaseFetch(`metas_sdrs?mes_id=eq.${metaMensalId}`, 'DELETE');
+        } else {
+          // Criar nova meta
+          const resultMeta = await supabaseFetch('metas_mensais', 'POST', {
+            mes: mes,
+            nivel: nivel,
+            meta_mensal_vendas: metaMensal,
+            meta_diaria_vendas: metaDiaria
+          });
+
+          if (!resultMeta || !resultMeta[0]) {
+            alert('Erro ao criar meta mensal');
+            return;
+          }
+
+          metaMensalId = resultMeta[0].id;
         }
-
-        const metaMensalId = resultMeta[0].id;
 
         // 2. Coletar metas de closers e inserir
         const closersData = {};
