@@ -1115,44 +1115,137 @@
       const mes = document.getElementById('registrar-mes').value;
       const nivel = document.getElementById('registrar-nivel').value;
       const metaMensal = parseFloat(document.getElementById('registrar-meta-mensal').value);
+      const metaDiaria = parseFloat(document.getElementById('registrar-meta-diaria').value);
 
       if (!mes || !nivel || !metaMensal) {
         alert('Preencha todos os campos obrigatórios');
         return;
       }
 
-      // Coletar metas de closers
-      const closersData = {};
-      closers.forEach(c => {
-        const mensal = parseFloat(document.querySelector(`.closer-meta-mensal[data-closer-id="${c.id}"]`).value) || 0;
-        const diaria = parseFloat(document.querySelector(`.closer-meta-diaria[data-closer-id="${c.id}"]`).value) || 0;
-        closersData[c.id] = { nome: c.name, meta_mensal: mensal, meta_diaria: diaria };
-      });
+      try {
+        // 1. Inserir em metas_mensais
+        const resultMeta = await supabaseFetch('metas_mensais', 'POST', {
+          mes: mes,
+          nivel: nivel,
+          meta_mensal_vendas: metaMensal,
+          meta_diaria_vendas: metaDiaria
+        });
 
-      // Coletar metas de SDRs
-      const sdrsData = {};
-      sdrs.forEach(s => {
-        const mensal = parseFloat(document.querySelector(`.sdr-meta-mensal[data-sdr-id="${s.id}"]`).value) || 0;
-        const diaria = parseFloat(document.querySelector(`.sdr-meta-diaria[data-sdr-id="${s.id}"]`).value) || 0;
-        sdrsData[s.id] = { nome: s.name, meta_mensal: mensal, meta_diaria: diaria };
-      });
+        if (!resultMeta || !resultMeta[0]) {
+          alert('Erro ao criar meta mensal');
+          return;
+        }
 
-      // Salvar na memória (depois integrar com Supabase)
-      metasMeses[mes] = {
-        nivel: nivel,
-        meta_mensal: metaMensal,
-        meta_diaria: document.getElementById('registrar-meta-diaria').value,
-        closers: closersData,
-        sdrs: sdrsData,
-        data_criacao: new Date().toISOString()
-      };
+        const metaMensalId = resultMeta[0].id;
 
-      fecharModalRegistrarMeta();
-      alert('Meta do mês registrada com sucesso!');
-      
-      // Carregar o mês que foi criado
-      document.getElementById('meta-mes-filtro').value = mes;
-      filtrarPorMes();
+        // 2. Coletar metas de closers e inserir
+        const closersData = {};
+        for (const closer of closers) {
+          const mensal = parseFloat(document.querySelector(`.closer-meta-mensal[data-closer-id="${closer.id}"]`).value) || 0;
+          const diaria = parseFloat(document.querySelector(`.closer-meta-diaria[data-closer-id="${closer.id}"]`).value) || 0;
+          
+          closersData[closer.id] = { nome: closer.name, meta_mensal: mensal, meta_diaria: diaria };
+          
+          // Inserir no Supabase
+          if (mensal > 0) {
+            await supabaseFetch('metas_closers', 'POST', {
+              mes_id: metaMensalId,
+              closer_id: closer.id,
+              meta_mensal: mensal,
+              meta_diaria: diaria
+            });
+          }
+        }
+
+        // 3. Coletar metas de SDRs e inserir
+        const sdrsData = {};
+        for (const sdr of sdrs) {
+          const mensal = parseInt(document.querySelector(`.sdr-meta-mensal[data-sdr-id="${sdr.id}"]`).value) || 0;
+          const diaria = parseInt(document.querySelector(`.sdr-meta-diaria[data-sdr-id="${sdr.id}"]`).value) || 0;
+          
+          sdrsData[sdr.id] = { nome: sdr.name, meta_mensal: mensal, meta_diaria: diaria };
+          
+          // Inserir no Supabase
+          if (mensal > 0) {
+            await supabaseFetch('metas_sdrs', 'POST', {
+              mes_id: metaMensalId,
+              sdr_id: sdr.id,
+              meta_mensal: mensal,
+              meta_diaria: diaria
+            });
+          }
+        }
+
+        // 4. Salvar na memória também (backup local)
+        metasMeses[mes] = {
+          id: metaMensalId,
+          nivel: nivel,
+          meta_mensal: metaMensal,
+          meta_diaria: metaDiaria,
+          closers: closersData,
+          sdrs: sdrsData,
+          data_criacao: new Date().toISOString()
+        };
+
+        fecharModalRegistrarMeta();
+        alert('Meta do mês registrada com sucesso!');
+        
+        // Carregar o mês que foi criado
+        document.getElementById('meta-mes-filtro').value = mes;
+        await carregarMetasDoSupabase();
+        filtrarPorMes();
+      } catch (error) {
+        console.error('Erro ao salvar meta:', error);
+        alert('Erro ao registrar meta: ' + error.message);
+      }
+    }
+
+    async function carregarMetasDoSupabase() {
+      try {
+        // Carregar metas_mensais
+        const metasResult = await supabaseFetch('metas_mensais?order=mes.desc');
+        if (Array.isArray(metasResult)) {
+          for (const meta of metasResult) {
+            metasMeses[meta.mes] = {
+              id: meta.id,
+              nivel: meta.nivel,
+              meta_mensal: meta.meta_mensal_vendas,
+              meta_diaria: meta.meta_diaria_vendas,
+              closers: {},
+              sdrs: {}
+            };
+
+            // Carregar closers deste mês
+            const closersResult = await supabaseFetch(`metas_closers?mes_id=eq.${meta.id}`);
+            if (Array.isArray(closersResult)) {
+              for (const closer of closersResult) {
+                const closerObj = closers.find(c => c.id == closer.closer_id);
+                metasMeses[meta.mes].closers[closer.closer_id] = {
+                  nome: closerObj ? closerObj.name : 'Desconhecido',
+                  meta_mensal: closer.meta_mensal,
+                  meta_diaria: closer.meta_diaria
+                };
+              }
+            }
+
+            // Carregar SDRs deste mês
+            const sdrsResult = await supabaseFetch(`metas_sdrs?mes_id=eq.${meta.id}`);
+            if (Array.isArray(sdrsResult)) {
+              for (const sdr of sdrsResult) {
+                const sdrObj = sdrs.find(s => s.id == sdr.sdr_id);
+                metasMeses[meta.mes].sdrs[sdr.sdr_id] = {
+                  nome: sdrObj ? sdrObj.name : 'Desconhecido',
+                  meta_mensal: sdr.meta_mensal,
+                  meta_diaria: sdr.meta_diaria
+                };
+              }
+            }
+          }
+        }
+        console.log('✅ Metas carregadas do Supabase');
+      } catch (error) {
+        console.log('Nota: Tabela de metas ainda não existe no Supabase');
+      }
     }
 
     function filtrarPorMes() {
@@ -1258,6 +1351,7 @@
       originalGoToPage2(page);
       if (page === 'acompanhamento-meta') {
         preencherDropdownMeses();
+        carregarMetasDoSupabase();  // Carregar metas existentes do Supabase
       }
     };
   </script>
