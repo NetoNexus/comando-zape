@@ -34,24 +34,7 @@
     #dashboard-container.active { display: flex; }
 
     aside { width: 240px; background: linear-gradient(180deg, #242424 0%, #1F1F1F 100%); border-right: 1px solid #383838; padding: 24px 0; position: fixed; height: 100vh; overflow-y: auto; }
-    .sidebar-logo { padding: 0 20px; margin-bottom: 30px; font-size: 16px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #B2FF00; display: flex; justify-content: space-between; align-items: center; }
-    .sidebar-toggle { cursor: pointer; font-size: 18px; color: #B2FF00; padding: 6px 8px; border-radius: 4px; transition: all 0.3s; user-select: none; display: flex; flex-direction: column; gap: 4px; width: 24px; justify-content: center; transform: rotate(0deg); flex-shrink: 0; order: 2; }
-    .sidebar-toggle span { width: 18px; height: 2px; background: #B2FF00; display: block; transition: all 0.3s; }
-    .sidebar-toggle:hover { background: rgba(178,255,0,0.1); }
-    .sidebar-toggle:hover span { background: #B2FF00; }
-    aside.minimized .sidebar-toggle { transform: rotate(90deg); position: relative; }
-    aside.minimized .sidebar-logo span { display: none; }
-    aside.minimized .sidebar-logo { padding: 0; justify-content: center; }
-    aside.minimized .sidebar-toggle { order: 1; }
-    aside.minimized { width: 60px; }
-    aside.minimized .sidebar-menu { padding: 0 6px; }
-    aside.minimized .sidebar-menu .menu-item { padding: 12px 6px; font-size: 0; }
-    aside.minimized .sidebar-menu .menu-item::before { content: '•'; font-size: 12px; color: #999; }
-    aside.minimized .sidebar-menu .menu-item.active::before { color: #B2FF00; }
-    aside.minimized .sidebar-menu .menu-item:hover::before { color: #B2FF00; }
-    aside.minimized .sidebar-footer { padding: 12px 6px; }
-    aside.minimized .submenu { display: none !important; }
-    aside { transition: width 0.3s ease; }
+    .sidebar-logo { padding: 0 20px; margin-bottom: 30px; font-size: 16px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #B2FF00; }
     .sidebar-menu { display: flex; flex-direction: column; gap: 8px; padding: 0 12px; }
     .menu-item { padding: 12px 16px; cursor: pointer; font-size: 12px; color: #999; border-radius: 6px; border-left: 3px solid transparent; transition: all 0.3s; }
     .menu-item:hover { background: rgba(178,255,0,0.05); color: #B2FF00; }
@@ -157,15 +140,8 @@
 
   <!-- DASHBOARD -->
   <div id="dashboard-container">
-    <aside id="sidebar">
-      <div class="sidebar-logo">
-        <span>ZAPE</span>
-        <div class="sidebar-toggle" onclick="toggleSidebar()">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-      </div>
+    <aside>
+      <div class="sidebar-logo">ZAPE</div>
       <div class="sidebar-menu">
         <div class="menu-item active" onclick="goToPage('painel')">Painel</div>
         <div class="menu-item expandable" onclick="toggleSubmenu('comercial-menu')">Comercial</div>
@@ -1146,11 +1122,6 @@
       document.getElementById('user-display').textContent = currentUser.fullname;
       loadUsersTable();
       initSupabase();
-      
-      // Restaurar estado do sidebar (minimizado ou não)
-      if (localStorage.getItem('sidebarMinimized') === 'true') {
-        document.getElementById('sidebar').classList.add('minimized');
-      }
     }
 
     function logout() {
@@ -1174,12 +1145,6 @@
       if (page === 'cadastro-sdrs') loadSDRs();
       if (page === 'cadastro-origens') loadOrigens();
       if (page === 'cadastro-servicos') loadServicos();
-    }
-
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      sidebar.classList.toggle('minimized');
-      localStorage.setItem('sidebarMinimized', sidebar.classList.contains('minimized'));
     }
 
     function toggleSubmenu(submenuId) {
